@@ -1,0 +1,29 @@
+name: Deploy to Contabo VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            # Navigate to the project directory on the VPS
+            cd /app/pedido-de-compra-de-material || exit 1
+            
+            # Pull latest code
+            git pull origin main
+            
+            # Rebuild and start container
+            docker rm -f rcsvision-app || true
+            docker compose up -d --build

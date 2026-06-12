@@ -1,0 +1,99 @@
+name: Production Deployment
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-push-prod:
+    # if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build dynamic version
+        id: get_version
+        run: |
+          BASE_VERSION=$(jq -r '.version' package.json)
+          VERSION="${BASE_VERSION}.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+          echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Using dynamic version: $VERSION"
+
+      - name: Check if Tag Already Exists
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = process.env.VERSION;
+            const tagName = `prod-${version}`;
+            
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${tagName}`
+              });
+              
+              core.setFailed(`Tag ${tagName} already exists. Aborting to avoid duplicate release tag.`);
+            } catch (e) {
+              if (e.status !== 404) {
+                throw e;
+              }
+              console.log(`Tag ${tagName} is available.`);
+            }
+
+      - name: Create and Push Git Tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag prod-$VERSION
+          git push origin prod-$VERSION
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Debug - Verify Secrets Are Set
+        run: |
+          echo "VITE_DOCUWARE_CLIENT_ID length: ${#VITE_DOCUWARE_CLIENT_ID}, starts with: ${VITE_DOCUWARE_CLIENT_ID:0:4}..."
+          echo "VITE_DOCUWARE_CLIENT_SECRET length: ${#VITE_DOCUWARE_CLIENT_SECRET}"
+          echo "DOCUWARE_USERNAME length: ${#DOCUWARE_USERNAME}, starts with: ${DOCUWARE_USERNAME:0:3}..."
+          echo "DOCUWARE_PASSWORD length: ${#DOCUWARE_PASSWORD}"
+          echo "DOCUWARE_ORG_ID length: ${#DOCUWARE_ORG_ID}, starts with: ${DOCUWARE_ORG_ID:0:4}..."
+          echo "VITE_DOCUWARE_WORKFLOW_API_KEY length: ${#VITE_DOCUWARE_WORKFLOW_API_KEY}"
+          echo "VITE_DOCUWARE_WORKFLOW_URL length: ${#VITE_DOCUWARE_WORKFLOW_URL}, value: ${VITE_DOCUWARE_WORKFLOW_URL:0:10}..."
+          echo "DOCKERHUB_REPOSITORY_URI length: ${#DOCKERHUB_REPOSITORY_URI}, value: ${DOCKERHUB_REPOSITORY_URI}"
+        env:
+          VITE_DOCUWARE_CLIENT_ID: ${{ secrets.VITE_DOCUWARE_CLIENT_ID }}
+          VITE_DOCUWARE_CLIENT_SECRET: ${{ secrets.VITE_DOCUWARE_CLIENT_SECRET }}
+          DOCUWARE_USERNAME: ${{ secrets.DOCUWARE_USERNAME }}
+          DOCUWARE_PASSWORD: ${{ secrets.DOCUWARE_PASSWORD }}
+          DOCUWARE_ORG_ID: ${{ secrets.DOCUWARE_ORG_ID }}
+          VITE_DOCUWARE_WORKFLOW_API_KEY: ${{ secrets.VITE_DOCUWARE_WORKFLOW_API_KEY }}
+          VITE_DOCUWARE_WORKFLOW_URL: ${{ secrets.VITE_DOCUWARE_WORKFLOW_URL }}
+          DOCKERHUB_REPOSITORY_URI: ${{ secrets.DOCKERHUB_REPOSITORY_URI }}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          build-args: |
+            VITE_DOCUWARE_CLIENT_ID=${{ secrets.VITE_DOCUWARE_CLIENT_ID }}
+            VITE_DOCUWARE_CLIENT_SECRET=${{ secrets.VITE_DOCUWARE_CLIENT_SECRET }}
+            DOCUWARE_USERNAME=${{ secrets.DOCUWARE_USERNAME }}
+            DOCUWARE_PASSWORD=${{ secrets.DOCUWARE_PASSWORD }}
+            DOCUWARE_ORG_ID=${{ secrets.DOCUWARE_ORG_ID }}
+            VITE_DOCUWARE_WORKFLOW_API_KEY=${{ secrets.VITE_DOCUWARE_WORKFLOW_API_KEY }}
+            VITE_DOCUWARE_WORKFLOW_URL=${{ secrets.VITE_DOCUWARE_WORKFLOW_URL }}
+          tags: |
+            ${{ secrets.DOCKERHUB_REPOSITORY_URI }}:prod-${{ env.VERSION }}
+            ${{ secrets.DOCKERHUB_REPOSITORY_URI }}:prod-latest

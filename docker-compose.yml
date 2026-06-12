@@ -1,0 +1,38 @@
+services:
+  rcsvision:
+    build:
+      context: .
+      args:
+        - VITE_DOCUWARE_CLIENT_ID=${VITE_DOCUWARE_CLIENT_ID}
+        - VITE_DOCUWARE_CLIENT_SECRET=${VITE_DOCUWARE_CLIENT_SECRET}
+        - VITE_DOCUWARE_REDIRECT_URI=${VITE_DOCUWARE_REDIRECT_URI}
+        - VITE_APP_URL=${VITE_APP_URL}
+        - VITE_DOCUWARE_WORKFLOW_API_KEY=${VITE_DOCUWARE_WORKFLOW_API_KEY}
+        - VITE_DOCUWARE_WORKFLOW_URL=${VITE_DOCUWARE_WORKFLOW_URL}
+        - DOCUWARE_USERNAME=${DOCUWARE_USERNAME}
+        - DOCUWARE_PASSWORD=${DOCUWARE_PASSWORD_DOCKER}
+        - DOCUWARE_ORG_ID=${DOCUWARE_ORG_ID}
+    container_name: rcsvision-app
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./exports:/app/exports
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DEV=true
+      - VITE_DOCUWARE_CLIENT_ID=${VITE_DOCUWARE_CLIENT_ID}
+      - VITE_DOCUWARE_CLIENT_SECRET=${VITE_DOCUWARE_CLIENT_SECRET}
+      - VITE_DOCUWARE_REDIRECT_URI=${VITE_DOCUWARE_REDIRECT_URI}
+      - VITE_APP_URL=${VITE_APP_URL}
+      - VITE_DOCUWARE_WORKFLOW_API_KEY=${VITE_DOCUWARE_WORKFLOW_API_KEY}
+      - VITE_DOCUWARE_WORKFLOW_URL=${VITE_DOCUWARE_WORKFLOW_URL}
+      - DOCUWARE_USERNAME=${DOCUWARE_USERNAME}
+      - DOCUWARE_PASSWORD=${DOCUWARE_PASSWORD_DOCKER}
+      - DOCUWARE_ORG_ID=${DOCUWARE_ORG_ID}
+    restart: unless-stopped
+
+networks:
+  default:
+    name: pedidodecompradematerial_default
+    external: true
