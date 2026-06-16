@@ -772,7 +772,7 @@ const WorkflowHistoryPage = () => {
                             let parsedDef = wfdDefinitions[instance.WorkflowId];
                             if (!parsedDef) {
                                 // Try server
-                                parsedDef = await workflowAnalyticsService.getWfdDefinition(instance.WorkflowId);
+                                parsedDef = await workflowAnalyticsService.getWfdDefinition(instance.WorkflowId, instance.Name);
                                 
                                 // Fallback to localStorage
                                 if (!parsedDef) {
@@ -1028,7 +1028,7 @@ const WorkflowHistoryPage = () => {
                 if (defs[workflowId]) continue; // already loaded
 
                 // Try server first
-                let parsed = await workflowAnalyticsService.getWfdDefinition(workflowId);
+                let parsed = await workflowAnalyticsService.getWfdDefinition(workflowId, inst.Name);
                 
                 // Fallback to localStorage
                 if (!parsed) {

@@ -180,12 +180,17 @@ export const workflowAnalyticsService = {
     /**
      * Get Workflow WFD definition from backend server
      */
-    getWfdDefinition: async (workflowId) => {
+    getWfdDefinition: async (workflowId, workflowName = null) => {
         if (wfdCache.has(workflowId)) {
             return wfdCache.get(workflowId);
         }
         try {
-            const response = await analyticsApi.get(`/api/wfd/${workflowId}`, { baseURL: '/' });
+            const params = {};
+            if (workflowName) params.name = workflowName;
+            const response = await analyticsApi.get(`/api/wfd/${workflowId}`, { 
+                baseURL: '/',
+                params
+            });
             wfdCache.set(workflowId, response.data);
             return response.data;
         } catch (err) {

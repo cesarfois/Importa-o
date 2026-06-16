@@ -752,9 +752,63 @@ app.post('/api/schedules/import', express.json(), async (req, res) => {
 app.get('/api/wfd/:workflowId', async (req, res) => {
     try {
         const { workflowId } = req.params;
+        const workflowName = req.query.name;
         const filePath = path.join(WFD_DIR, `${workflowId}.json`);
-        const content = await fs.readFile(filePath, 'utf8');
-        res.json(JSON.parse(content));
+        
+        try {
+            const content = await fs.readFile(filePath, 'utf8');
+            return res.json(JSON.parse(content));
+        } catch (fileErr) {
+            // File not found for this specific workflowId.
+            // If workflowName was provided, search all files in WFD_DIR for name similarity!
+            if (workflowName) {
+                console.log(`[WFD] Searching for WFD matching name: "${workflowName}"`);
+                const files = await fs.readdir(WFD_DIR);
+                
+                // Helper to normalize strings for comparison (remove version, spacing, accents)
+                const normalize = (s) => (s || '').toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // remove accents
+                    .replace(/\s+/g, ' ')            // collapse spacing
+                    .replace(/v\d+$/i, '')           // remove version suffix like v40
+                    .replace(/version\s*\d+$/i, '')
+                    .replace(/\(antigo\)/gi, '')
+                    .replace(/-cgo-/gi, '')
+                    .replace(/[^a-z0-9]/g, '')        // alphanumeric only
+                    .trim();
+
+                const normalizedSearch = normalize(workflowName);
+                console.log(`[WFD] Normalized search query: "${normalizedSearch}"`);
+
+                for (const file of files) {
+                    if (file.endsWith('.json')) {
+                        try {
+                            const fileContent = await fs.readFile(path.join(WFD_DIR, file), 'utf8');
+                            const wfd = JSON.parse(fileContent);
+                            
+                            if (wfd && wfd.name) {
+                                const normalizedWfdName = normalize(wfd.name);
+                                console.log(`[WFD] Comparing against: "${normalizedWfdName}" (from ${file})`);
+
+                                // Match if one contains the other, or if they are identical when normalized
+                                if (normalizedSearch.includes(normalizedWfdName) || normalizedWfdName.includes(normalizedSearch)) {
+                                    console.log(`[WFD] Found match! Using ${file} for ${workflowId} (${workflowName})`);
+                                    
+                                    // Auto-save it for this workflowId so next time it finds it directly
+                                    const newPath = path.join(WFD_DIR, `${workflowId}.json`);
+                                    await fs.writeFile(newPath, fileContent, 'utf8');
+                                    
+                                    return res.json(wfd);
+                                }
+                            }
+                        } catch (e) {
+                            // ignore individual parse/read errors
+                        }
+                    }
+                }
+            }
+            throw fileErr;
+        }
     } catch (err) {
         res.status(404).json({ error: 'WFD not found' });
     }
