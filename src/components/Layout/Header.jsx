@@ -24,7 +24,7 @@ const Header = () => {
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
                 <a
-                    href="https://wp.processcloud.app/"
+                    href="https://wp.processcloud.app/portal"
                     className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                     title="Voltar ao Portal"
                 >
