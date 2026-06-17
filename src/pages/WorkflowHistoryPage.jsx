@@ -1688,7 +1688,7 @@ const WorkflowHistoryPage = () => {
         : null;
 
     return (
-        <div className="p-6 w-full mx-auto space-y-6">
+        <div className="p-4 w-full mx-auto space-y-6">
             {openFilterDropdown && (
                 <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setOpenFilterDropdown(null)} />
             )}
@@ -1864,9 +1864,9 @@ const WorkflowHistoryPage = () => {
                     </div>
 
                     {/* Main Workspace: Table + Pipeline Side-by-Side */}
-                    <div className="flex flex-col lg:flex-row gap-6">
-                        {/* Left Column (82% width): Table and Filters */}
-                        <div className="w-full lg:w-[82%] flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="flex flex-col lg:flex-row gap-4">
+                        {/* Left Column (84.5% width): Table and Filters */}
+                        <div className="w-full lg:w-[84.5%] flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                             {/* Toolbar: Filters */}
                             <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-wrap gap-4 items-center justify-between">
                                 
@@ -1976,13 +1976,13 @@ const WorkflowHistoryPage = () => {
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('dataRealizacao')}>
                                                     Previsão {sortField === 'dataRealizacao' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
-                                                <th className="py-3 px-1 text-center w-[38px]" title="Histórico">
+                                                <th className="py-3 px-1 text-center w-[38px] min-w-[38px] shrink-0" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
                                                 </th>
-                                                <th className="py-3 px-1 text-center w-[38px]" title="Ver Documento">
+                                                <th className="py-3 px-1 text-center w-[38px] min-w-[38px] shrink-0" title="Ver Documento">
                                                     <FaFileAlt className="mx-auto text-slate-400" />
                                                 </th>
-                                                <th className="py-3 px-1 text-center w-[38px]" title="Visualizar Diagrama">
+                                                <th className="py-3 px-1 text-center w-[38px] min-w-[38px] shrink-0" title="Visualizar Diagrama">
                                                     <FaProjectDiagram className="mx-auto text-slate-400" />
                                                 </th>
                                             </tr>
@@ -2123,7 +2123,7 @@ const WorkflowHistoryPage = () => {
                                                         </td>
 
                                                         {/* History */}
-                                                        <td className="py-3 px-0.5 text-center w-[38px]">
+                                                        <td className="py-3 px-0.5 text-center w-[38px] min-w-[38px] shrink-0">
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -2137,20 +2137,20 @@ const WorkflowHistoryPage = () => {
                                                         </td>
 
                                                         {/* Link */}
-                                                        <td className="py-3 px-0.5 text-center w-[38px]" onClick={(e) => e.stopPropagation()}>
+                                                        <td className="py-3 px-0.5 text-center w-[38px] min-w-[38px] shrink-0" onClick={(e) => e.stopPropagation()}>
                                                             <a
                                                                 href={docuwareService.getDocumentViewUrl(selectedCabinet, doc.Id)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
-                                                                title="Ver Documento"
+                                                                title="Abrir no DocuWare"
                                                             >
-                                                                <FaFileAlt className="text-sm" />
+                                                                <FaExternalLinkAlt className="text-xs" />
                                                             </a>
                                                         </td>
 
                                                         {/* Diagram */}
-                                                        <td className="py-3 px-0.5 text-center w-[38px]">
+                                                        <td className="py-3 px-0.5 text-center w-[38px] min-w-[38px] shrink-0">
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -2172,8 +2172,8 @@ const WorkflowHistoryPage = () => {
                             </div>
                         </div>
 
-                        {/* Right Column (18% width): Pipeline Visual */}
-                        <div className="w-full lg:w-[18%] flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                        {/* Right Column (15.5% width): Pipeline Visual */}
+                        <div className="w-full lg:w-[15.5%] flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                             <div className="p-4 bg-slate-50 border-b border-slate-200 shrink-0">
                                 <span className="font-bold text-xs uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                                     <FaProjectDiagram /> Trilha do Workflow
