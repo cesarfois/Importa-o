@@ -1582,7 +1582,7 @@ const WorkflowHistoryPage = () => {
         }
     };
 
-    const renderFilterDropdown = (type, title, currentValue, setValue, searchVal, setSearchVal, options) => {
+    const renderFilterDropdown = (type, title, currentValue, setValue, searchVal, setSearchVal, options, alignLeft = false) => {
         const isOpen = openFilterDropdown === type;
         const filteredOptions = options.filter(opt => 
             String(opt).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -1605,7 +1605,7 @@ const WorkflowHistoryPage = () => {
                 
                 {isOpen && (
                     <div 
-                        className="absolute right-0 mt-1 z-50 w-64 bg-white border border-slate-200 rounded-xl shadow-xl p-3 text-slate-700 font-normal normal-case"
+                        className={`absolute ${alignLeft ? 'left-0' : 'right-0'} mt-1 z-50 w-64 bg-white border border-slate-200 rounded-xl shadow-xl p-3 text-slate-700 font-normal normal-case`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="text-xs font-semibold text-slate-700 mb-2 border-b border-slate-100 pb-1.5 flex justify-between items-center">
@@ -1937,7 +1937,7 @@ const WorkflowHistoryPage = () => {
                                                     <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('docNum')}>
                                                         Documento {sortField === 'docNum' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                     </span>
-                                                    {renderFilterDropdown('docNum', 'Documento', filterDocNum, setFilterDocNum, searchDocNum, setSearchDocNum, uniqueDocNums)}
+                                                    {renderFilterDropdown('docNum', 'Documento', filterDocNum, setFilterDocNum, searchDocNum, setSearchDocNum, uniqueDocNums, true)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('entryDate')}>
                                                     Início {sortField === 'entryDate' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
