@@ -294,6 +294,11 @@ const getDocumentCommentsII = (doc) => {
     return '';
 };
 
+const getDocumentRealizationDate = (doc) => {
+    if (!doc) return '';
+    return getDocFieldValue(doc, 'DATA_DE_REALIZACAO') || getDocFieldValue(doc, 'DATA_REALIZACAO') || '';
+};
+
 
 const WorkflowHistoryPage = () => {
     // Basic States
@@ -639,6 +644,23 @@ const WorkflowHistoryPage = () => {
                 const getMat = (d) => getDocFieldValue(d, 'MATRICULA') || '';
                 valA = getMat(a);
                 valB = getMat(b);
+            } else if (sortField === 'dataRealizacao') {
+                const getReal = (d) => {
+                    const val = getDocumentRealizationDate(d);
+                    if (val) {
+                        let dateObj;
+                        if (typeof val === 'string' && val.startsWith('/Date(')) {
+                            const timestamp = parseInt(val.match(/\d+/)[0]);
+                            dateObj = new Date(timestamp);
+                        } else {
+                            dateObj = new Date(val);
+                        }
+                        return isNaN(dateObj.getTime()) ? 0 : dateObj.getTime();
+                    }
+                    return 0;
+                };
+                valA = getReal(a);
+                valB = getReal(b);
             } else {
                 return 0;
             }
@@ -1463,7 +1485,8 @@ const WorkflowHistoryPage = () => {
                 'Responsável',
                 'Tempo Parado',
                 'Comentários',
-                'Valor'
+                'Valor',
+                'Data Realização'
             ];
 
             const rows = filteredAndSortedDocuments.map(doc => {
@@ -1485,7 +1508,8 @@ const WorkflowHistoryPage = () => {
                     'Responsável': prog.responsible && prog.responsible !== '-' ? prog.responsible : '',
                     'Tempo Parado': timeStopped,
                     'Comentários': comments,
-                    'Valor': getDocFieldValue(doc, 'MATRICULA') || ''
+                    'Valor': getDocFieldValue(doc, 'MATRICULA') || '',
+                    'Data Realização': getDocumentRealizationDate(doc) ? formatDate(getDocumentRealizationDate(doc), true) : ''
                 };
             });
 
@@ -1793,6 +1817,9 @@ const WorkflowHistoryPage = () => {
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('matricula')}>
                                                     Valor {sortField === 'matricula' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
+                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('dataRealizacao')}>
+                                                    Data Realização {sortField === 'dataRealizacao' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                </th>
                                                 <th className="py-3 px-1 text-center w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
                                                 </th>
@@ -1928,6 +1955,15 @@ const WorkflowHistoryPage = () => {
                                                                     {getDocFieldValue(doc, 'MATRICULA') || '-'}
                                                                 </div>
                                                             )}
+                                                        </td>
+
+                                                        {/* Data Realizacao */}
+                                                        <td className="py-3 px-2 font-mono text-[11px] text-slate-500">
+                                                            {isProgLoading ? (
+                                                                <span className="inline-block w-16 h-3 bg-slate-100 animate-pulse rounded"></span>
+                                                            ) : getDocumentRealizationDate(doc) ? (
+                                                                formatDate(getDocumentRealizationDate(doc), true)
+                                                            ) : '-'}
                                                         </td>
 
                                                         {/* History */}
