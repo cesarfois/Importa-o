@@ -18,7 +18,9 @@ import {
     FaInfoCircle,
     FaFilter,
     FaCalendarAlt,
-    FaExpand
+    FaExpand,
+    FaCircle,
+    FaRegCircle
 } from 'react-icons/fa';
 import { workflowAnalyticsService } from '../services/workflowAnalyticsService';
 import { docuwareService } from '../services/docuwareService';
@@ -323,11 +325,17 @@ const WorkflowHistoryPage = () => {
     const [documentProgress, setDocumentProgress] = useState({}); // { [docId]: { percent, remaining, statusText, activeTaskName, isFinished } }
     const [quickFilter, setQuickFilter] = useState('all'); // 'all' | 'completed' | 'active'
     
-    // Workflow Cockpit Sort & Filter States
     const [sortField, setSortField] = useState('timeStoppedMs'); // default: most delayed first
     const [sortDirection, setSortDirection] = useState('desc');
     const [filterStep, setFilterStep] = useState('all');
     const [filterResponsible, setFilterResponsible] = useState('all');
+    const [filterDocNum, setFilterDocNum] = useState('all');
+    const [filterComments, setFilterComments] = useState('all');
+    const [searchDocNum, setSearchDocNum] = useState('');
+    const [searchStep, setSearchStep] = useState('');
+    const [searchResponsible, setSearchResponsible] = useState('');
+    const [searchComments, setSearchComments] = useState('');
+    const [openFilterDropdown, setOpenFilterDropdown] = useState(null);
     
     // Document Grid / List States
     const [documents, setDocuments] = useState([]);
@@ -579,6 +587,26 @@ const WorkflowHistoryPage = () => {
         return Array.from(users).sort();
     }, [documentProgress]);
 
+    // Unique document numbers (all doc nums currently loaded)
+    const uniqueDocNums = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            const num = getDocumentNumber(doc);
+            set.add(num || 'Sem Nº');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    // Unique comments (all comments currently loaded)
+    const uniqueCommentsList = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            const comm = getDocumentComments(doc);
+            set.add(comm || 'Sem Comentários');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
     // Filter and sort documents for the operational table
     const filteredAndSortedDocuments = useMemo(() => {
         let result = [...documents];
@@ -602,6 +630,18 @@ const WorkflowHistoryPage = () => {
 
             // Responsible Filter
             if (filterResponsible !== 'all' && prog.responsible !== filterResponsible && !(prog.responsible && prog.responsible.includes(filterResponsible))) return false;
+
+            // Document Number Filter
+            if (filterDocNum !== 'all') {
+                const docNum = getDocumentNumber(doc) || 'Sem Nº';
+                if (docNum !== filterDocNum) return false;
+            }
+
+            // Comments Filter
+            if (filterComments !== 'all') {
+                const docComments = getDocumentComments(doc) || 'Sem Comentários';
+                if (docComments !== filterComments) return false;
+            }
 
             return true;
         });
@@ -1542,12 +1582,115 @@ const WorkflowHistoryPage = () => {
         }
     };
 
+    const renderFilterDropdown = (type, title, currentValue, setValue, searchVal, setSearchVal, options) => {
+        const isOpen = openFilterDropdown === type;
+        const filteredOptions = options.filter(opt => 
+            String(opt).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .includes(searchVal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+        );
+        
+        return (
+            <div className="relative inline-block ml-1 align-middle">
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenFilterDropdown(isOpen ? null : type);
+                    }}
+                    className={`p-1 rounded hover:bg-slate-200 transition-colors ${currentValue !== 'all' ? 'text-indigo-600 font-bold' : 'text-slate-400'}`}
+                    title={`Filtrar por ${title}`}
+                >
+                    <FaFilter className="text-[10px]" />
+                </button>
+                
+                {isOpen && (
+                    <div 
+                        className="absolute right-0 mt-1 z-50 w-64 bg-white border border-slate-200 rounded-xl shadow-xl p-3 text-slate-700 font-normal normal-case"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="text-xs font-semibold text-slate-700 mb-2 border-b border-slate-100 pb-1.5 flex justify-between items-center">
+                            <span>Filtrar {title}</span>
+                            {currentValue !== 'all' && (
+                                <button 
+                                    onClick={() => {
+                                        setValue('all');
+                                        setOpenFilterDropdown(null);
+                                    }} 
+                                    className="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium"
+                                >
+                                    Limpar
+                                </button>
+                            )}
+                        </div>
+                        
+                        <div className="mb-2">
+                            <input
+                                type="text"
+                                placeholder="Buscar..."
+                                value={searchVal}
+                                onChange={(e) => setSearchVal(e.target.value)}
+                                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:bg-white transition-all"
+                            />
+                        </div>
+                        
+                        <ul className="max-h-48 overflow-y-auto space-y-0.5 pr-1">
+                            <li 
+                                onClick={() => {
+                                    setValue('all');
+                                    setOpenFilterDropdown(null);
+                                }}
+                                className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded-lg cursor-pointer text-xs transition-colors"
+                            >
+                                {currentValue === 'all' ? (
+                                    <FaCircle className="text-[10px] text-indigo-600" />
+                                ) : (
+                                    <FaRegCircle className="text-[10px] text-indigo-500" />
+                                )}
+                                <span className={currentValue === 'all' ? "font-semibold text-indigo-600" : ""}>Todos</span>
+                            </li>
+                            
+                            {filteredOptions.length === 0 ? (
+                                <li className="text-[10px] text-slate-400 italic p-2 text-center">Nenhum resultado encontrado</li>
+                            ) : (
+                                filteredOptions.map((opt) => {
+                                    const isSelected = currentValue === opt;
+                                    return (
+                                        <li 
+                                            key={opt}
+                                            onClick={() => {
+                                                setValue(opt);
+                                                setOpenFilterDropdown(null);
+                                            }}
+                                            className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded-lg cursor-pointer text-xs transition-colors"
+                                        >
+                                            {isSelected ? (
+                                                <FaCircle className="text-[10px] text-indigo-600 shrink-0" />
+                                            ) : (
+                                                <FaRegCircle className="text-[10px] text-indigo-500 shrink-0" />
+                                            )}
+                                            <span className={`truncate ${isSelected ? "font-semibold text-indigo-600" : "text-slate-600"}`} title={opt}>
+                                                {opt}
+                                            </span>
+                                        </li>
+                                    );
+                                })
+                            )}
+                        </ul>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const currentInstance = (historyInstances && historyInstances.length > 0) 
         ? historyInstances[activeTab] 
         : null;
 
     return (
         <div className="p-6 w-full mx-auto space-y-6">
+            {openFilterDropdown && (
+                <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setOpenFilterDropdown(null)} />
+            )}
             {error && (
                 <div className="alert alert-error shadow-lg animate-fade-in-down">
                     <div>
@@ -1790,8 +1933,11 @@ const WorkflowHistoryPage = () => {
                                     <table className="table table-compact w-full border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-wider font-semibold">
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('docNum')}>
-                                                    Documento {sortField === 'docNum' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('docNum')}>
+                                                        Documento {sortField === 'docNum' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('docNum', 'Documento', filterDocNum, setFilterDocNum, searchDocNum, setSearchDocNum, uniqueDocNums)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('entryDate')}>
                                                     Início {sortField === 'entryDate' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
@@ -1802,17 +1948,26 @@ const WorkflowHistoryPage = () => {
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('requerente')}>
                                                     Requerente {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('activeTaskName')}>
-                                                    Etapa Atual {sortField === 'activeTaskName' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('activeTaskName')}>
+                                                        Etapa Atual {sortField === 'activeTaskName' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('step', 'Etapa', filterStep, setFilterStep, searchStep, setSearchStep, uniqueSteps)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('responsible')}>
-                                                    Responsável {sortField === 'responsible' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('responsible')}>
+                                                        Responsável {sortField === 'responsible' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('responsible', 'Responsável', filterResponsible, setFilterResponsible, searchResponsible, setSearchResponsible, uniqueResponsibles)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('timeStoppedMs')}>
                                                     Tempo Parado {sortField === 'timeStoppedMs' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
-                                                <th className="py-3 px-2 text-left">
-                                                    Comentários
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span>
+                                                        Comentários
+                                                    </span>
+                                                    {renderFilterDropdown('comments', 'Comentários', filterComments, setFilterComments, searchComments, setSearchComments, uniqueCommentsList)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('matricula')}>
                                                     Valor {sortField === 'matricula' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
