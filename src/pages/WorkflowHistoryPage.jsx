@@ -48,8 +48,7 @@ const isTaskType = (typeStr) => {
 const isWorkflowStartNode = (node) => {
     if (!node) return false;
     const type = (node.type || '').toLowerCase();
-    const name = (node.name || '').toLowerCase();
-    return type.includes('start') || name.includes('start') || name.includes('inicio') || name.includes('início');
+    return type === 'start' || type.includes('start');
 };
 
 const isWorkflowEndNode = (node) => {
@@ -1092,8 +1091,7 @@ const WorkflowHistoryPage = () => {
                                  } else {
                                       const startNode = nodes.find(n => {
                                           const type = (n.type || '').toLowerCase();
-                                          const name = (n.name || '').toLowerCase();
-                                          return type.includes('start') || name.includes('start') || name.includes('inicio') || name.includes('início');
+                                          return type === 'start' || type.includes('start');
                                       });
                                      if (startNode) {
                                          remaining = getRemainingTaskCount(nodes, edges, startNode.id);
