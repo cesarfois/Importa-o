@@ -17,6 +17,10 @@ services:
       - "3012:3012"
     volumes:
       - ./exports:/app/exports
+      - ./wfd_definitions:/app/wfd_definitions
+      - ./schedules.json:/app/schedules.json
+      - ./history.json:/app/history.json
+      - ./tokens.json:/app/tokens.json
     environment:
       - NODE_ENV=production
       - PORT=3012

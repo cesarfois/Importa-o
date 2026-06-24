@@ -28,6 +28,12 @@ jobs:
             # Pull latest code
             git pull origin main
             
+            # Ensure persistent directories and files exist on the host
+            mkdir -p wfd_definitions exports
+            [ -f schedules.json ] || echo "[]" > schedules.json
+            [ -f history.json ] || echo "[]" > history.json
+            [ -f tokens.json ] || echo "{}" > tokens.json
+            
             # Rebuild and start container
             docker rm -f rcsvision-app || true
             docker compose up -d --build
