@@ -397,8 +397,8 @@ const WorkflowHistoryPage = () => {
     const [cabinetFields, setCabinetFields] = useState([]);
     const [cabinetCount, setCabinetCount] = useState(0);
     const [orgId, setOrgId] = useState('');
-    const [docTypes, setDocTypes] = useState(['Processo de Importação']);
-    const [selectedDocType, setSelectedDocType] = useState('Processo de Importação');
+    const [docTypes, setDocTypes] = useState(['Registo Processo de Importação']);
+    const [selectedDocType, setSelectedDocType] = useState('Registo Processo de Importação');
     
     // Date filter range state (default to 30 days ago to today)
     const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -558,19 +558,19 @@ const WorkflowHistoryPage = () => {
                     try {
                         const types = await docuwareService.getSelectList(selectedCabinet, detectedTypeField.DBFieldName || detectedTypeField.FieldName);
                         if (types && types.length > 0) {
-                            const uniqueTypes = Array.from(new Set(['Processo de Importação', ...types]));
+                            const uniqueTypes = Array.from(new Set(['Registo Processo de Importação', ...types]));
                             setDocTypes(uniqueTypes);
                             if (!uniqueTypes.includes(selectedDocType)) {
                                 setSelectedDocType(uniqueTypes[0]);
                             }
                         } else {
-                            setDocTypes(['Processo de Importação']);
-                            setSelectedDocType('Processo de Importação');
+                            setDocTypes(['Registo Processo de Importação']);
+                            setSelectedDocType('Registo Processo de Importação');
                         }
                     } catch (err) {
                         console.error("Failed to load select list for document type", err);
-                        setDocTypes(['Processo de Importação']);
-                        setSelectedDocType('Processo de Importação');
+                        setDocTypes(['Registo Processo de Importação']);
+                        setSelectedDocType('Registo Processo de Importação');
                     }
                 }
             } catch (err) {
