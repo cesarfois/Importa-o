@@ -399,6 +399,7 @@ const WorkflowHistoryPage = () => {
     const [orgId, setOrgId] = useState('');
     const [docTypes, setDocTypes] = useState(['Registo Processo de Importação']);
     const [selectedDocType, setSelectedDocType] = useState('Registo Processo de Importação');
+    const searchIndexRef = React.useRef(0);
     
     // Date filter range state (default to 30 days ago to today)
     const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -1270,6 +1271,8 @@ const WorkflowHistoryPage = () => {
         if (e) e.preventDefault();
         if (!selectedCabinet) return;
 
+        const currentSearchIndex = ++searchIndexRef.current;
+
         setSearchLoading(true);
         setSearched(true);
         setError(null);
@@ -1301,6 +1304,11 @@ const WorkflowHistoryPage = () => {
             console.log(`Searching documents in cabinet ${selectedCabinet} with filters:`, queryFilters);
             const response = await docuwareService.searchDocuments(selectedCabinet, queryFilters, 1000);
             
+            if (currentSearchIndex !== searchIndexRef.current) {
+                console.log("[Search] Ignoring outdated search result");
+                return;
+            }
+
             const items = response.items || [];
             setDocuments(items);
 
@@ -1309,11 +1317,14 @@ const WorkflowHistoryPage = () => {
                 handleSelectDocument(items[0], 'timeline', false);
             }
         } catch (err) {
+            if (currentSearchIndex !== searchIndexRef.current) return;
             console.error('Document query failed:', err);
             setError('Não foi possível carregar os documentos. Verifique a conexão e tente novamente.');
             setDocuments([]);
         } finally {
-            setSearchLoading(false);
+            if (currentSearchIndex === searchIndexRef.current) {
+                setSearchLoading(false);
+            }
         }
     };
 
