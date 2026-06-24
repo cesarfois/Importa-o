@@ -408,12 +408,12 @@ const WorkflowHistoryPage = () => {
     
     // Date filter range state (default to 30 days ago to today)
     const getTodayString = () => new Date().toISOString().split('T')[0];
-    const getThirtyDaysAgoString = () => {
+    const getSixMonthsAgoString = () => {
         const d = new Date();
-        d.setDate(d.getDate() - 30);
+        d.setMonth(d.getMonth() - 6);
         return d.toISOString().split('T')[0];
     };
-    const [dateRange, setDateRange] = useState([getThirtyDaysAgoString(), getTodayString()]);
+    const [dateRange, setDateRange] = useState([getSixMonthsAgoString(), getTodayString()]);
 
     const [detectedTypeField, setDetectedTypeField] = useState(null);
     const [detectedDateField, setDetectedDateField] = useState(null);
