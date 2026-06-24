@@ -837,62 +837,69 @@ const WorkflowHistoryPage = () => {
         return result;
     }, [documents, documentProgress, quickFilter, filterStep, filterResponsible, sortField, sortDirection]);
 
-    // Pipeline visual steps aggregated for the cockpit - Processo de Importação (6 Etapas Estáticas)
+    // Pipeline visual steps aggregated for the cockpit - Dynamic from WFD
     const flowPipelineSteps = useMemo(() => {
-        const staticStages = [
-            { id: 'etapa1', name: 'ETAPA 1 - Abertura do Processo', stageNum: 1 },
-            { id: 'etapa2', name: 'ETAPA 2 - Documentação / Certificados', stageNum: 2 },
-            { id: 'etapa3', name: 'ETAPA 3 - Despachante e Transporte', stageNum: 3 },
-            { id: 'etapa4', name: 'ETAPA 4 - Chegada Angola / Desembaraço', stageNum: 4 },
-            { id: 'etapa5', name: 'ETAPA 5 - DAF / Custos Importação', stageNum: 5 },
-            { id: 'etapa6', name: 'ETAPA 6 - Finalizado', stageNum: 6 }
-        ];
-
-        return staticStages.map(stage => {
-            const docsInStage = documents.filter(doc => {
-                const prog = documentProgress[doc.Id];
-                if (!prog) return false;
-                const currentStage = evaluateActiveStage(doc, prog.activeTaskName, prog.isFinished);
-                return currentStage === stage.stageNum;
-            });
-
-            const count = docsInStage.length;
-
-            const activeDocsInStage = docsInStage.filter(doc => {
-                const prog = documentProgress[doc.Id];
-                return prog && !prog.isFinished;
-            });
-            const avgTimeMs = activeDocsInStage.length > 0
-                ? (activeDocsInStage.reduce((acc, doc) => acc + (documentProgress[doc.Id]?.timeStoppedMs || 0), 0) / activeDocsInStage.length)
-                : 0;
-
-            // Regra especial da Etapa 2
-            let isPendingAlert = false;
-            if (stage.stageNum === 2) {
-                isPendingAlert = docsInStage.some(doc => {
-                    const prog = documentProgress[doc.Id];
-                    if (prog && prog.isFinished) return false;
-                    const certificates = ['INACOM', 'INIQ', 'IANORQ', 'MINDICOM', 'MINAMB', 'CNCA', 'MINCO'];
-                    return certificates.some(cert => {
-                        const ped = findFieldVal(doc, [`PEDIDO_${cert}`, `PEDIDO__${cert}_`]);
-                        const rec = findFieldVal(doc, [`RECEBIMENTO_${cert}`, `RECEBIMENTO__${cert}_`]);
-                        return ped && !rec;
-                    });
+        const targetDoc = selectedDoc || documents.find(doc => documentProgress[doc.Id]?.mergedGraph);
+        if (!targetDoc || !documentProgress[targetDoc.Id]) return [];
+        const prog = documentProgress[targetDoc.Id];
+        if (!prog.mergedGraph) return [];
+        
+        const staticNodes = prog.mergedGraph.nodes || [];
+        const staticEdges = prog.mergedGraph.edges || [];
+        
+        const orderedTasks = getFlowPipelineSteps(staticNodes, staticEdges);
+        
+        const stepsWithAggregates = orderedTasks.map(task => {
+            const isCompletedStep = isWorkflowEndNode(task);
+            let count = 0;
+            let avgTimeMs = 0;
+            
+            if (isCompletedStep) {
+                count = documents.filter(doc => {
+                    const p = documentProgress[doc.Id];
+                    return p && p.isFinished;
+                }).length;
+            } else {
+                const renamedTaskName = renameWorkflowTask(task.name);
+                const activeDocs = documents.filter(doc => {
+                    const p = documentProgress[doc.Id];
+                    return p && !p.isFinished && p.activeTaskName === renamedTaskName;
                 });
+                count = activeDocs.length;
+                avgTimeMs = count > 0 
+                    ? (activeDocs.reduce((acc, doc) => acc + (documentProgress[doc.Id]?.timeStoppedMs || 0), 0) / count) 
+                    : 0;
             }
-
+                
             return {
-                id: stage.id,
-                name: stage.name,
+                id: task.id,
+                name: renameWorkflowTask(task.name),
                 count,
                 avgTimeText: avgTimeMs > 0 ? WorkflowHistoryAnalyzer.formatDuration(avgTimeMs) : '-',
-                isStart: stage.stageNum === 1,
-                isEnd: stage.stageNum === 6,
-                isPendingAlert,
-                stageNum: stage.stageNum
+                isStart: isWorkflowStartNode(task),
+                isEnd: isCompletedStep
             };
         });
-    }, [documentProgress, documents]);
+        
+        const hasEndNode = orderedTasks.some(isWorkflowEndNode);
+        if (!hasEndNode) {
+            const completedDocsCount = documents.filter(doc => {
+                const p = documentProgress[doc.Id];
+                return p && p.isFinished;
+            }).length;
+            
+            stepsWithAggregates.push({
+                id: 'virtual_completed',
+                name: 'Concluído',
+                count: completedDocsCount,
+                avgTimeText: '-',
+                isStart: false,
+                isEnd: true
+            });
+        }
+        
+        return stepsWithAggregates;
+    }, [selectedDoc, documentProgress, documents]);
 
     // Background queue to fetch progress for all documents dynamically
     useEffect(() => {
