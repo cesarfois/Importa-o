@@ -1845,38 +1845,6 @@ const WorkflowHistoryPage = () => {
                     <form onSubmit={handleSearchDocuments} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         {/* Date Range Inputs Row */}
                         <div className="flex flex-wrap items-center gap-6 flex-1">
-                            {/* Armário */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">Armário:</span>
-                                <select
-                                    className="select select-bordered select-md text-sm border-slate-300 bg-white text-slate-700 rounded-lg focus:ring-2 focus:ring-[#4f46e5] focus:border-transparent px-3 py-2 w-[220px]"
-                                    value={selectedCabinet}
-                                    onChange={(e) => setSelectedCabinet(e.target.value)}
-                                >
-                                    {cabinets.map(cab => (
-                                        <option key={cab.Id} value={cab.Id}>
-                                            {cab.Name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Tipo de Documento */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">Tipo Documento:</span>
-                                <select
-                                    className="select select-bordered select-md text-sm border-slate-300 bg-white text-slate-700 rounded-lg focus:ring-2 focus:ring-[#4f46e5] focus:border-transparent px-3 py-2 w-[220px]"
-                                    value={selectedDocType}
-                                    onChange={(e) => setSelectedDocType(e.target.value)}
-                                >
-                                    {docTypes.map((type, idx) => (
-                                        <option key={idx} value={type}>
-                                            {type}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
                             {/* Data Inicial */}
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">Data Inicial:</span>
