@@ -13,10 +13,10 @@ const Header = () => {
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 leading-tight">
-                        Painel Compra de Material
+                        Painel Processo de Importação
                     </h1>
                     <p className="text-sm text-gray-500 mt-0.5">
-                        Visão consolidada dos pedidos de compra
+                        Monitorização completa dos processos de importação, desde abertura do processo, documentação, transporte, desembaraço, custos e entrega final.
                     </p>
                 </div>
             </div>

@@ -14,12 +14,12 @@ services:
         - DOCUWARE_ORG_ID=${DOCUWARE_ORG_ID}
     container_name: rcsvision-app
     ports:
-      - "3001:3001"
+      - "3012:3012"
     volumes:
       - ./exports:/app/exports
     environment:
       - NODE_ENV=production
-      - PORT=3001
+      - PORT=3012
       - DEV=true
       - VITE_DOCUWARE_CLIENT_ID=${VITE_DOCUWARE_CLIENT_ID}
       - VITE_DOCUWARE_CLIENT_SECRET=${VITE_DOCUWARE_CLIENT_SECRET}
@@ -34,5 +34,5 @@ services:
 
 networks:
   default:
-    name: pedidodecompradematerial_default
+    name: processodeimportacao_default
     external: true

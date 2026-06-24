@@ -19,7 +19,7 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             # Navigate to the project directory on the VPS
-            cd /app/pedido-de-compra-de-material || exit 1
+            cd /app/processo-de-importacao || cd /app/pedido-de-compra-de-material || exit 1
             
             # Pull latest code
             git pull origin main

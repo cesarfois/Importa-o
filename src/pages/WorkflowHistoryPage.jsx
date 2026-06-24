@@ -234,9 +234,97 @@ const getDocFieldValue = (doc, fieldName) => {
     return field.Item || field.Value || '';
 };
 
+// Robust case-insensitive and partial matching helper
+const findFieldVal = (doc, searchNames) => {
+    if (!doc || !doc.Fields) return '';
+    const field = doc.Fields.find(f => {
+        const dbName = (f.FieldName || '').toUpperCase();
+        return searchNames.some(name => dbName === name.toUpperCase() || dbName.includes(name.toUpperCase()));
+    });
+    if (!field) return '';
+    return field.Item || field.Value || '';
+};
+
+// Rename workflow tasks per request
+const renameWorkflowTask = (name) => {
+    if (!name) return '';
+    const trimmed = name.trim();
+    if (trimmed === 'EP_Operador Importação' || trimmed === 'EP Operador Importação') {
+        return 'Operador Importação';
+    }
+    if (trimmed === '26 Importação Despachantes') {
+        return 'Despachante / Processo Aduaneiro';
+    }
+    if (trimmed === 'DAF_Contas a Pagar_2') {
+        return 'DAF - Custos e Pagamentos';
+    }
+    return trimmed;
+};
+
+// Mapeamento dinâmico das 6 etapas do Processo de Importação
+const evaluateActiveStage = (doc, activeTaskName, isFinished) => {
+    // Stage 6: Finalizado
+    const hasDataEntregue = !!findFieldVal(doc, ['DATA_ENTREGUE', 'DATA_ENTREGUE_RCS', 'ENTREGUE']);
+    const estatutoVal = String(findFieldVal(doc, ['ESTATUTO', 'STATUS'])).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const isEstatutoConcluido = estatutoVal.includes('concluid') || estatutoVal.includes('finaliz');
+    if (isFinished || hasDataEntregue || isEstatutoConcluido) {
+        return 6;
+    }
+
+    // Stage 5: DAF / Custos Importação
+    const hasStage5Fields = [
+        'MONTANTE_RDF', 'PAGAMENTO_RDF', 'DIREITO_ALFANDEGARIOS', 'DIREITOS_ALFANDEGARIOS', 'DIREITO_ALFAND',
+        'VALOR_IVA_IMPORTACAO', 'IVA_IMPORTACAO', 'SERVICOS_DESPACHANTES', 'SERVICO_DESPACHANTE'
+    ].some(term => !!findFieldVal(doc, [term]));
+
+    // Stage 4: Chegada Angola / Desembaraço
+    const hasStage4Fields = [
+        'DATA_CHEGADA', 'CHEGADA_AO', 'DATA_ENTRADA_INSPECAO', 'ENTRADA_INSPECAO', 'DATA_SAIDA_INSPECAO', 'SAIDA_INSPECAO', 'DATA_DESPACHO'
+    ].some(term => !!findFieldVal(doc, [term]));
+
+    // Stage 3: Despachante e Transporte
+    const hasStage3Fields = [
+        'TRANSPORTADOR', 'AWB_BL', 'AWB', 'BL', 'DATA_AWB_BL', 'DESPACHANTE', 'DATA_AVISO_DESPACHANTE', 'AVISO_DESPACHANTE',
+        'NO_DOCUMENTO_TRANSPORTE', 'NUMERO_DOCUMENTO_TRANSPORTE', 'DOCUMENTO_TRANSPORTE'
+    ].some(term => !!findFieldVal(doc, [term]));
+
+    // Stage 2: Documentação / Certificados (INACOM, INIQ/IANORQ, MINDICOM, MINAMB, CNCA, MINCO)
+    const certificates = ['INACOM', 'INIQ', 'IANORQ', 'MINDICOM', 'MINAMB', 'CNCA', 'MINCO'];
+    let hasStage2Fields = false;
+    for (const cert of certificates) {
+        const ped = findFieldVal(doc, [`PEDIDO_${cert}`, `PEDIDO__${cert}_`]);
+        const rec = findFieldVal(doc, [`RECEBIMENTO_${cert}`, `RECEBIMENTO__${cert}_`]);
+        if (ped || rec) {
+            hasStage2Fields = true;
+            break;
+        }
+    }
+
+    // Check by active workflow task
+    const activeTaskNorm = (activeTaskName || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    if (activeTaskNorm.includes('daf') || activeTaskNorm.includes('contas a pagar') || activeTaskNorm.includes('custos')) {
+        return 5;
+    }
+    if (activeTaskNorm.includes('despachante') || activeTaskNorm.includes('aduaneiro') || activeTaskNorm.includes('processo aduaneiro')) {
+        if (hasStage4Fields) return 4;
+        return 3;
+    }
+
+    // Fallbacks
+    if (hasStage5Fields) return 5;
+    if (hasStage4Fields) return 4;
+    if (hasStage3Fields) return 3;
+    if (hasStage2Fields) return 2;
+
+    return 1; // Default: Abertura do Processo
+};
+
 const getDocumentNumber = (doc) => {
     if (!doc) return '';
     const fieldsToTry = [
+        'NO_PROCESSO_IMPORTACAO',
+        'N_PROCESSO_IMPORTACAO',
+        'NUM_PROCESSO',
         'NO_DOCUMENTO',
         'NO_PEDIDO___REFERENCIA',
         'NO_TICKET',
@@ -379,8 +467,11 @@ const WorkflowHistoryPage = () => {
                 const oid = await docuwareService.getOrganization();
                 if (oid) setOrgId(oid);
 
-                // Force cabinet to "34 Armazém - Procurement" UUID
+                // Force cabinet to "Importação" UUID if it exists, otherwise fallback to "34 Armazém - Procurement"
                 const targetCab = cabList.find(c => 
+                    (c.Name || '').toLowerCase().includes('importac') ||
+                    (c.Name || '').toLowerCase().includes('importaç') ||
+                    (c.Name || '').toLowerCase().includes('import') ||
                     (c.Name || '').includes('34') || 
                     (c.Name || '').toLowerCase().includes('armazem') ||
                     (c.Name || '').toLowerCase().includes('procurement')
@@ -626,7 +717,12 @@ const WorkflowHistoryPage = () => {
             if (quickFilter === 'rejected' && !prog.isRejected) return false;
 
             // Step Filter
-            if (filterStep !== 'all' && prog.activeTaskName !== filterStep) return false;
+            if (filterStep !== 'all') {
+                const currentStageNum = evaluateActiveStage(doc, prog.activeTaskName, prog.isFinished);
+                const isMatch = filterStep === prog.activeTaskName || 
+                    (filterStep.startsWith('ETAPA') && filterStep.includes(String(currentStageNum)));
+                if (!isMatch) return false;
+            }
 
             // Responsible Filter
             if (filterResponsible !== 'all' && prog.responsible !== filterResponsible && !(prog.responsible && prog.responsible.includes(filterResponsible))) return false;
@@ -719,68 +815,62 @@ const WorkflowHistoryPage = () => {
         return result;
     }, [documents, documentProgress, quickFilter, filterStep, filterResponsible, sortField, sortDirection]);
 
-    // Pipeline visual steps aggregated for the cockpit
+    // Pipeline visual steps aggregated for the cockpit - Processo de Importação (6 Etapas Estáticas)
     const flowPipelineSteps = useMemo(() => {
-        const targetDoc = selectedDoc || documents.find(doc => documentProgress[doc.Id]?.mergedGraph);
-        if (!targetDoc || !documentProgress[targetDoc.Id]) return [];
-        const prog = documentProgress[targetDoc.Id];
-        if (!prog.mergedGraph) return [];
-        
-        const staticNodes = prog.mergedGraph.nodes || [];
-        const staticEdges = prog.mergedGraph.edges || [];
-        
-        const orderedTasks = getFlowPipelineSteps(staticNodes, staticEdges);
-        
-        const stepsWithAggregates = orderedTasks.map(task => {
-            const isCompletedStep = isWorkflowEndNode(task);
-            let count = 0;
-            let avgTimeMs = 0;
-            
-            if (isCompletedStep) {
-                count = documents.filter(doc => {
-                    const p = documentProgress[doc.Id];
-                    return p && p.isFinished;
-                }).length;
-            } else {
-                const activeDocs = documents.filter(doc => {
-                    const p = documentProgress[doc.Id];
-                    return p && !p.isFinished && p.activeTaskName === task.name;
+        const staticStages = [
+            { id: 'etapa1', name: 'ETAPA 1 - Abertura do Processo', stageNum: 1 },
+            { id: 'etapa2', name: 'ETAPA 2 - Documentação / Certificados', stageNum: 2 },
+            { id: 'etapa3', name: 'ETAPA 3 - Despachante e Transporte', stageNum: 3 },
+            { id: 'etapa4', name: 'ETAPA 4 - Chegada Angola / Desembaraço', stageNum: 4 },
+            { id: 'etapa5', name: 'ETAPA 5 - DAF / Custos Importação', stageNum: 5 },
+            { id: 'etapa6', name: 'ETAPA 6 - Finalizado', stageNum: 6 }
+        ];
+
+        return staticStages.map(stage => {
+            const docsInStage = documents.filter(doc => {
+                const prog = documentProgress[doc.Id];
+                if (!prog) return false;
+                const currentStage = evaluateActiveStage(doc, prog.activeTaskName, prog.isFinished);
+                return currentStage === stage.stageNum;
+            });
+
+            const count = docsInStage.length;
+
+            const activeDocsInStage = docsInStage.filter(doc => {
+                const prog = documentProgress[doc.Id];
+                return prog && !prog.isFinished;
+            });
+            const avgTimeMs = activeDocsInStage.length > 0
+                ? (activeDocsInStage.reduce((acc, doc) => acc + (documentProgress[doc.Id]?.timeStoppedMs || 0), 0) / activeDocsInStage.length)
+                : 0;
+
+            // Regra especial da Etapa 2
+            let isPendingAlert = false;
+            if (stage.stageNum === 2) {
+                isPendingAlert = docsInStage.some(doc => {
+                    const prog = documentProgress[doc.Id];
+                    if (prog && prog.isFinished) return false;
+                    const certificates = ['INACOM', 'INIQ', 'IANORQ', 'MINDICOM', 'MINAMB', 'CNCA', 'MINCO'];
+                    return certificates.some(cert => {
+                        const ped = findFieldVal(doc, [`PEDIDO_${cert}`, `PEDIDO__${cert}_`]);
+                        const rec = findFieldVal(doc, [`RECEBIMENTO_${cert}`, `RECEBIMENTO__${cert}_`]);
+                        return ped && !rec;
+                    });
                 });
-                count = activeDocs.length;
-                avgTimeMs = count > 0 
-                    ? (activeDocs.reduce((acc, doc) => acc + (documentProgress[doc.Id]?.timeStoppedMs || 0), 0) / count) 
-                    : 0;
             }
-                
+
             return {
-                id: task.id,
-                name: task.name,
+                id: stage.id,
+                name: stage.name,
                 count,
                 avgTimeText: avgTimeMs > 0 ? WorkflowHistoryAnalyzer.formatDuration(avgTimeMs) : '-',
-                isStart: isWorkflowStartNode(task),
-                isEnd: isCompletedStep
+                isStart: stage.stageNum === 1,
+                isEnd: stage.stageNum === 6,
+                isPendingAlert,
+                stageNum: stage.stageNum
             };
         });
-        
-        const hasEndNode = orderedTasks.some(isWorkflowEndNode);
-        if (!hasEndNode) {
-            const completedDocsCount = documents.filter(doc => {
-                const p = documentProgress[doc.Id];
-                return p && p.isFinished;
-            }).length;
-            
-            stepsWithAggregates.push({
-                id: 'virtual_completed',
-                name: 'Concluído',
-                count: completedDocsCount,
-                avgTimeText: '-',
-                isStart: false,
-                isEnd: true
-            });
-        }
-        
-        return stepsWithAggregates;
-    }, [selectedDoc, documentProgress, documents]);
+    }, [documentProgress, documents]);
 
     // Background queue to fetch progress for all documents dynamically
     useEffect(() => {
@@ -930,51 +1020,48 @@ const WorkflowHistoryPage = () => {
                                 if (activeStart) {
                                     timeStoppedMs = Math.max(0, new Date().getTime() - new Date(activeStart).getTime());
                                 }
-                            }
+                                const getNextStepName = (nodes, edges, activeNode) => {
+                                 if (!activeNode) return '-';
+                                 const outgoing = edges.filter(e => e.source === activeNode.id);
+                                 if (outgoing.length === 0) return 'Fim';
+                                 const targetNames = outgoing.map(edge => {
+                                     const targetNode = nodes.find(n => n.id === edge.target);
+                                     const label = edge.label ? ` (${edge.label})` : '';
+                                     return targetNode ? `${renameWorkflowTask(targetNode.name)}${label}` : '';
+                                 }).filter(Boolean);
+                                 return targetNames.join(' / ') || 'Fim';
+                             };
+                             nextStep = getNextStepName(nodes, edges, activeNode);
 
-                            const getNextStepName = (nodes, edges, activeNode) => {
-                                if (!activeNode) return '-';
-                                const outgoing = edges.filter(e => e.source === activeNode.id);
-                                if (outgoing.length === 0) return 'Fim';
-                                const targetNames = outgoing.map(edge => {
-                                    const targetNode = nodes.find(n => n.id === edge.target);
-                                    const label = edge.label ? ` (${edge.label})` : '';
-                                    return targetNode ? `${targetNode.name}${label}` : '';
-                                }).filter(Boolean);
-                                return targetNames.join(' / ') || 'Fim';
-                            };
-                            nextStep = getNextStepName(nodes, edges, activeNode);
+                             const calculatedStage = evaluateActiveStage(doc, activeNode ? activeNode.name : '', isFinished);
+                             percent = Math.round((calculatedStage / 6) * 100);
 
-                            if (isFinished) {
-                                percent = 100;
-                                remaining = 0;
-                                statusText = 'Concluído';
-                            } else {
-                                if (activeNode) {
-                                    activeTaskName = activeNode.name;
-                                    remaining = getRemainingTaskCount(nodes, edges, activeNode.id) || 1;
-                                    
-                                    const completed = nodes.filter(n => n.status === 'completed' && isTaskType(n.type)).length;
-                                    const total = completed + remaining;
-                                    percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-                                    
-                                    if (percent >= 100) percent = 99;
-                                    statusText = `Em Andamento (${percent}%)`;
-                                } else {
-                                     const startNode = nodes.find(n => {
-                                         const type = (n.type || '').toLowerCase();
-                                         const name = (n.name || '').toLowerCase();
-                                         return type.includes('start') || name.includes('start') || name.includes('inicio') || name.includes('início');
-                                     });
-                                    if (startNode) {
-                                        remaining = getRemainingTaskCount(nodes, edges, startNode.id);
-                                        percent = 0;
-                                        statusText = 'Pendente';
-                                    } else {
-                                        percent = 0;
-                                        statusText = 'Em Processamento';
-                                    }
-                                }
+                             if (isFinished) {
+                                 percent = 100;
+                                 remaining = 0;
+                                 statusText = 'Concluído';
+                             } else {
+                                 if (activeNode) {
+                                     activeTaskName = renameWorkflowTask(activeNode.name);
+                                     remaining = getRemainingTaskCount(nodes, edges, activeNode.id) || 1;
+                                     if (percent >= 100) percent = 99;
+                                     statusText = `Em Andamento (${percent}%)`;
+                                 } else {
+                                      const startNode = nodes.find(n => {
+                                          const type = (n.type || '').toLowerCase();
+                                          const name = (n.name || '').toLowerCase();
+                                          return type.includes('start') || name.includes('start') || name.includes('inicio') || name.includes('início');
+                                      });
+                                     if (startNode) {
+                                         remaining = getRemainingTaskCount(nodes, edges, startNode.id);
+                                         percent = 0;
+                                         statusText = 'Pendente';
+                                     } else {
+                                         percent = 0;
+                                         statusText = 'Em Processamento';
+                                     }
+                                 }
+                             }
                             }
                         }
 
@@ -1170,7 +1257,7 @@ const WorkflowHistoryPage = () => {
             if (detectedTypeField) {
                 queryFilters.push({
                     fieldName: detectedTypeField.DBFieldName || detectedTypeField.FieldName,
-                    value: "Pedido/Compra de Material"
+                    value: "Processo de Importação"
                 });
             }
 
@@ -2252,8 +2339,11 @@ const WorkflowHistoryPage = () => {
                                                         }`}>
                                                             {idx + 1}
                                                         </span>
-                                                        <span className="font-bold text-slate-800 text-[11px] leading-tight flex-1" title={isStartStep ? "INÍCIO" : step.name}>
+                                                        <span className="font-bold text-slate-800 text-[11px] leading-tight flex-1 flex items-center gap-1" title={isStartStep ? "INÍCIO" : step.name}>
                                                             {isStartStep ? "INÍCIO" : step.name}
+                                                            {step.isPendingAlert && (
+                                                                <span className="badge badge-xs badge-warning text-[8px] font-black shrink-0 px-1 py-0.5 rounded border leading-none shadow-sm animate-pulse" title="Documento com certificado pendente (Data Pedido preenchida e Data Recebimento vazia)">PENDENTE</span>
+                                                            )}
                                                         </span>
                                                     </div>
 
@@ -2499,7 +2589,7 @@ const WorkflowHistoryPage = () => {
                                                                                 {/* Header: Name and Type */}
                                                                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                                                                     <span className="font-bold text-slate-800 text-sm">
-                                                                                        {step.name}
+                                                                                        {renameWorkflowTask(step.name)}
                                                                                     </span>
                                                                                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                                                                                         isStart ? 'bg-blue-100 text-blue-800' :

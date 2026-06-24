@@ -13,9 +13,25 @@ export const WorkflowTimelineEngine = {
      * @returns {Object} Graph with statuses and execution metrics
      */
     merge: (graph, historySteps) => {
+        const renameWorkflowTask = (name) => {
+            if (!name) return '';
+            const trimmed = name.trim();
+            if (trimmed === 'EP_Operador Importação' || trimmed === 'EP Operador Importação') {
+                return 'Operador Importação';
+            }
+            if (trimmed === '26 Importação Despachantes') {
+                return 'Despachante / Processo Aduaneiro';
+            }
+            if (trimmed === 'DAF_Contas a Pagar_2') {
+                return 'DAF - Custos e Pagamentos';
+            }
+            return trimmed;
+        };
+
         // Initialize node details
         const nodes = graph.nodes.map(n => ({
             ...n,
+            name: renameWorkflowTask(n.name),
             status: 'pending', // 'pending' | 'completed' | 'active' | 'skipped'
             executions: [],
             activeUsers: [],
@@ -72,7 +88,7 @@ export const WorkflowTimelineEngine = {
 
         // Match a step in the history to a node in the definition
         const findNodeForStep = (step) => {
-            const stepNameNorm = normalizeStr(step.name);
+            const stepNameNorm = normalizeStr(renameWorkflowTask(step.name));
             
             // Try exact name match
             const matches = nodesByName.get(stepNameNorm);
