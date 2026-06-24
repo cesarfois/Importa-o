@@ -12,7 +12,7 @@ services:
         - DOCUWARE_USERNAME=${DOCUWARE_USERNAME}
         - DOCUWARE_PASSWORD=${DOCUWARE_PASSWORD_DOCKER}
         - DOCUWARE_ORG_ID=${DOCUWARE_ORG_ID}
-    container_name: rcsvision-app
+    container_name: rcsvision-importacao-app
     ports:
       - "3012:3012"
     volumes:
