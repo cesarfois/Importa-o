@@ -178,68 +178,128 @@ export const docuwareService = {
         }
 
         // Case 2: With Filters - Requires Search Dialog ID
-        const dialogs = await docuwareService.getDialogs(cabinetId);
-        const searchDialog = dialogs.find(d => d.Type === 'Search') || dialogs[0];
+        try {
+            const dialogs = await docuwareService.getDialogs(cabinetId);
+            const searchDialog = dialogs.find(d => d.Type === 'Search') || dialogs[0];
 
-        if (!searchDialog) {
-            throw new Error('No search dialog found for this cabinet');
-        }
-
-        // Construct standard DocuWare Query Object
-        const conditions = filters.map(filter => {
-            let value = Array.isArray(filter.value) ? [...filter.value] : [filter.value];
-            // Handle open-ended date ranges:
-            // Only start → end = far future; Only end → start = far past
-            if (value.length === 2) {
-                if (value[0] && !value[1]) value[1] = '2099-12-31';
-                if (!value[0] && value[1]) value[0] = '1900-01-01';
+            if (!searchDialog) {
+                throw new Error('No search dialog found for this cabinet');
             }
-            return { DBName: filter.fieldName, Value: value };
-        });
 
-        const queryBody = {
-            Condition: conditions,
-            Operation: 'And'
-        };
-
-        // Single-page request
-        if (resultLimit <= PAGE_SIZE) {
-            const response = await api.post(
-                `/FileCabinets/${cabinetId}/Query/DialogExpression`,
-                queryBody,
-                {
-                    params: { dialogId: searchDialog.Id, count: resultLimit },
-                    timeout: 300000
+            // Construct standard DocuWare Query Object
+            const conditions = filters.map(filter => {
+                let value = Array.isArray(filter.value) ? [...filter.value] : [filter.value];
+                // Handle open-ended date ranges:
+                // Only start → end = far future; Only end → start = far past
+                if (value.length === 2) {
+                    if (value[0] && !value[1]) value[1] = '2099-12-31';
+                    if (!value[0] && value[1]) value[0] = '1900-01-01';
                 }
-            );
-            return { items: response.data.Items || [], total: getCount(response.data) };
+                return { DBName: filter.fieldName, Value: value };
+            });
+
+            const queryBody = {
+                Condition: conditions,
+                Operation: 'And'
+            };
+
+            // Single-page request
+            if (resultLimit <= PAGE_SIZE) {
+                const response = await api.post(
+                    `/FileCabinets/${cabinetId}/Query/DialogExpression`,
+                    queryBody,
+                    {
+                        params: { dialogId: searchDialog.Id, count: resultLimit },
+                        timeout: 300000
+                    }
+                );
+                return { items: response.data.Items || [], total: getCount(response.data) };
+            }
+
+            // Paginated request for large result sets
+            let allItems = [], start = 0, total = 0;
+            do {
+                const chunk = Math.min(PAGE_SIZE, resultLimit - allItems.length);
+                const res = await api.post(
+                    `/FileCabinets/${cabinetId}/Query/DialogExpression`,
+                    queryBody,
+                    {
+                        params: {
+                            dialogId: searchDialog.Id,
+                            count: chunk,
+                            start,
+                            calculateTotalCount: start === 0
+                        },
+                        timeout: 300000
+                    }
+                );
+                if (start === 0) total = getCount(res.data);
+                const items = res.data.Items || [];
+                allItems = allItems.concat(items);
+                start += items.length;
+                if (items.length < chunk) break; // No more pages
+            } while (allItems.length < resultLimit);
+
+            return { items: allItems, total };
+        } catch (error) {
+            console.warn('[DocuWare] DialogExpression search failed, falling back to client-side filtering:', error.message || error);
+            
+            // Fallback: Fetch all documents (up to resultLimit) and filter in memory
+            let allItems = [], start = 0, total = 0;
+            do {
+                const chunk = Math.min(PAGE_SIZE, resultLimit - allItems.length);
+                const res = await api.get(`/FileCabinets/${cabinetId}/Documents`, {
+                    params: { count: chunk, start, calculateTotalCount: start === 0 }
+                });
+                if (start === 0) total = getCount(res.data);
+                const items = res.data.Items || [];
+                allItems = allItems.concat(items);
+                start += items.length;
+                if (items.length < chunk) break; // No more pages
+            } while (allItems.length < resultLimit);
+
+            const getFieldValue = (doc, fieldName) => {
+                if (!doc || !doc.Fields) return null;
+                const field = doc.Fields.find(f => 
+                    (f.FieldName || '').toUpperCase() === fieldName.toUpperCase() || 
+                    (f.DBName || '').toUpperCase() === fieldName.toUpperCase()
+                );
+                if (!field) return null;
+                return field.Item !== undefined ? field.Item : field.Value;
+            };
+
+            const parseDate = (val) => {
+                if (!val) return null;
+                if (typeof val === 'string' && val.startsWith('/Date(')) {
+                    const match = val.match(/-?\d+/);
+                    if (match) {
+                        const ts = parseInt(match[0]);
+                        return ts > 0 ? new Date(ts) : null;
+                    }
+                }
+                const d = new Date(val);
+                return isNaN(d.getTime()) ? null : d;
+            };
+
+            const filteredItems = allItems.filter(doc => {
+                return filters.every(filter => {
+                    const val = getFieldValue(doc, filter.fieldName);
+                    if (val === null || val === undefined) return false;
+                    
+                    if (Array.isArray(filter.value)) {
+                        const itemDate = parseDate(val);
+                        if (!itemDate) return false;
+                        const startDate = parseDate(filter.value[0]);
+                        const endDate = parseDate(filter.value[1]);
+                        return (!startDate || itemDate >= startDate) && (!endDate || itemDate <= endDate);
+                    } else {
+                        return String(val).toLowerCase() === String(filter.value).toLowerCase();
+                    }
+                });
+            });
+
+            return { items: filteredItems, total: filteredItems.length };
         }
-
-        // Paginated request for large result sets
-        let allItems = [], start = 0, total = 0;
-        do {
-            const chunk = Math.min(PAGE_SIZE, resultLimit - allItems.length);
-            const res = await api.post(
-                `/FileCabinets/${cabinetId}/Query/DialogExpression`,
-                queryBody,
-                {
-                    params: {
-                        dialogId: searchDialog.Id,
-                        count: chunk,
-                        start,
-                        calculateTotalCount: start === 0
-                    },
-                    timeout: 300000
-                }
-            );
-            if (start === 0) total = getCount(res.data);
-            const items = res.data.Items || [];
-            allItems = allItems.concat(items);
-            start += items.length;
-            if (items.length < chunk) break; // No more pages
-        } while (allItems.length < resultLimit);
-
-        return { items: allItems, total };
     },
 
     /**
