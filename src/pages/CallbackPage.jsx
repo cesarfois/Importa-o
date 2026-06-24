@@ -58,7 +58,7 @@ const CallbackPage = () => {
                         sessionStorage.removeItem('redirect_after_login');
                         window.location.href = redirectPath;
                     } else {
-                        window.location.href = '/compras';
+                        window.location.href = '/importacao';
                     }
                 }, 500);
 

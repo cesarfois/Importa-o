@@ -42,17 +42,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<CallbackPage />} />
             <Route
-              path="/compra-de-material"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <WorkflowHistoryPage />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/compras"
+              path="/importacao"
               element={
                 <ProtectedRoute>
                   <DashboardLayout>
@@ -68,15 +58,18 @@ function App() {
               element={<WorkflowDiagramPage />}
             />
             <Route
-              path="/compra-de-material/workflow-diagram"
+              path="/importacao/workflow-diagram"
               element={<WorkflowDiagramPage />}
             />
-            <Route
-              path="/compras/workflow-diagram"
-              element={<WorkflowDiagramPage />}
-            />
-            <Route path="/" element={<Navigate to="/compras" />} />
-            <Route path="*" element={<Navigate to="/compras" replace />} />
+
+            {/* Legacy/Redirect Routes */}
+            <Route path="/compras" element={<Navigate to="/importacao" replace />} />
+            <Route path="/compra-de-material" element={<Navigate to="/importacao" replace />} />
+            <Route path="/compras/workflow-diagram" element={<Navigate to="/importacao/workflow-diagram" replace />} />
+            <Route path="/compra-de-material/workflow-diagram" element={<Navigate to="/importacao/workflow-diagram" replace />} />
+
+            <Route path="/" element={<Navigate to="/importacao" replace />} />
+            <Route path="*" element={<Navigate to="/importacao" replace />} />
           </Routes>
         </Router>
       </AuthProvider>
