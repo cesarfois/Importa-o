@@ -397,6 +397,8 @@ const WorkflowHistoryPage = () => {
     const [cabinetFields, setCabinetFields] = useState([]);
     const [cabinetCount, setCabinetCount] = useState(0);
     const [orgId, setOrgId] = useState('');
+    const [docTypes, setDocTypes] = useState(['Processo de Importação']);
+    const [selectedDocType, setSelectedDocType] = useState('Processo de Importação');
     
     // Date filter range state (default to 30 days ago to today)
     const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -551,6 +553,26 @@ const WorkflowHistoryPage = () => {
                 setDetectedTypeField(detectedTypeField);
                 setDetectedDateField(detectedDateField);
                 setSuggestions({}); // Reset suggestions
+
+                if (detectedTypeField) {
+                    try {
+                        const types = await docuwareService.getSelectList(selectedCabinet, detectedTypeField.DBFieldName || detectedTypeField.FieldName);
+                        if (types && types.length > 0) {
+                            const uniqueTypes = Array.from(new Set(['Processo de Importação', ...types]));
+                            setDocTypes(uniqueTypes);
+                            if (!uniqueTypes.includes(selectedDocType)) {
+                                setSelectedDocType(uniqueTypes[0]);
+                            }
+                        } else {
+                            setDocTypes(['Processo de Importação']);
+                            setSelectedDocType('Processo de Importação');
+                        }
+                    } catch (err) {
+                        console.error("Failed to load select list for document type", err);
+                        setDocTypes(['Processo de Importação']);
+                        setSelectedDocType('Processo de Importação');
+                    }
+                }
             } catch (err) {
                 console.error("Failed to load cabinet metadata", err);
             }
@@ -1257,7 +1279,7 @@ const WorkflowHistoryPage = () => {
             if (detectedTypeField) {
                 queryFilters.push({
                     fieldName: detectedTypeField.DBFieldName || detectedTypeField.FieldName,
-                    value: "Processo de Importação"
+                    value: selectedDocType
                 });
             }
 
@@ -1293,7 +1315,7 @@ const WorkflowHistoryPage = () => {
         if (selectedCabinet && detectedTypeField && detectedDateField) {
             handleSearchDocuments();
         }
-    }, [selectedCabinet, detectedTypeField, detectedDateField]);
+    }, [selectedCabinet, detectedTypeField, detectedDateField, selectedDocType]);
 
     // Triggered when a document row is clicked
     const handleSelectDocument = async (doc, initialSubTab = 'timeline', openDrawer = true) => {
@@ -1794,6 +1816,38 @@ const WorkflowHistoryPage = () => {
                     <form onSubmit={handleSearchDocuments} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         {/* Date Range Inputs Row */}
                         <div className="flex flex-wrap items-center gap-6 flex-1">
+                            {/* Armário */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">Armário:</span>
+                                <select
+                                    className="select select-bordered select-md text-sm border-slate-300 bg-white text-slate-700 rounded-lg focus:ring-2 focus:ring-[#4f46e5] focus:border-transparent px-3 py-2 w-[220px]"
+                                    value={selectedCabinet}
+                                    onChange={(e) => setSelectedCabinet(e.target.value)}
+                                >
+                                    {cabinets.map(cab => (
+                                        <option key={cab.Id} value={cab.Id}>
+                                            {cab.Name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Tipo de Documento */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">Tipo Documento:</span>
+                                <select
+                                    className="select select-bordered select-md text-sm border-slate-300 bg-white text-slate-700 rounded-lg focus:ring-2 focus:ring-[#4f46e5] focus:border-transparent px-3 py-2 w-[220px]"
+                                    value={selectedDocType}
+                                    onChange={(e) => setSelectedDocType(e.target.value)}
+                                >
+                                    {docTypes.map((type, idx) => (
+                                        <option key={idx} value={type}>
+                                            {type}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             {/* Data Inicial */}
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">Data Inicial:</span>
