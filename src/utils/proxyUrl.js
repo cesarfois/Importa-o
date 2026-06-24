@@ -8,5 +8,6 @@ export const getProxyBaseUrl = () => {
     const isDev = import.meta.env.DEV || window.location.hostname === 'localhost';
     if (isDev) return '';
     const isNetlify = window.location.hostname.includes('.netlify.app') || window.location.hostname.includes('.netlify.com');
-    return isNetlify ? window.location.origin + '/.netlify/functions/api' : window.location.origin;
+    if (isNetlify) return window.location.origin + '/.netlify/functions/api';
+    return window.location.origin + '/importacao';
 };
