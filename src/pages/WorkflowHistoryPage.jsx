@@ -804,7 +804,7 @@ const WorkflowHistoryPage = () => {
                 valA = getDocNum(a);
                 valB = getDocNum(b);
             } else if (sortField === 'requerente') {
-                const getReq = (d) => getDocFieldValue(d, 'REQUERENTE') || '';
+                const getReq = (d) => getDocFieldValue(d, 'DESPACHANTE') || '';
                 valA = getReq(a);
                 valB = getReq(b);
             } else if (sortField === 'matricula') {
@@ -1662,7 +1662,7 @@ const WorkflowHistoryPage = () => {
                 'Início',
                 'Status',
                 'Progresso (%)',
-                'Requerente',
+                'Despachante',
                 'Etapa Atual',
                 'Responsável',
                 'Tempo na Tarefa',
@@ -1685,7 +1685,7 @@ const WorkflowHistoryPage = () => {
                     'Início': prog.entryDate ? formatDate(prog.entryDate, true) : '',
                     'Status': prog.isFinished ? 'Concluído' : (prog.percent !== undefined ? 'Ativo' : 'Carregando...'),
                     'Progresso (%)': prog.percent !== undefined ? `${prog.percent}%` : '',
-                    'Requerente': getDocFieldValue(doc, 'REQUERENTE') || '',
+                    'Requerente': getDocFieldValue(doc, 'DESPACHANTE') || '',
                     'Etapa Atual': prog.activeTaskName || '',
                     'Responsável': prog.responsible && prog.responsible !== '-' ? prog.responsible : '',
                     'Tempo na Tarefa': timeStopped,
@@ -2088,7 +2088,7 @@ const WorkflowHistoryPage = () => {
                                                     Progresso {sortField === 'percent' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('requerente')}>
-                                                    Requerente {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    Despachante {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap">
                                                     <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('activeTaskName')}>
@@ -2182,10 +2182,10 @@ const WorkflowHistoryPage = () => {
                                                             )}
                                                         </td>
 
-                                                        {/* Requerente */}
+                                                        {/* Despachante */}
                                                         <td className="py-3 px-2">
-                                                            <div className="font-medium text-slate-700 text-xs truncate max-w-[130px]" title={getDocFieldValue(doc, 'REQUERENTE') || '-'}>
-                                                                {getDocFieldValue(doc, 'REQUERENTE') ? getDocFieldValue(doc, 'REQUERENTE').split('@')[0] : '-'}
+                                                            <div className="font-medium text-slate-700 text-xs truncate max-w-[130px]" title={getDocFieldValue(doc, 'DESPACHANTE') || '-'}>
+                                                                {getDocFieldValue(doc, 'DESPACHANTE') ? getDocFieldValue(doc, 'DESPACHANTE').split('@')[0] : '-'}
                                                             </div>
                                                         </td>
 
