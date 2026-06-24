@@ -57,6 +57,12 @@ const isWorkflowEndNode = (node) => {
     const type = (node.type || '').toLowerCase();
     const name = (node.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     
+    // Ignore assignment steps (e.g. "Atribuir Data Fim")
+    if (type.includes('assign') || type.includes('atrib') || 
+        name.includes('atribuir') || name.includes('atribuicao') || name.includes('assignment')) {
+        return false;
+    }
+    
     if (type.includes('end') || type.includes('fim')) return true;
     
     return name === 'end' || 
@@ -980,26 +986,33 @@ const WorkflowHistoryPage = () => {
                             const edges = merged.edges || [];
                             
                             const isEndNode = (n) => {
-                                 if (!n) return false;
-                                 const type = (n.type || '').toLowerCase();
-                                 const name = (n.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-                                 const hasOutgoing = edges.some(e => e.source === n.id);
-                                 
-                                 if (!hasOutgoing) return true;
-                                 if (type.includes('end') || type.includes('fim')) return true;
-                                 
-                                 return name === 'end' || 
-                                        name.startsWith('end ') || 
-                                        name.endsWith(' end') || 
-                                        name.includes(' end ') ||
-                                        name.startsWith('fim') ||
-                                        name.includes(' fim') ||
-                                        name.includes('concluid') || 
-                                        name.includes('termin') || 
-                                        name.includes('conclusao') ||
-                                        name.includes('cancelad') ||
-                                        name.includes('reprovad');
-                             };
+                                  if (!n) return false;
+                                  const type = (n.type || '').toLowerCase();
+                                  const name = (n.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                                  
+                                  // Ignore assignment steps (e.g. "Atribuir Data Fim")
+                                  if (type.includes('assign') || type.includes('atrib') || 
+                                      name.includes('atribuir') || name.includes('atribuicao') || name.includes('assignment')) {
+                                      return false;
+                                  }
+                                  
+                                  const hasOutgoing = edges.some(e => e.source === n.id);
+                                  
+                                  if (!hasOutgoing) return true;
+                                  if (type.includes('end') || type.includes('fim')) return true;
+                                  
+                                  return name === 'end' || 
+                                         name.startsWith('end ') || 
+                                         name.endsWith(' end') || 
+                                         name.includes(' end ') ||
+                                         name.startsWith('fim') ||
+                                         name.includes(' fim') ||
+                                         name.includes('concluid') || 
+                                         name.includes('termin') || 
+                                         name.includes('conclusao') ||
+                                         name.includes('cancelad') ||
+                                         name.includes('reprovad');
+                              };
                             
                             const endNode = nodes.find(isEndNode);
                             isFinished = endNode && endNode.status === 'completed';
