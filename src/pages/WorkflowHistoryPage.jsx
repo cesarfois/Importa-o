@@ -48,7 +48,8 @@ const isTaskType = (typeStr) => {
 const isWorkflowStartNode = (node) => {
     if (!node) return false;
     const type = (node.type || '').toLowerCase();
-    return type === 'start' || type.includes('start');
+    const name = (node.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return type === 'start' || type.includes('start') || name === 'inicio' || name === 'workflow';
 };
 
 const isWorkflowEndNode = (node) => {
@@ -189,12 +190,16 @@ const getFlowPipelineSteps = (nodes, edges) => {
     const endNodes = nodes.filter(isWorkflowEndNode);
 
     // Filter intermediate nodes (exclude start, end, assignments, and technical steps)
-    const intermediateNodes = nodes.filter(node => 
-        !isWorkflowStartNode(node) && 
-        !isWorkflowEndNode(node) &&
-        !isWorkflowAssignmentNode(node) && 
-        !isWorkflowTechnicalNode(node)
-    );
+    const intermediateNodes = nodes.filter(node => {
+        if (isWorkflowStartNode(node) || isWorkflowEndNode(node) || isWorkflowAssignmentNode(node) || isWorkflowTechnicalNode(node)) {
+            return false;
+        }
+        const name = (node.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        if (name === 'inicio' || name === 'workflow' || name === 'start') {
+            return false;
+        }
+        return true;
+    });
 
     // Sort intermediate nodes by x coordinate (left-to-right flow), then y coordinate (top-to-bottom flow)
     intermediateNodes.sort((a, b) => {
@@ -206,12 +211,10 @@ const getFlowPipelineSteps = (nodes, edges) => {
 
     const orderedTasks = [];
     
-    // 1. Add start node(s)
-    startNodes.forEach(node => {
-        if (!orderedTasks.some(t => t.name === node.name)) {
-            orderedTasks.push(node);
-        }
-    });
+    // 1. Add exactly one start node
+    if (startNodes.length > 0) {
+        orderedTasks.push(startNodes[0]);
+    }
 
     // 2. Add sorted intermediate node(s)
     intermediateNodes.forEach(node => {
