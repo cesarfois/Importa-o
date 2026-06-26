@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import WorkflowHistoryPage from './pages/WorkflowHistoryPage';
 import WorkflowDiagramPage from './pages/WorkflowDiagramPage';
+import WorkflowAnalyticsPage from './pages/WorkflowAnalyticsPage';
 import DashboardLayout from './components/Layout/DashboardLayout';
 import CallbackPage from './pages/CallbackPage';
 
@@ -47,6 +48,16 @@ function App() {
                 <ProtectedRoute>
                   <DashboardLayout>
                     <WorkflowHistoryPage />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/importacao/analytics"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <WorkflowAnalyticsPage />
                   </DashboardLayout>
                 </ProtectedRoute>
               }

@@ -1,8 +1,11 @@
-import { FaSignOutAlt, FaBoxes, FaSyncAlt, FaArrowLeft } from 'react-icons/fa';
+import { FaSignOutAlt, FaBoxes, FaSyncAlt, FaArrowLeft, FaChartBar } from 'react-icons/fa';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const Header = () => {
     const { logout } = useAuth();
+    const location = useLocation();
+    const isAnalyticsRoute = location.pathname.includes('/analytics');
 
     return (
         <header className="bg-white shadow-sm border-b border-gray-100 px-8 py-5 flex items-center justify-between">
@@ -12,9 +15,28 @@ const Header = () => {
                     <FaBoxes className="text-2xl" />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 leading-tight">
-                        Painel Processo de Importação
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+                            Painel Processo de Importação
+                        </h1>
+                        {isAnalyticsRoute ? (
+                            <Link
+                                to="/importacao"
+                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#4f46e5] rounded-lg hover:bg-[#4338ca] transition-all shadow-sm"
+                            >
+                                <FaBoxes className="text-[10px]" />
+                                <span>Visão Operacional</span>
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/importacao/analytics"
+                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#4f46e5] rounded-lg hover:bg-[#4338ca] transition-all shadow-sm"
+                            >
+                                <FaChartBar className="text-[10px]" />
+                                <span>Análise Gráfico</span>
+                            </Link>
+                        )}
+                    </div>
                     <p className="text-sm text-gray-500 mt-0.5">
                         Monitorização completa dos processos de importação, desde abertura do processo, documentação, transporte, desembaraço, custos e entrega final.
                     </p>
