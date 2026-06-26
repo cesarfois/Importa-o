@@ -248,7 +248,7 @@ const WorkflowAnalyticsPage = () => {
                         {label} {detailSort.column === colKey ? (detailSort.direction === 'asc' ? '↑' : '↓') : ''}
                     </span>
                     
-                    <div className="dropdown dropdown-bottom dropdown-end inline-block">
+                    <div className={`dropdown dropdown-bottom ${colKey === 'docNum' || colKey === 'etapa' ? '' : 'dropdown-end'} inline-block`}>
                         <div tabIndex={0} role="button" className={`btn btn-ghost btn-xs p-1 h-auto min-h-0 ${hasActiveFilter ? 'text-indigo-600 font-bold' : 'text-slate-400'} hover:text-indigo-600`}>
                             <FaFilter className="text-[10px]" />
                         </div>
