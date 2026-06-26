@@ -188,6 +188,111 @@ const WorkflowAnalyticsPage = () => {
     const [detailSearch, setDetailSearch] = useState('');
     const [detailSort, setDetailSort] = useState({ column: 'docNum', direction: 'asc' });
 
+    // Column Filters States
+    const [colFilters, setColFilters] = useState({
+        docNum: [],
+        etapa: [],
+        responsavel: [],
+        despachante: [],
+        fornecedor: [],
+        tipoCarga: [],
+        statusFinal: [],
+        qualidade: []
+    });
+
+    const [colSearchTerms, setColSearchTerms] = useState({
+        docNum: '',
+        etapa: '',
+        responsavel: '',
+        despachante: '',
+        fornecedor: '',
+        tipoCarga: '',
+        statusFinal: '',
+        qualidade: ''
+    });
+
+    const renderFilterHeader = (label, colKey, widthClass = '') => {
+        const uniqueVals = Array.from(new Set(detailedProcesses.map(p => String(p[colKey] || '-').trim()))).sort();
+        const selectedVals = colFilters[colKey] || [];
+        const searchTerm = colSearchTerms[colKey] || '';
+        const filteredVals = uniqueVals.filter(v => v.toLowerCase().includes(searchTerm.toLowerCase()));
+
+        const toggleVal = (val) => {
+            setColFilters(prev => {
+                const current = prev[colKey] || [];
+                const next = current.includes(val) 
+                    ? current.filter(x => x !== val) 
+                    : [...current, val];
+                return { ...prev, [colKey]: next };
+            });
+        };
+
+        const clearFilter = () => {
+            setColFilters(prev => ({ ...prev, [colKey]: [] }));
+            setColSearchTerms(prev => ({ ...prev, [colKey]: '' }));
+        };
+
+        const selectAll = () => {
+            setColFilters(prev => ({ ...prev, [colKey]: uniqueVals }));
+        };
+
+        const hasActiveFilter = selectedVals.length > 0;
+
+        return (
+            <th className={`bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass}`}>
+                <div className="flex items-center justify-between gap-1">
+                    <span 
+                        className="cursor-pointer hover:text-indigo-600 flex-1 select-none whitespace-nowrap" 
+                        onClick={() => setDetailSort({ column: colKey, direction: detailSort.column === colKey && detailSort.direction === 'asc' ? 'desc' : 'asc' })}
+                    >
+                        {label} {detailSort.column === colKey ? (detailSort.direction === 'asc' ? '↑' : '↓') : ''}
+                    </span>
+                    
+                    <div className="dropdown dropdown-bottom dropdown-end inline-block">
+                        <div tabIndex={0} role="button" className={`btn btn-ghost btn-xs p-1 h-auto min-h-0 ${hasActiveFilter ? 'text-indigo-600 font-bold' : 'text-slate-400'} hover:text-indigo-600`}>
+                            <FaFilter className="text-[10px]" />
+                        </div>
+                        <div tabIndex={0} className="dropdown-content z-[30] card card-compact w-64 p-3 shadow-xl bg-white border border-slate-200 text-slate-700 mt-1 font-normal normal-case">
+                            <div className="font-bold text-xs text-slate-700 border-b border-slate-100 pb-1.5 mb-2 flex items-center justify-between">
+                                <span>Filtrar {label}</span>
+                                {hasActiveFilter && (
+                                    <button className="text-[10px] text-rose-500 font-bold hover:underline" onClick={clearFilter}>Limpar</button>
+                                )}
+                            </div>
+                            <input 
+                                type="text" 
+                                placeholder="Buscar..." 
+                                className="input input-bordered input-xs bg-white text-slate-700 w-full mb-2 rounded-md font-normal"
+                                value={searchTerm}
+                                onChange={(e) => setColSearchTerms(prev => ({ ...prev, [colKey]: e.target.value }))}
+                            />
+                            <div className="flex gap-2 mb-2 border-b border-slate-100 pb-2">
+                                <button className="btn btn-xs btn-outline flex-1 rounded font-semibold text-[10px]" onClick={selectAll}>Todos</button>
+                                <button className="btn btn-xs btn-outline flex-1 rounded font-semibold text-[10px]" onClick={clearFilter}>Limpar</button>
+                            </div>
+                            <div className="max-h-40 overflow-y-auto space-y-1">
+                                {filteredVals.map(val => (
+                                    <label key={val} className="flex items-center gap-2 p-1.5 rounded hover:bg-slate-50 cursor-pointer select-none text-[10px] font-medium text-slate-600">
+                                        <input 
+                                            type="checkbox" 
+                                            className="checkbox checkbox-xs checkbox-primary" 
+                                            checked={selectedVals.includes(val)}
+                                            onChange={() => toggleVal(val)}
+                                        />
+                                        <span className="truncate flex-1" title={val}>{val}</span>
+                                    </label>
+                                ))}
+                                {filteredVals.length === 0 && (
+                                    <div className="text-[10px] text-slate-400 italic text-center py-2">Nenhum valor encontrado</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </th>
+        );
+    };
+
     // Load Cabinets on mount
     useEffect(() => {
         const fetchInitialCabinetAndFields = async () => {
@@ -534,6 +639,18 @@ const WorkflowAnalyticsPage = () => {
     // --- Sorted & Filtered Details ---
     const searchedAndSortedDetails = useMemo(() => {
         let result = [...detailedProcesses];
+
+        // Apply column-level checkbox filters
+        Object.keys(colFilters).forEach(colKey => {
+            const selected = colFilters[colKey];
+            if (selected && selected.length > 0) {
+                result = result.filter(p => {
+                    const val = String(p[colKey] || '-').trim();
+                    return selected.includes(val);
+                });
+            }
+        });
+
         if (detailSearch.trim() !== '') {
             const s = detailSearch.toLowerCase();
             result = result.filter(p => 
@@ -561,7 +678,7 @@ const WorkflowAnalyticsPage = () => {
             });
         }
         return result;
-    }, [detailedProcesses, detailSearch, detailSort]);
+    }, [detailedProcesses, detailSearch, detailSort, colFilters]);
 
     // Handle Open DocuWare Document
     const handleOpenDocument = (docId) => {
@@ -1703,12 +1820,12 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50">
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 cursor-pointer hover:bg-slate-200" onClick={() => setDetailSort({ column: 'docNum', direction: detailSort.direction === 'asc' ? 'desc' : 'asc' })}>Nº Processo</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 cursor-pointer hover:bg-slate-200" onClick={() => setDetailSort({ column: 'etapa', direction: detailSort.direction === 'asc' ? 'desc' : 'asc' })}>Etapa Atual</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 cursor-pointer hover:bg-slate-200" onClick={() => setDetailSort({ column: 'responsavel', direction: detailSort.direction === 'asc' ? 'desc' : 'asc' })}>Responsável</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 cursor-pointer hover:bg-slate-200" onClick={() => setDetailSort({ column: 'despachante', direction: detailSort.direction === 'asc' ? 'desc' : 'asc' })}>Despachante</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 cursor-pointer hover:bg-slate-200" onClick={() => setDetailSort({ column: 'fornecedor', direction: detailSort.direction === 'asc' ? 'desc' : 'asc' })}>Fornecedor</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 cursor-pointer hover:bg-slate-200" onClick={() => setDetailSort({ column: 'tipoCarga', direction: detailSort.direction === 'asc' ? 'desc' : 'asc' })}>Tipo Carga</th>
+                                                {renderFilterHeader('Nº Processo', 'docNum')}
+                                                {renderFilterHeader('Etapa Atual', 'etapa')}
+                                                {renderFilterHeader('Responsável', 'responsavel')}
+                                                {renderFilterHeader('Despachante', 'despachante')}
+                                                {renderFilterHeader('Fornecedor', 'fornecedor')}
+                                                {renderFilterHeader('Tipo Carga', 'tipoCarga')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10">Entrada Bolloré</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10">Envio Angola</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10">Chegada Angola</th>
@@ -1724,8 +1841,8 @@ const WorkflowAnalyticsPage = () => {
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10">Coeficiente</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10" onClick={() => setDetailSort({ column: 'diasTotais', direction: detailSort.direction === 'asc' ? 'desc' : 'asc' })}>Dias Totais</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10" onClick={() => setDetailSort({ column: 'diasParado', direction: detailSort.direction === 'asc' ? 'desc' : 'asc' })}>Dias Parado</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10">Status</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10">Qualidade Dados</th>
+                                                {renderFilterHeader('Status', 'statusFinal')}
+                                                {renderFilterHeader('Qualidade Dados', 'qualidade')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10">Ações</th>
                                             </tr>
                                         </thead>
