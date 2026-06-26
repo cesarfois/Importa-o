@@ -163,7 +163,7 @@ const WorkflowAnalyticsPage = () => {
     };
 
     const [dateRange, setDateRange] = useState([getSixMonthsAgoString(), getTodayString()]);
-    const [selectedCabinet, setSelectedCabinet] = useState('56c20dfc-a25b-4ed7-890a-15de4b3853d7');
+    const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
     const [activeTab, setActiveTab] = useState('visao_operacional');
 
     // Loaded Data
@@ -182,6 +182,25 @@ const WorkflowAnalyticsPage = () => {
 
     // Load WFD Definitions from localStorage or fallback
     const [wfdDefinitions, setWfdDefinitions] = useState({});
+
+    // Load Cabinets on mount
+    useEffect(() => {
+        const fetchInitialCabinet = async () => {
+            try {
+                const cabList = await docuwareService.getCabinets();
+                const targetCab = cabList.find(c => 
+                    (c.Name || '').toLowerCase().includes('importac') ||
+                    c.Id === 'c31ae087-921c-4985-bfcc-7b32de369db8'
+                );
+                if (targetCab) {
+                    setSelectedCabinet(targetCab.Id);
+                }
+            } catch (err) {
+                console.error('[WorkflowAnalytics] Failed to fetch cabinets on mount:', err);
+            }
+        };
+        fetchInitialCabinet();
+    }, []);
 
     // Fetch documents
     const fetchDocuments = async () => {
@@ -210,7 +229,9 @@ const WorkflowAnalyticsPage = () => {
 
     // Load on dateRange or cabinet change
     useEffect(() => {
-        fetchDocuments();
+        if (selectedCabinet) {
+            fetchDocuments();
+        }
     }, [dateRange, selectedCabinet]);
 
     const fetchProgressForDocs = async (docsToFetch) => {
