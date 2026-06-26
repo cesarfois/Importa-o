@@ -28,7 +28,8 @@ import {
     LineChart, 
     Line, 
     AreaChart, 
-    Area 
+    Area,
+    ComposedChart 
 } from 'recharts';
 import { docuwareService } from '../services/docuwareService';
 import { workflowAnalyticsService } from '../services/workflowAnalyticsService';
@@ -628,6 +629,7 @@ const WorkflowAnalyticsPage = () => {
         let totalRDF = 0;
 
         const coeficients = [];
+        const monthlyEvolutionMap = {};
 
         filteredDocuments.forEach(doc => {
             const fMerc = parseCurrency(getDocFieldValue(doc, 'VALOR_FOB') || getDocFieldValue(doc, 'FOB') || getDocFieldValue(doc, 'VALOR_MERCADORIA'));
@@ -649,6 +651,23 @@ const WorkflowAnalyticsPage = () => {
                 const coef = despesasTotais / fMerc;
                 coeficients.push(coef);
             }
+
+            const regDateStr = getDocFieldValue(doc, 'DATA_REGISTO') || getDocFieldValue(doc, 'DATA_INICIO') || getDocFieldValue(doc, 'DWSTOREDATETIME') || getDocFieldValue(doc, 'DWSTOREDATE');
+            if (regDateStr) {
+                const date = new Date(regDateStr);
+                if (!isNaN(date.getTime())) {
+                    const monthLabel = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    if (!monthlyEvolutionMap[monthLabel]) {
+                        monthlyEvolutionMap[monthLabel] = {
+                            periodo: monthLabel,
+                            fob: 0,
+                            custos: 0
+                        };
+                    }
+                    monthlyEvolutionMap[monthLabel].fob += fMerc;
+                    monthlyEvolutionMap[monthLabel].custos += despesasTotais;
+                }
+            }
         });
 
         const totalCustos = totalFrete + totalDespachante + totalDireitos + totalIVA + totalRDF;
@@ -666,6 +685,17 @@ const WorkflowAnalyticsPage = () => {
             { name: 'RDF', value: totalRDF }
         ].filter(item => item.value > 0);
 
+        const monthlyEvolution = Object.keys(monthlyEvolutionMap).sort().map(m => {
+            const data = monthlyEvolutionMap[m];
+            const coeficiente = data.fob > 0 ? (data.custos / data.fob) : 0;
+            return {
+                periodo: m,
+                'Valor Importado (FOB)': Math.round(data.fob),
+                'Custos Adicionais': Math.round(data.custos),
+                'Coeficiente': parseFloat(coeficiente.toFixed(2))
+            };
+        });
+
         return {
             totalMercadoria,
             totalFrete,
@@ -678,7 +708,8 @@ const WorkflowAnalyticsPage = () => {
             avgCoef: avgCoef.toFixed(2),
             minCoef: minCoef.toFixed(2),
             maxCoef: maxCoef.toFixed(2),
-            costComposition
+            costComposition,
+            monthlyEvolution
         };
     }, [filteredDocuments]);
 
@@ -1246,6 +1277,39 @@ const WorkflowAnalyticsPage = () => {
                                             </tbody>
                                         </table>
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* Monthly Cost Evolution Chart */}
+                            <div className="card bg-white border border-slate-200 p-6 rounded-2xl shadow-sm mt-6">
+                                <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
+                                    <FaChartLine /> Evolução dos custos por mês (Valor Importado vs Custos vs Coeficiente)
+                                </h3>
+                                <div className="h-80">
+                                    {financialData.monthlyEvolution.length === 0 ? (
+                                        <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">
+                                            Nenhum dado financeiro temporal disponível.
+                                        </div>
+                                    ) : (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <ComposedChart data={financialData.monthlyEvolution} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                                <XAxis dataKey="periodo" stroke="#94a3b8" fontSize={11} />
+                                                {/* Left Y-Axis for Values */}
+                                                <YAxis yAxisId="left" stroke="#94a3b8" fontSize={11} label={{ value: 'Valor (AOA)', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' } }} />
+                                                {/* Right Y-Axis for Coefficient */}
+                                                <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={11} label={{ value: 'Coeficiente', angle: 90, position: 'insideRight', style: { fill: '#10b981', fontSize: 10, fontWeight: 'bold' } }} />
+                                                <Tooltip formatter={(value, name) => {
+                                                    if (name === 'Coeficiente') return value;
+                                                    return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(value);
+                                                }} />
+                                                <Legend />
+                                                <Bar yAxisId="left" dataKey="Valor Importado (FOB)" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={24} />
+                                                <Bar yAxisId="left" dataKey="Custos Adicionais" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={24} />
+                                                <Line yAxisId="right" type="monotone" dataKey="Coeficiente" stroke="#10b981" strokeWidth={3} activeDot={{ r: 8 }} />
+                                            </ComposedChart>
+                                        </ResponsiveContainer>
+                                    )}
                                 </div>
                             </div>
                         </div>
