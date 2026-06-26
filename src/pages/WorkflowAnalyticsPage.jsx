@@ -547,7 +547,7 @@ const WorkflowAnalyticsPage = () => {
             const dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
             
             // Financials
-            const fMerc = parseCurrency(getDocFieldValue(doc, 'VALOR_FOB') || getDocFieldValue(doc, 'FOB') || getDocFieldValue(doc, 'VALOR_MERCADORIA'));
+            const fMerc = parseCurrency(getDocFieldValue(doc, 'VALOR_FOB') || getDocFieldValue(doc, 'FOB') || getDocFieldValue(doc, 'VALOR_MERCADORIA') || getDocFieldValue(doc, 'MONTANTE_FACTURA') || getDocFieldValue(doc, 'VALOR'));
             const fFrete = parseCurrency(getDocFieldValue(doc, 'VALOR_FRETE') || getDocFieldValue(doc, 'FRETE'));
             const fCustosAdicionais = parseCurrency(getDocFieldValue(doc, 'CUSTOS_ADICIONAIS') || getDocFieldValue(doc, 'OUTROS_CUSTOS') || getDocFieldValue(doc, 'OUTRAS_DESPESAS'));
             const fRdf = parseCurrency(getDocFieldValue(doc, 'MONTANTE_RDF') || getDocFieldValue(doc, 'RDF'));
