@@ -188,14 +188,16 @@ export const docuwareService = {
 
             // Construct standard DocuWare Query Object
             const conditions = filters.map(filter => {
-                let value = Array.isArray(filter.value) ? [...filter.value] : [filter.value];
+                const fName = filter.fieldName || filter.FieldName;
+                const fVal = filter.value !== undefined ? filter.value : filter.Value;
+                let value = Array.isArray(fVal) ? [...fVal] : [fVal];
                 // Handle open-ended date ranges:
                 // Only start → end = far future; Only end → start = far past
                 if (value.length === 2) {
                     if (value[0] && !value[1]) value[1] = '2099-12-31';
                     if (!value[0] && value[1]) value[0] = '1900-01-01';
                 }
-                return { DBName: filter.fieldName, Value: value };
+                return { DBName: fName, Value: value };
             });
 
             const queryBody = {
@@ -283,17 +285,19 @@ export const docuwareService = {
 
             const filteredItems = allItems.filter(doc => {
                 return filters.every(filter => {
-                    const val = getFieldValue(doc, filter.fieldName);
+                    const fName = filter.fieldName || filter.FieldName;
+                    const fVal = filter.value !== undefined ? filter.value : filter.Value;
+                    const val = getFieldValue(doc, fName);
                     if (val === null || val === undefined) return false;
                     
-                    if (Array.isArray(filter.value)) {
+                    if (Array.isArray(fVal)) {
                         const itemDate = parseDate(val);
                         if (!itemDate) return false;
-                        const startDate = parseDate(filter.value[0]);
-                        const endDate = parseDate(filter.value[1]);
+                        const startDate = parseDate(fVal[0]);
+                        const endDate = parseDate(fVal[1]);
                         return (!startDate || itemDate >= startDate) && (!endDate || itemDate <= endDate);
                     } else {
-                        return String(val).toLowerCase() === String(filter.value).toLowerCase();
+                        return String(val).toLowerCase() === String(fVal).toLowerCase();
                     }
                 });
             });

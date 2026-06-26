@@ -188,11 +188,10 @@ const WorkflowAnalyticsPage = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const docTypeFilter = { FieldName: 'TIPO_DOCUMENTO', Value: 'Registo Processo de Importação' };
+            const docTypeFilter = { fieldName: 'TIPO_DOCUMENTO', value: 'Registo Processo de Importação' };
             const dateFilter = { 
-                FieldName: 'DATA_REGISTO', 
-                Value: `${dateRange[0]}..${dateRange[1]}`, 
-                IsRange: true 
+                fieldName: 'DATA_REGISTO', 
+                value: [dateRange[0] || '1900-01-01', dateRange[1] || '2099-12-31']
             };
 
             const response = await docuwareService.searchDocuments(selectedCabinet, [docTypeFilter, dateFilter], 1000);
