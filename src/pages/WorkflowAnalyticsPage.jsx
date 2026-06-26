@@ -165,6 +165,8 @@ const WorkflowAnalyticsPage = () => {
     const [dateRange, setDateRange] = useState([getSixMonthsAgoString(), getTodayString()]);
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
     const [activeTab, setActiveTab] = useState('visao_operacional');
+    const [detectedTypeField, setDetectedTypeField] = useState(null);
+    const [detectedDateField, setDetectedDateField] = useState(null);
 
     // Loaded Data
     const [documents, setDocuments] = useState([]);
@@ -185,31 +187,64 @@ const WorkflowAnalyticsPage = () => {
 
     // Load Cabinets on mount
     useEffect(() => {
-        const fetchInitialCabinet = async () => {
+        const fetchInitialCabinetAndFields = async () => {
             try {
                 const cabList = await docuwareService.getCabinets();
                 const targetCab = cabList.find(c => 
                     (c.Name || '').toLowerCase().includes('importac') ||
                     c.Id === 'c31ae087-921c-4985-bfcc-7b32de369db8'
                 );
+                const activeCabId = targetCab ? targetCab.Id : selectedCabinet;
                 if (targetCab) {
                     setSelectedCabinet(targetCab.Id);
                 }
+
+                // Fetch fields to detect DocType and StorageDate fields
+                const fields = await docuwareService.getCabinetFields(activeCabId);
+                const textFields = fields.filter(f => f.DWFieldType === 'Text' || f.DWFieldType === 'String' || f.SystemField);
+                const dateFields = fields.filter(f => f.DWFieldType === 'Date' || f.DWFieldType === 'DateTime');
+
+                // 1. Detect Document Type field
+                const typeKeywords = ['tipo', 'type', 'documento', 'doc_type', 'docclass'];
+                const typeF = textFields.find(f => {
+                    const name = (f.DBFieldName || f.FieldName || '').toLowerCase();
+                    const disp = (f.DisplayName || '').toLowerCase();
+                    return typeKeywords.some(kw => name.includes(kw) || disp.includes(kw));
+                }) || textFields[0];
+                setDetectedTypeField(typeF);
+
+                // 2. Detect Date field
+                const systemStoreField = fields.find(f => {
+                    const name = (f.DBFieldName || f.FieldName || '').toUpperCase();
+                    return name === 'DWSTOREDATETIME' || name === 'DWSTOREDATE';
+                });
+                const dateF = systemStoreField || fields.find(f => {
+                    const name = (f.DBFieldName || f.FieldName || '').toLowerCase();
+                    const disp = (f.DisplayName || '').toLowerCase();
+                    const dateKeywords = ['dwstoredate', 'dwstoredatetime', 'storedate', 'armazenado', 'data', 'date'];
+                    return dateKeywords.some(kw => name.includes(kw) || disp.includes(kw));
+                }) || dateFields[0];
+                setDetectedDateField(dateF);
+
             } catch (err) {
-                console.error('[WorkflowAnalytics] Failed to fetch cabinets on mount:', err);
+                console.error('[WorkflowAnalytics] Failed to fetch cabinets or fields on mount:', err);
             }
         };
-        fetchInitialCabinet();
+        fetchInitialCabinetAndFields();
     }, []);
 
     // Fetch documents
     const fetchDocuments = async () => {
+        if (!selectedCabinet || !detectedTypeField || !detectedDateField) return;
         setIsLoading(true);
         setError(null);
         try {
-            const docTypeFilter = { fieldName: 'TIPO_DOCUMENTO', value: 'Registo Processo de Importação' };
+            const docTypeFilter = { 
+                fieldName: detectedTypeField.DBFieldName || detectedTypeField.FieldName, 
+                value: 'Registo Processo de Importação' 
+            };
             const dateFilter = { 
-                fieldName: 'DATA_REGISTO', 
+                fieldName: detectedDateField.DBFieldName || detectedDateField.FieldName, 
                 value: [dateRange[0] || '1900-01-01', dateRange[1] || '2099-12-31']
             };
 
@@ -229,10 +264,10 @@ const WorkflowAnalyticsPage = () => {
 
     // Load on dateRange or cabinet change
     useEffect(() => {
-        if (selectedCabinet) {
+        if (selectedCabinet && detectedTypeField && detectedDateField) {
             fetchDocuments();
         }
-    }, [dateRange, selectedCabinet]);
+    }, [dateRange, selectedCabinet, detectedTypeField, detectedDateField]);
 
     const fetchProgressForDocs = async (docsToFetch) => {
         const batchSize = 12;
