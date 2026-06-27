@@ -1997,15 +1997,15 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table w-full text-xs">
                                         <thead>
                                             <tr>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Despachante</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Processos Atribuídos</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Processos Concluídos</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Tempo Médio Desembaraço</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Tempo Médio até Entrega</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Valor Movimentado</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Custo Médio / Processo</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Coeficiente Médio</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-24">Ação</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-normal">Despachante</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Processos<br />Atribuídos</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Processos<br />Concluídos</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Tempo Médio<br />Desembaraço</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Tempo Médio<br />até Entrega</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-normal">Valor<br />Movimentado</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-normal">Custo Médio /<br />Processo</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Coeficiente<br />Médio</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-24 whitespace-normal">Ação</th>
                                             </tr>
                                         </thead>
                                         <tbody>
