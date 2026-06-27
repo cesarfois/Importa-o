@@ -2032,7 +2032,10 @@ const WorkflowAnalyticsPage = () => {
                                                                     setSelectedDespachanteGroup(p.name);
                                                                 }
                                                             }} 
-                                                            className={`btn btn-xs ${selectedDespachanteGroup === p.name ? 'btn-error text-white font-bold' : 'btn-outline btn-primary font-bold'} rounded-lg`}
+                                                            className={selectedDespachanteGroup === p.name 
+                                                                ? "px-3 py-1 bg-[#e11d48] text-white hover:bg-[#be123c] text-[10px] font-semibold rounded-full transition-all whitespace-nowrap shadow-sm" 
+                                                                : "px-3 py-1 border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 text-[10px] font-semibold rounded-full transition-all whitespace-nowrap shadow-sm"
+                                                            }
                                                         >
                                                             {selectedDespachanteGroup === p.name ? 'Fechar' : 'Visualizar Processos'}
                                                         </button>
