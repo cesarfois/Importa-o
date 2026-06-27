@@ -319,7 +319,7 @@ const DetailDrillDown = ({ groupKey, groupValue, allProcesses, handleOpenDocumen
                 </div>
             </div>
 
-            {/* Quick Actions (Search, Sort, Filters) */}
+            {/* Quick Actions (Search) */}
             <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
                 {/* Search */}
                 <div className="relative w-full lg:w-72">
@@ -333,68 +333,6 @@ const DetailDrillDown = ({ groupKey, groupValue, allProcesses, handleOpenDocumen
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                </div>
-
-                {/* Filters & Sorting */}
-                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
-                    {/* Sort Dropdown */}
-                    <select 
-                        className="select select-bordered select-xs bg-white text-slate-700 rounded-lg font-semibold"
-                        value={`${sortBy}-${sortDir}`}
-                        onChange={(e) => {
-                            const [by, dir] = e.target.value.split('-');
-                            setSortBy(by);
-                            setSortDir(dir);
-                        }}
-                    >
-                        <option value="docNum-asc">Nº Processo (A-Z)</option>
-                        <option value="docNum-desc">Nº Processo (Z-A)</option>
-                        <option value="custoTotal-desc">Maior Custo Primeiro</option>
-                        <option value="custoTotal-asc">Menor Custo Primeiro</option>
-                        <option value="coeficiente-desc">Maior Coeficiente Primeiro</option>
-                        <option value="coeficiente-asc">Menor Coeficiente Primeiro</option>
-                        <option value="diasTotais-desc">Maior Tempo de Importação</option>
-                        <option value="diasTotais-asc">Menor Tempo de Importação</option>
-                    </select>
-
-                    {/* Filter Fornecedor */}
-                    {groupKey !== 'fornecedor' && (
-                        <select 
-                            className="select select-bordered select-xs bg-white text-slate-700 rounded-lg"
-                            value={filterFornecedor}
-                            onChange={(e) => setFilterFornecedor(e.target.value)}
-                        >
-                            <option value="all">Todos Fornecedores</option>
-                            {filterOptions.suppliers.map(s => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
-                        </select>
-                    )}
-
-                    {/* Filter Estado */}
-                    <select 
-                        className="select select-bordered select-xs bg-white text-slate-700 rounded-lg"
-                        value={filterEstado}
-                        onChange={(e) => setFilterEstado(e.target.value)}
-                    >
-                        <option value="all">Todos Estados</option>
-                        <option value="Em Andamento">Em Andamento</option>
-                        <option value="Concluído">Concluídos</option>
-                    </select>
-
-                    {/* Filter Tipo Carga */}
-                    {groupKey !== 'tipoCarga' && (
-                        <select 
-                            className="select select-bordered select-xs bg-white text-slate-700 rounded-lg"
-                            value={filterTipoCarga}
-                            onChange={(e) => setFilterTipoCarga(e.target.value)}
-                        >
-                            <option value="all">Todos Tipos Carga</option>
-                            {filterOptions.cargoTypes.map(c => (
-                                <option key={c} value={c}>{c}</option>
-                            ))}
-                        </select>
-                    )}
                 </div>
             </div>
 
