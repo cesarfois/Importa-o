@@ -155,6 +155,311 @@ const getStageName = (idx) => {
     }
 };
 
+// Reusable DetailDrillDown component
+const DetailDrillDown = ({ groupKey, groupValue, allProcesses, handleOpenDocument, onClose }) => {
+    const [search, setSearch] = useState('');
+    const [sortBy, setSortBy] = useState('docNum');
+    const [sortDir, setSortDir] = useState('asc');
+    
+    // Filters inside drilldown
+    const [filterFornecedor, setFilterFornecedor] = useState('all');
+    const [filterEstado, setFilterEstado] = useState('all');
+    const [filterTipoCarga, setFilterTipoCarga] = useState('all');
+
+    // 1. Filter processes belonging to the selected group
+    const groupProcesses = useMemo(() => {
+        return allProcesses.filter(p => {
+            const val = String(p[groupKey] || '-').trim();
+            return val.toLowerCase() === String(groupValue || '').trim().toLowerCase();
+        });
+    }, [allProcesses, groupKey, groupValue]);
+
+    // Calculate unique values for filters inside group
+    const filterOptions = useMemo(() => {
+        const suppliers = new Set();
+        const cargoTypes = new Set();
+        groupProcesses.forEach(p => {
+            if (p.fornecedor && p.fornecedor !== '-') suppliers.add(p.fornecedor);
+            if (p.tipoCarga && p.tipoCarga !== '-') cargoTypes.add(p.tipoCarga);
+        });
+        return {
+            suppliers: Array.from(suppliers).sort(),
+            cargoTypes: Array.from(cargoTypes).sort()
+        };
+    }, [groupProcesses]);
+
+    // 2. Calculate summary statistics for the selected group
+    const summary = useMemo(() => {
+        const count = groupProcesses.length;
+        let totalValue = 0;
+        let totalExpenses = 0;
+        let totalDays = 0;
+        let daysCount = 0;
+        const coefs = [];
+
+        groupProcesses.forEach(p => {
+            const totalCosts = p.frete + p.custosAdicionais + p.servicosDespachante + p.direitos + p.iva + p.rdf;
+            totalValue += (p.valMercadoria + totalCosts);
+            totalExpenses += totalCosts;
+            
+            if (typeof p.diasTotais === 'number' && p.diasTotais > 0) {
+                totalDays += p.diasTotais;
+                daysCount++;
+            }
+            if (p.coeficienteNumeric > 0) {
+                coefs.push(p.coeficienteNumeric);
+            }
+        });
+
+        const avgCost = count > 0 ? Math.round(totalExpenses / count) : 0;
+        const avgCoef = coefs.length > 0 ? (coefs.reduce((a, b) => a + b, 0) / coefs.length).toFixed(2) : 'N/D';
+        const avgTime = daysCount > 0 ? `${Math.round(totalDays / daysCount)} dias` : 'N/D';
+
+        return {
+            count,
+            totalValue,
+            avgCost,
+            avgCoef,
+            avgTime
+        };
+    }, [groupProcesses]);
+
+    // 3. Apply search, sort, and filters to group processes
+    const processedList = useMemo(() => {
+        let list = [...groupProcesses];
+
+        // Search
+        if (search.trim() !== '') {
+            const s = search.toLowerCase();
+            list = list.filter(p => 
+                p.docNum.toLowerCase().includes(s) ||
+                p.responsavel.toLowerCase().includes(s) ||
+                p.fornecedor.toLowerCase().includes(s) ||
+                p.tipoCarga.toLowerCase().includes(s)
+            );
+        }
+
+        // Filters
+        if (filterFornecedor !== 'all') {
+            list = list.filter(p => p.fornecedor === filterFornecedor);
+        }
+        if (filterEstado !== 'all') {
+            list = list.filter(p => p.statusFinal === filterEstado);
+        }
+        if (filterTipoCarga !== 'all') {
+            list = list.filter(p => p.tipoCarga === filterTipoCarga);
+        }
+
+        // Sort
+        if (sortBy) {
+            list.sort((a, b) => {
+                let valA = a[sortBy];
+                let valB = b[sortBy];
+
+                if (sortBy === 'custoTotal') {
+                    valA = a.frete + a.custosAdicionais + a.servicosDespachante + a.direitos + a.iva + a.rdf;
+                    valB = b.frete + b.custosAdicionais + b.servicosDespachante + b.direitos + b.iva + b.rdf;
+                } else if (sortBy === 'coeficiente') {
+                    valA = a.coeficienteNumeric || 0;
+                    valB = b.coeficienteNumeric || 0;
+                } else if (sortBy === 'diasTotais') {
+                    valA = typeof a.diasTotais === 'number' ? a.diasTotais : 0;
+                    valB = typeof b.diasTotais === 'number' ? b.diasTotais : 0;
+                }
+
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        return list;
+    }, [groupProcesses, search, sortBy, sortDir, filterFornecedor, filterEstado, filterTipoCarga]);
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <h3 className="font-bold text-slate-800 text-sm">
+                        Processos do Despachante: <span className="text-indigo-600 font-extrabold">{groupValue}</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                        Exibindo {processedList.length} processos pertencentes ao despachante selecionado.
+                    </p>
+                </div>
+                <button onClick={onClose} className="btn btn-sm btn-ghost text-rose-500 font-bold hover:bg-rose-50 rounded-lg">
+                    Fechar
+                </button>
+            </div>
+
+            {/* Resumo Executivo / Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">Quantidade de processos</span>
+                    <span className="text-base font-black text-slate-800 mt-1">{summary.count}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">Valor total movimentado</span>
+                    <span className="text-base font-black text-slate-800 mt-1 font-mono">{formatKwanza(summary.totalValue)}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">Custo médio por processo</span>
+                    <span className="text-base font-black text-amber-600 mt-1 font-mono">{formatKwanza(summary.avgCost)}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">Coeficiente médio</span>
+                    <span className="text-base font-black text-emerald-600 mt-1 font-mono">{summary.avgCoef}</span>
+                </div>
+                <div className="flex flex-col col-span-2 md:col-span-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">Tempo médio da importação</span>
+                    <span className="text-base font-black text-indigo-600 mt-1">{summary.avgTime}</span>
+                </div>
+            </div>
+
+            {/* Quick Actions (Search, Sort, Filters) */}
+            <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+                {/* Search */}
+                <div className="relative w-full lg:w-72">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-400">
+                        <FaSearch className="text-xs" />
+                    </span>
+                    <input 
+                        type="text" 
+                        placeholder="Buscar por nº processo, responsável..." 
+                        className="input input-bordered input-xs pl-8 bg-white text-slate-700 w-full rounded-lg"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+
+                {/* Filters & Sorting */}
+                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+                    {/* Sort Dropdown */}
+                    <select 
+                        className="select select-bordered select-xs bg-white text-slate-700 rounded-lg font-semibold"
+                        value={`${sortBy}-${sortDir}`}
+                        onChange={(e) => {
+                            const [by, dir] = e.target.value.split('-');
+                            setSortBy(by);
+                            setSortDir(dir);
+                        }}
+                    >
+                        <option value="docNum-asc">Nº Processo (A-Z)</option>
+                        <option value="docNum-desc">Nº Processo (Z-A)</option>
+                        <option value="custoTotal-desc">Maior Custo Primeiro</option>
+                        <option value="custoTotal-asc">Menor Custo Primeiro</option>
+                        <option value="coeficiente-desc">Maior Coeficiente Primeiro</option>
+                        <option value="coeficiente-asc">Menor Coeficiente Primeiro</option>
+                        <option value="diasTotais-desc">Maior Tempo de Importação</option>
+                        <option value="diasTotais-asc">Menor Tempo de Importação</option>
+                    </select>
+
+                    {/* Filter Fornecedor */}
+                    {groupKey !== 'fornecedor' && (
+                        <select 
+                            className="select select-bordered select-xs bg-white text-slate-700 rounded-lg"
+                            value={filterFornecedor}
+                            onChange={(e) => setFilterFornecedor(e.target.value)}
+                        >
+                            <option value="all">Todos Fornecedores</option>
+                            {filterOptions.suppliers.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    {/* Filter Estado */}
+                    <select 
+                        className="select select-bordered select-xs bg-white text-slate-700 rounded-lg"
+                        value={filterEstado}
+                        onChange={(e) => setFilterEstado(e.target.value)}
+                    >
+                        <option value="all">Todos Estados</option>
+                        <option value="Em Andamento">Em Andamento</option>
+                        <option value="Concluído">Concluídos</option>
+                    </select>
+
+                    {/* Filter Tipo Carga */}
+                    {groupKey !== 'tipoCarga' && (
+                        <select 
+                            className="select select-bordered select-xs bg-white text-slate-700 rounded-lg"
+                            value={filterTipoCarga}
+                            onChange={(e) => setFilterTipoCarga(e.target.value)}
+                        >
+                            <option value="all">Todos Tipos Carga</option>
+                            {filterOptions.cargoTypes.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
+                    )}
+                </div>
+            </div>
+
+            {/* Drilldown Table */}
+            <div className="overflow-x-auto border border-slate-200 rounded-xl max-h-80 scrollbar-thin">
+                <table className="table table-compact w-full text-[10px]">
+                    <thead>
+                        <tr className="bg-slate-50">
+                            <th className="bg-slate-100 text-slate-600 font-bold sticky top-0">Nº Processo</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold sticky top-0">Data Entrada</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold sticky top-0">Fornecedor</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold sticky top-0">Tipo Carga</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold sticky top-0">Estado Atual</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold sticky top-0">Responsável</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0">Dias Importação</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold text-right sticky top-0">V. Mercadoria</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold text-right sticky top-0">Frete</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold text-right sticky top-0">Custos Adicionais</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold text-right sticky top-0">Custo Total</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0">Coeficiente</th>
+                            <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {processedList.map((p, idx) => {
+                            const totalCosts = p.frete + p.custosAdicionais + p.servicosDespachante + p.direitos + p.iva + p.rdf;
+                            return (
+                                <tr key={idx} className="hover:bg-slate-50/50">
+                                    <td className="font-bold text-slate-700">{p.docNum}</td>
+                                    <td>{p.dtBollore}</td>
+                                    <td className="max-w-[120px] truncate" title={p.fornecedor}>{p.fornecedor}</td>
+                                    <td>{p.tipoCarga}</td>
+                                    <td>
+                                        <span className="font-semibold text-slate-600">{p.etapa}</span>
+                                    </td>
+                                    <td className="max-w-[120px] truncate" title={p.responsavel}>{p.responsavel}</td>
+                                    <td className="text-center font-mono font-bold">{p.diasTotais} {p.isParcial ? '(parcial)' : ''}</td>
+                                    <td className="text-right font-mono">{formatKwanza(p.valMercadoria)}</td>
+                                    <td className="text-right font-mono">{formatKwanza(p.frete)}</td>
+                                    <td className="text-right font-mono">{formatKwanza(p.custosAdicionais)}</td>
+                                    <td className="text-right font-mono font-bold text-indigo-600">{formatKwanza(totalCosts)}</td>
+                                    <td className="text-center font-mono font-bold text-emerald-600">{p.coeficienteText}</td>
+                                    <td className="text-center">
+                                        <button 
+                                            onClick={() => handleOpenDocument(p.id)}
+                                            className="btn btn-xs btn-outline btn-primary font-bold flex items-center gap-1 mx-auto rounded-lg"
+                                        >
+                                            Abrir Documento
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                        {processedList.length === 0 && (
+                            <tr>
+                                <td colSpan={13} className="text-center py-6 text-slate-400 italic">Nenhum processo correspondente.</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
 const WorkflowAnalyticsPage = () => {
     // --- Date Filter Setup (Default: 6 months ago to today) ---
     const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -167,6 +472,7 @@ const WorkflowAnalyticsPage = () => {
     const [dateRange, setDateRange] = useState([getSixMonthsAgoString(), getTodayString()]);
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
     const [activeTab, setActiveTab] = useState('visao_operacional');
+    const [selectedDespachanteGroup, setSelectedDespachanteGroup] = useState(null);
     const [detectedTypeField, setDetectedTypeField] = useState(null);
     const [detectedDateField, setDetectedDateField] = useState(null);
 
@@ -1761,6 +2067,7 @@ const WorkflowAnalyticsPage = () => {
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Valor Movimentado</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Custo Médio / Processo</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Coeficiente Médio</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-24">Ação</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1778,16 +2085,42 @@ const WorkflowAnalyticsPage = () => {
                                                     <td className="text-right font-mono">{formatKwanza(p.totalValue)}</td>
                                                     <td className="text-right font-mono">{formatKwanza(p.avgCostPerProcess)}</td>
                                                     <td className="text-center font-mono font-bold text-emerald-600">{p.avgCoef}</td>
+                                                    <td className="text-center">
+                                                        <button 
+                                                            onClick={() => {
+                                                                if (selectedDespachanteGroup === p.name) {
+                                                                    setSelectedDespachanteGroup(null);
+                                                                } else {
+                                                                    setSelectedDespachanteGroup(p.name);
+                                                                }
+                                                            }} 
+                                                            className={`btn btn-xs ${selectedDespachanteGroup === p.name ? 'btn-error text-white font-bold' : 'btn-outline btn-primary font-bold'} rounded-lg`}
+                                                        >
+                                                            {selectedDespachanteGroup === p.name ? 'Fechar' : 'Visualizar Processos'}
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             ))}
                                             {despachantesPerformance.length === 0 && (
                                                 <tr>
-                                                    <td colSpan={8} className="text-center py-8 text-slate-400 italic">Não existem despachantes registrados para esta seleção.</td>
+                                                    <td colSpan={9} className="text-center py-8 text-slate-400 italic">Não existem despachantes registrados para esta seleção.</td>
                                                 </tr>
                                             )}
                                         </tbody>
                                     </table>
                                 </div>
+
+                                {selectedDespachanteGroup && (
+                                    <div className="mt-6 border-t border-slate-100 pt-6">
+                                        <DetailDrillDown 
+                                            groupKey="despachante" 
+                                            groupValue={selectedDespachanteGroup} 
+                                            allProcesses={detailedProcesses} 
+                                            handleOpenDocument={handleOpenDocument}
+                                            onClose={() => setSelectedDespachanteGroup(null)}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
