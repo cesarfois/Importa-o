@@ -2002,8 +2002,8 @@ const WorkflowAnalyticsPage = () => {
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Processos<br />Concluídos</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Tempo Médio<br />Desembaraço</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Tempo Médio<br />até Entrega</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-normal">Valor<br />Movimentado</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-normal">Custo Médio /<br />Processo</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Valor<br />Movimentado</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Custo Médio /<br />Processo</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Coeficiente<br />Médio</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-24 whitespace-normal">Ação</th>
                                             </tr>
