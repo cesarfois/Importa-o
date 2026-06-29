@@ -1389,7 +1389,7 @@ const WorkflowAnalyticsPage = () => {
                             </button>
                         </div>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                        <div className="grid grid-cols-2 gap-3 max-w-xs">
                             {/* Período */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase">Data Inicial</label>
@@ -1409,81 +1409,6 @@ const WorkflowAnalyticsPage = () => {
                                     value={dateRange[1]}
                                     onChange={(e) => setDateRange([dateRange[0], e.target.value])}
                                 />
-                            </div>
-
-                            {/* Despachante */}
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Despachante</label>
-                                <select 
-                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
-                                    value={selectedDespachante}
-                                    onChange={(e) => setSelectedDespachante(e.target.value)}
-                                >
-                                    <option value="all">Todos</option>
-                                    {filterOptions.despachantes.map(d => (
-                                        <option key={d} value={d}>{d}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Fornecedor */}
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Fornecedor</label>
-                                <select 
-                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
-                                    value={selectedFornecedor}
-                                    onChange={(e) => setSelectedFornecedor(e.target.value)}
-                                >
-                                    <option value="all">Todos</option>
-                                    {filterOptions.fornecedores.map(f => (
-                                        <option key={f} value={f}>{f}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Tipo Carga */}
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Tipo de Carga</label>
-                                <select 
-                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
-                                    value={selectedTipoCarga}
-                                    onChange={(e) => setSelectedTipoCarga(e.target.value)}
-                                >
-                                    <option value="all">Todos</option>
-                                    {filterOptions.tiposCarga.map(t => (
-                                        <option key={t} value={t}>{t}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Estado */}
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Estado</label>
-                                <select 
-                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
-                                    value={selectedEstado}
-                                    onChange={(e) => setSelectedEstado(e.target.value)}
-                                >
-                                    <option value="all">Todos</option>
-                                    <option value="ativo">Em Andamento</option>
-                                    <option value="concluido">Concluído</option>
-                                    <option value="atraso">Em Atraso (&gt;15 dias)</option>
-                                </select>
-                            </div>
-
-                            {/* Responsável */}
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Responsável</label>
-                                <select 
-                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
-                                    value={selectedResponsavel}
-                                    onChange={(e) => setSelectedResponsavel(e.target.value)}
-                                >
-                                    <option value="all">Todos</option>
-                                    {filterOptions.responsaveis.map(r => (
-                                        <option key={r} value={r}>{r}</option>
-                                    ))}
-                                </select>
                             </div>
                         </div>
                     </div>
