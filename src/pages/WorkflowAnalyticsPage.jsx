@@ -195,6 +195,51 @@ const getStageName = (idx) => {
     }
 };
 
+// Reusable Tooltip component for small stats cards (KPIs)
+const CardInfoTooltip = ({ metricKey, activeKey, setActiveKey }) => {
+    const exp = METRIC_EXPLANATIONS[metricKey];
+    if (!exp || activeKey !== metricKey) return null;
+    return (
+        <div className="absolute z-30 top-9 right-2 bg-[#4f46e5] text-white text-[10px] p-3 rounded-xl shadow-lg max-w-[250px] text-left leading-relaxed">
+            <div className="absolute -top-1 right-3.5 w-2 h-2 bg-[#4f46e5] transform rotate-45"></div>
+            <div className="flex justify-between items-center mb-1 font-extrabold uppercase tracking-wider text-[9px] text-indigo-200">
+                <span>Regra de Cálculo</span>
+                <button onClick={(e) => { e.stopPropagation(); setActiveKey(null); }} className="text-indigo-200 hover:text-white ml-2 text-xs">✕</button>
+            </div>
+            <div className="font-bold">
+                {exp.formula}
+            </div>
+            <div className="mt-1.5 pt-1.5 border-t border-indigo-500/50 text-[9px] text-indigo-100 font-medium">
+                Origem: {exp.source}
+            </div>
+        </div>
+    );
+};
+
+// Reusable inline alert component for charts and big tables
+const ChartInfoAlert = ({ metricKey, showInfo, setShowInfo }) => {
+    const exp = METRIC_EXPLANATIONS[metricKey];
+    if (!exp || !showInfo) return null;
+    return (
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative text-xs mb-4 text-left">
+            <button 
+                onClick={() => setShowInfo(false)} 
+                className="absolute top-3 right-3.5 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+                ✕
+            </button>
+            <h4 className="font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                <FaInfoCircle className="text-indigo-600" /> Regras do Indicador ({exp.title})
+            </h4>
+            <div className="text-slate-600 space-y-1.5 font-medium leading-relaxed">
+                <p><strong>Fórmula:</strong> {exp.formula}</p>
+                <p><strong>Origem dos Dados:</strong> {exp.source}</p>
+                <p className="text-[11px] text-slate-500 mt-1">{exp.description}</p>
+            </div>
+        </div>
+    );
+};
+
 // Reusable DetailDrillDown component
 const DetailDrillDown = ({ groupKey, groupValue, allProcesses, handleOpenDocument, onClose }) => {
     const [search, setSearch] = useState('');
@@ -662,6 +707,14 @@ const WorkflowAnalyticsPage = () => {
     const [detailSearch, setDetailSearch] = useState('');
     const [detailSort, setDetailSort] = useState({ column: 'docNum', direction: 'asc' });
     const [activeExplanation, setActiveExplanation] = useState(null);
+    const [visibleChartExplanations, setVisibleChartExplanations] = useState({});
+
+    const toggleChartExplanation = (key) => {
+        setVisibleChartExplanations(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
 
     // Column Filters States
     const [colFilters, setColFilters] = useState({
@@ -1809,7 +1862,7 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Processos</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('total_processos')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'total_processos' ? null : 'total_processos')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -1817,12 +1870,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-2xl font-black text-slate-800 mt-1">{stats.total}</div>
+                                    <CardInfoTooltip metricKey="total_processos" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Em Andamento</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('em_andamento')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'em_andamento' ? null : 'em_andamento')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -1830,12 +1884,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-2xl font-black text-amber-600 mt-1">{stats.active}</div>
+                                    <CardInfoTooltip metricKey="em_andamento" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Concluídos</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('concluidos')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'concluidos' ? null : 'concluidos')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -1843,12 +1898,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-2xl font-black text-emerald-600 mt-1">{stats.completed}</div>
+                                    <CardInfoTooltip metricKey="concluidos" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Em atraso</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('em_atraso')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'em_atraso' ? null : 'em_atraso')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -1856,12 +1912,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-2xl font-black text-rose-600 mt-1">{stats.delayed}</div>
+                                    <CardInfoTooltip metricKey="em_atraso" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm col-span-1 lg:col-span-2 relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valor total em processos abertos</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('valor_processos_abertos')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'valor_processos_abertos' ? null : 'valor_processos_abertos')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -1869,12 +1926,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-indigo-700 mt-1 font-mono">{formatKwanza(stats.openProcessValue)}</div>
+                                    <CardInfoTooltip metricKey="valor_processos_abertos" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prazo Médio Total</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('prazo_medio_total')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'prazo_medio_total' ? null : 'prazo_medio_total')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -1882,12 +1940,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-xl font-black text-slate-800 mt-1">{stats.avgCycleTimeText}</div>
+                                    <CardInfoTooltip metricKey="prazo_medio_total" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Parado Etapa Atual</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('parado_etapa_atual')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'parado_etapa_atual' ? null : 'parado_etapa_atual')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -1895,6 +1954,7 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-xl font-black text-rose-600 mt-1">{stats.avgTimeStoppedText}</div>
+                                    <CardInfoTooltip metricKey="parado_etapa_atual" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                             </div>
 
@@ -1912,13 +1972,18 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5"><FaChartBar /> Distribuição dos processos por etapa</h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('grafico_etapas')}
+                                            onClick={() => toggleChartExplanation('grafico_etapas')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="grafico_etapas" 
+                                        showInfo={!!visibleChartExplanations['grafico_etapas']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, grafico_etapas: val}))} 
+                                    />
                                     <div className="h-72">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={stageDistributionData} margin={{ top: 20, right: 30, left: -10, bottom: 5 }}>
@@ -1936,13 +2001,18 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5"><FaClock /> Tempo médio por etapa (em dias)</h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('grafico_tempo_etapa')}
+                                            onClick={() => toggleChartExplanation('grafico_tempo_etapa')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="grafico_tempo_etapa" 
+                                        showInfo={!!visibleChartExplanations['grafico_tempo_etapa']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, grafico_tempo_etapa: val}))} 
+                                    />
                                     <div className="h-72">
                                         {avgTimePerStageData.every(d => d['Dias Médios'] === 0) ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -1998,7 +2068,7 @@ const WorkflowAnalyticsPage = () => {
                                         <div className="flex justify-between items-start">
                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prazo Médio da Importação</div>
                                             <button 
-                                                onClick={() => setActiveExplanation('prazo_medio_total')}
+                                                onClick={() => setActiveExplanation(activeExplanation === 'prazo_medio_total' ? null : 'prazo_medio_total')}
                                                 className="text-slate-300 hover:text-indigo-600 transition-colors mr-2"
                                                 title="Ver fórmula e origem"
                                             >
@@ -2016,6 +2086,7 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
                                         <FaClock className="text-xl" />
                                     </div>
+                                    <CardInfoTooltip metricKey="prazo_medio_total" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-row items-center justify-between relative">
@@ -2023,7 +2094,7 @@ const WorkflowAnalyticsPage = () => {
                                         <div className="flex justify-between items-start">
                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tempo Médio de Grupagem</div>
                                             <button 
-                                                onClick={() => setActiveExplanation('tempo_grupagem')}
+                                                onClick={() => setActiveExplanation(activeExplanation === 'tempo_grupagem' ? null : 'tempo_grupagem')}
                                                 className="text-slate-300 hover:text-indigo-600 transition-colors mr-2"
                                                 title="Ver fórmula e origem"
                                             >
@@ -2036,6 +2107,7 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
                                         <FaClock className="text-xl" />
                                     </div>
+                                    <CardInfoTooltip metricKey="tempo_grupagem" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-row items-center justify-between relative">
@@ -2043,7 +2115,7 @@ const WorkflowAnalyticsPage = () => {
                                         <div className="flex justify-between items-start">
                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tempo na Alfândega</div>
                                             <button 
-                                                onClick={() => setActiveExplanation('tempo_alfandega')}
+                                                onClick={() => setActiveExplanation(activeExplanation === 'tempo_alfandega' ? null : 'tempo_alfandega')}
                                                 className="text-slate-300 hover:text-indigo-600 transition-colors mr-2"
                                                 title="Ver fórmula e origem"
                                             >
@@ -2056,6 +2128,7 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="p-3 bg-rose-50 text-rose-600 rounded-xl">
                                         <FaClock className="text-xl" />
                                     </div>
+                                    <CardInfoTooltip metricKey="tempo_alfandega" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                             </div>
 
@@ -2065,13 +2138,18 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm"><FaTruck className="inline mr-1 text-slate-500" /> Tempo Médio por Trecho (Portugal → Bolloré → Angola → RCS)</h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('tempo_medio_trecho')}
+                                            onClick={() => toggleChartExplanation('tempo_medio_trecho')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="tempo_medio_trecho" 
+                                        showInfo={!!visibleChartExplanations['tempo_medio_trecho']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, tempo_medio_trecho: val}))} 
+                                    />
                                     <div className="h-64">
                                         {transitSegmentsData.every(d => d['Dias'] === 0) ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -2093,13 +2171,18 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm"><FaUserShield className="inline mr-1 text-slate-500" /> Média de Dias por Despachante</h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('dias_medio_despachante')}
+                                            onClick={() => toggleChartExplanation('dias_medio_despachante')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="dias_medio_despachante" 
+                                        showInfo={!!visibleChartExplanations['dias_medio_despachante']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, dias_medio_despachante: val}))} 
+                                    />
                                     <div className="h-64">
                                         {logisticsAverages.broker.length === 0 ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -2121,13 +2204,18 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm">Dias Médios por Tipo de Carga</h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('dias_medio_tipo_carga')}
+                                            onClick={() => toggleChartExplanation('dias_medio_tipo_carga')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-[11px]" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="dias_medio_tipo_carga" 
+                                        showInfo={!!visibleChartExplanations['dias_medio_tipo_carga']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, dias_medio_tipo_carga: val}))} 
+                                    />
                                     <div className="h-64">
                                         {logisticsAverages.cargo.length === 0 ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -2149,13 +2237,18 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm">Dias Médios por Fornecedor</h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('dias_medio_fornecedor')}
+                                            onClick={() => toggleChartExplanation('dias_medio_fornecedor')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-[11px]" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="dias_medio_fornecedor" 
+                                        showInfo={!!visibleChartExplanations['dias_medio_fornecedor']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, dias_medio_fornecedor: val}))} 
+                                    />
                                     <div className="h-64">
                                         {logisticsAverages.supplier.length === 0 ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -2177,13 +2270,18 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm">Top 10 Processos Mais Demorados</h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('top_10_demorados')}
+                                            onClick={() => toggleChartExplanation('top_10_demorados')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="top_10_demorados" 
+                                        showInfo={!!visibleChartExplanations['top_10_demorados']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, top_10_demorados: val}))} 
+                                    />
                                     <div className="overflow-x-auto max-h-80 scrollbar-thin">
                                         <table className="table table-compact w-full text-xs">
                                             <thead>
@@ -2231,7 +2329,7 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mercadoria (FOB)</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('fob')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'fob' ? null : 'fob')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2239,12 +2337,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-slate-800 mt-1 font-mono">{formatKwanza(financialData.totalMercadoria)}</div>
+                                    <CardInfoTooltip metricKey="fob" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frete Total</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('frete')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'frete' ? null : 'frete')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2252,12 +2351,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalFrete)}</div>
+                                    <CardInfoTooltip metricKey="frete" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custos Adicionais</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('custos_adicionais')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'custos_adicionais' ? null : 'custos_adicionais')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2265,12 +2365,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-amber-600 mt-1 font-mono">{formatKwanza(financialData.totalCustosAdicionais)}</div>
+                                    <CardInfoTooltip metricKey="custos_adicionais" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RDF Total</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('rdf')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'rdf' ? null : 'rdf')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2278,12 +2379,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalRDF)}</div>
+                                    <CardInfoTooltip metricKey="rdf" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IVA Total</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('iva')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'iva' ? null : 'iva')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2291,12 +2393,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalIVA)}</div>
+                                    <CardInfoTooltip metricKey="iva" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Direitos Aduaneiros</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('direitos')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'direitos' ? null : 'direitos')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2304,12 +2407,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalDireitos)}</div>
+                                    <CardInfoTooltip metricKey="direitos" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Serviços Despachante</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('despachante')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'despachante' ? null : 'despachante')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2317,12 +2421,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalDespachante)}</div>
+                                    <CardInfoTooltip metricKey="despachante" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custo de Importação</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('custo_importacao')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'custo_importacao' ? null : 'custo_importacao')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2330,12 +2435,13 @@ const WorkflowAnalyticsPage = () => {
                                         </button>
                                     </div>
                                     <div className="text-lg font-black text-[#4f46e5] mt-1 font-mono">{formatKwanza(financialData.totalImportacao)}</div>
+                                    <CardInfoTooltip metricKey="custo_importacao" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Fator de Nacionalização</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('fator_nacionalizacao')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'fator_nacionalizacao' ? null : 'fator_nacionalizacao')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2346,12 +2452,13 @@ const WorkflowAnalyticsPage = () => {
                                         {financialData.avgCoef !== 'N/D' ? `${financialData.avgCoef}x` : 'N/D'}
                                     </div>
                                     <div className="text-[9px] text-slate-400">Min: {financialData.minCoef}x | Max: {financialData.maxCoef}x</div>
+                                    <CardInfoTooltip metricKey="fator_nacionalizacao" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                                 <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
                                     <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Desvio Cambial</div>
                                         <button 
-                                            onClick={() => setActiveExplanation('desvio_cambial')}
+                                            onClick={() => setActiveExplanation(activeExplanation === 'desvio_cambial' ? null : 'desvio_cambial')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
@@ -2364,6 +2471,7 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="text-[9px] text-slate-400">
                                         {financialData.totalDesvioCambial > 0 ? 'Custo extra por depreciação' : financialData.totalDesvioCambial < 0 ? 'Economia por valorização' : 'Sem desvio'}
                                     </div>
+                                    <CardInfoTooltip metricKey="desvio_cambial" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
                             </div>
 
@@ -2375,13 +2483,18 @@ const WorkflowAnalyticsPage = () => {
                                             <FaChartPie /> Composição dos Custos Adicionais da Importação
                                         </h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('grafico_donut_custos')}
+                                            onClick={() => toggleChartExplanation('grafico_donut_custos')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="grafico_donut_custos" 
+                                        showInfo={!!visibleChartExplanations['grafico_donut_custos']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, grafico_donut_custos: val}))} 
+                                    />
                                     <div className="h-72 flex items-center justify-center">
                                         {financialData.costComposition.length === 0 ? (
                                             <div className="text-slate-400 italic text-xs">Não existem processos com dados suficientes para calcular este indicador.</div>
@@ -2415,13 +2528,18 @@ const WorkflowAnalyticsPage = () => {
                                             <FaChartLine /> Análise de Acúmulo de Custo (Cascata)
                                         </h3>
                                         <button 
-                                            onClick={() => setActiveExplanation('grafico_waterfall')}
+                                            onClick={() => toggleChartExplanation('grafico_waterfall')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
                                             title="Ver fórmula e origem"
                                         >
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
+                                    <ChartInfoAlert 
+                                        metricKey="grafico_waterfall" 
+                                        showInfo={!!visibleChartExplanations['grafico_waterfall']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, grafico_waterfall: val}))} 
+                                    />
                                     <div className="h-72">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={waterfallData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -2752,65 +2870,6 @@ const WorkflowAnalyticsPage = () => {
                     )}
                 </div>
             )}
-            {/* Modal de Explicação de Métrica (CFO Auditoria) */}
-            {activeExplanation && (() => {
-                const exp = METRIC_EXPLANATIONS[activeExplanation];
-                if (!exp) return null;
-                return (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full shadow-2xl p-6 relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-                            
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
-                                        <FaInfoCircle className="text-xl" />
-                                    </div>
-                                    <h3 className="font-extrabold text-slate-800 text-lg leading-tight">{exp.title}</h3>
-                                </div>
-                                <button 
-                                    onClick={() => setActiveExplanation(null)}
-                                    className="btn btn-sm btn-circle btn-ghost text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Fórmula de Cálculo / Regra</h4>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-mono text-xs text-slate-700 font-bold leading-relaxed break-words">
-                                        {exp.formula}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Campos de Origem dos Dados</h4>
-                                    <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-900 font-semibold leading-relaxed">
-                                        {exp.source}
-                                    </div>
-                                </div>
-
-                                <div className="pt-2 border-t border-slate-100">
-                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Significado para a Diretoria (CFO)</h4>
-                                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                                        {exp.description}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="mt-6 flex justify-end">
-                                <button 
-                                    onClick={() => setActiveExplanation(null)}
-                                    className="btn btn-sm bg-indigo-600 hover:bg-indigo-700 border-none text-white font-bold px-6 rounded-xl shadow-sm"
-                                >
-                                    Fechar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            })()}
         </div>
     );
 };
