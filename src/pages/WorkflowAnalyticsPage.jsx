@@ -798,7 +798,7 @@ const WorkflowAnalyticsPage = () => {
             }
             // Via de Transporte (Modal)
             if (selectedViaTransporte !== 'all') {
-                const val = findFieldVal(doc, ['TIPO', 'VIA', 'MODAL', 'MEIO_TRANSPORTE', 'VIA_TRANSPORTE']);
+                const val = getDocFieldValue(doc, 'TIPO') || getDocFieldValue(doc, 'VIA') || getDocFieldValue(doc, 'MODAL') || getDocFieldValue(doc, 'MEIO_TRANSPORTE') || getDocFieldValue(doc, 'VIA_TRANSPORTE');
                 if (val !== selectedViaTransporte) return false;
             }
             // Transportador
@@ -898,7 +898,7 @@ const WorkflowAnalyticsPage = () => {
                 qualidade = 'Falta custo final';
             }
 
-            const viaTransporte = findFieldVal(doc, ['TIPO', 'VIA', 'MODAL', 'MEIO_TRANSPORTE', 'VIA_TRANSPORTE']) || '-';
+            const viaTransporte = getDocFieldValue(doc, 'TIPO') || getDocFieldValue(doc, 'VIA') || getDocFieldValue(doc, 'MODAL') || getDocFieldValue(doc, 'MEIO_TRANSPORTE') || getDocFieldValue(doc, 'VIA_TRANSPORTE') || '-';
 
             return {
                 id: doc.Id,
@@ -955,7 +955,7 @@ const WorkflowAnalyticsPage = () => {
     const viasList = useMemo(() => {
         const set = new Set();
         documents.forEach(d => {
-            const val = findFieldVal(d, ['TIPO', 'VIA', 'MODAL', 'MEIO_TRANSPORTE', 'VIA_TRANSPORTE']);
+            const val = getDocFieldValue(d, 'TIPO') || getDocFieldValue(d, 'VIA') || getDocFieldValue(d, 'MODAL') || getDocFieldValue(d, 'MEIO_TRANSPORTE') || getDocFieldValue(d, 'VIA_TRANSPORTE');
             if (val) set.add(val.trim());
         });
         return Array.from(set).sort();
