@@ -437,6 +437,195 @@ const DetailDrillDown = ({ groupKey, groupValue, allProcesses, handleOpenDocumen
     );
 };
 
+const METRIC_EXPLANATIONS = {
+    total_processos: {
+        title: "Total Processos",
+        formula: "Quantidade total de instâncias localizadas",
+        source: "Filtro dinâmico por Tipo de Documento no DocuWare",
+        description: "Volume absoluto de processos de importação iniciados no período selecionado."
+    },
+    em_andamento: {
+        title: "Em Andamento",
+        formula: "Total Processos - Concluídos",
+        source: "Verificação de etapa atual (Etapas 1 a 5) no DocuWare",
+        description: "Processos ativos em qualquer etapa logística ou de desembaraço aduaneiro antes da entrega."
+    },
+    concluidos: {
+        title: "Concluídos",
+        formula: "Instâncias na Etapa 6 ou com data de entrega na RCS",
+        source: "Campo DATA_ENTREGUE, DATA_ENTREGUE_RCS ou status Concluído no histórico",
+        description: "Processos que finalizaram todo o ciclo logístico e aduaneiro, com a carga entregue."
+    },
+    em_atraso: {
+        title: "Em Atraso",
+        formula: "Processos ativos sem atualização de etapa há mais de 15 dias",
+        source: "Cálculo de diferença de tempo a partir da última transição no histórico",
+        description: "Gargalos operacionais críticos que necessitam de intervenção ou cobrança de parceiros."
+    },
+    valor_processos_abertos: {
+        title: "Valor Total em Processos Abertos",
+        formula: "Soma de (Montante_Factura * Valor Cambial) para processos 'Em Andamento'",
+        source: "Campos MONTANTE_FACTURA e VALOR_CAMBIAL no DocuWare",
+        description: "Exposição financeira total e fluxo de caixa comprometido em mercadorias atualmente em trânsito/desembaraço."
+    },
+    prazo_medio_total: {
+        title: "Prazo Médio Total",
+        formula: "Média de (Data de Entrega na RCS - Entrada na Bolloré) em dias",
+        source: "Mapeamento dos campos DATA_ENTRADA_BOLLORE e DATA_ENTREGUE no DocuWare",
+        description: "Ciclo médio total (Lead Time) de ponta a ponta para a nacionalização e entrega de cargas."
+    },
+    parado_etapa_atual: {
+        title: "Parado na Etapa Atual",
+        formula: "Média de dias desde a última movimentação de etapa dos processos ativos",
+        source: "Último StepDate registrado no histórico da instância",
+        description: "Tempo médio de retenção dos processos nas mãos dos respectivos responsáveis."
+    },
+    fob: {
+        title: "Mercadoria (FOB)",
+        formula: "Soma de (Montante_Factura * Valor Cambial)",
+        source: "Campos MONTANTE_FACTURA e VALOR_CAMBIAL no DocuWare",
+        description: "Custo de aquisição FOB da mercadoria convertida para a moeda local (Cuanzas)."
+    },
+    frete: {
+        title: "Frete Total",
+        formula: "Soma de (Montante_transporte * Valor Cambial)",
+        source: "Campos MONTANTE_TRANSPORTE e VALOR_CAMBIAL no DocuWare",
+        description: "Custo total com frete internacional para movimentação das cargas até Angola."
+    },
+    custos_adicionais: {
+        title: "Custos Adicionais",
+        formula: "Soma de (Despesas_extras * Valor Cambial)",
+        source: "Campos CUSTOS_ADICIONAIS, OUTROS_CUSTOS ou DESPESAS_EXTRAS no DocuWare",
+        description: "Custos diversos e taxas logísticas extraordinárias incorridas durante o trânsito."
+    },
+    rdf: {
+        title: "RDF Total",
+        formula: "Soma de Montante_RDF",
+        source: "Campo MONTANTE_RDF (Cuanzas) no DocuWare",
+        description: "Total pago em tarifas de importação e impostos via documento de arrecadação aduaneira (RDF)."
+    },
+    iva: {
+        title: "IVA Total",
+        formula: "Soma de Valor IVA_Importação",
+        source: "Campo VALOR_IVA_IMPORTACAO no DocuWare",
+        description: "Total acumulado de Imposto sobre o Valor Acrescentado recolhido na importação."
+    },
+    direitos: {
+        title: "Direitos Aduaneiros",
+        formula: "Soma de Direito Alfandegários e Taxas",
+        source: "Campo DIREITOS_ALFANDEGARIOS ou DIREITO_ALFANDEGARIOS no DocuWare",
+        description: "Taxas aduaneiras e direitos alfandegários recolhidos."
+    },
+    despachante: {
+        title: "Serviços Despachante",
+        formula: "Soma de Serviços Despachantes",
+        source: "Campo SERVICOS_DESPACHANTES (Cuanzas) no DocuWare",
+        description: "Honorários e taxas de serviços pagos aos despachantes oficiais aduaneiros."
+    },
+    custo_importacao: {
+        title: "Custo de Importação",
+        formula: "FOB_Kz + Montante_RDF + Serviços Despachantes + Frete_Kz + Despesas_Extras_Kz",
+        source: "Fórmula de consolidação corporativa (soma dos componentes acima convertidos)",
+        description: "Custo real desembolsado de ponta a ponta para colocação da mercadoria no inventário da empresa."
+    },
+    fator_nacionalizacao: {
+        title: "Fator de Nacionalização (Landing Factor)",
+        formula: "Custo de Importação / Valor FOB Convertido (FOB_Kz)",
+        source: "Divisão do custo consolidado pelo FOB total em Kz",
+        description: "Relação multiplicadora de acréscimo de custo logístico sobre o produto. Ex: 1.23x indica 23% de custo adicional."
+    },
+    desvio_cambial: {
+        title: "Desvio Cambial",
+        formula: "Soma de [Montante_Factura * (Valor Cambial - Vaor Cambial_FC)]",
+        source: "Diferença entre a taxa cambial do fechamento (Valor Cambial) e da emissão da fatura (Vaor Cambial_FC)",
+        description: "Impacto financeiro acumulado decorrente da variação do Cuanza frente às moedas estrangeiras da compra."
+    },
+    grafico_etapas: {
+        title: "Distribuição por Etapa",
+        formula: "Contagem de processos ativos agrupados por sua etapa avaliada (1 a 6)",
+        source: "Análise dinâmica de campos de status e tarefas do histórico no DocuWare",
+        description: "Distribuição física dos processos na esteira operacional para identificação de gargalos."
+    },
+    grafico_tempo_etapa: {
+        title: "Tempo Médio por Etapa",
+        formula: "Média de dias decorridos entre a entrada e a saída de cada etapa no histórico",
+        source: "Diferença entre o StepDate das tarefas de início e conclusão de cada etapa",
+        description: "Velocidade de processamento operacional média em cada fase del fluxo."
+    },
+    trecho_portugal_bollore: {
+        title: "Portugal → Bolloré",
+        formula: "Média de (Data Entrada na Bolloré - Data Saída Portugal)",
+        source: "Campos DATA_SAIDA_PORTUGAL e DATA_ENTRADA_BOLLORE no DocuWare",
+        description: "Tempo de trânsito internacional do porto/aeroporto de origem até o operador logístico internacional."
+    },
+    trecho_bollore_angola: {
+        title: "Bolloré → Angola",
+        formula: "Média de (Data Chegada Angola - Data Entrada na Bolloré)",
+        source: "Campos DATA_CHEGADA e DATA_ENTRADA_BOLLORE no DocuWare",
+        description: "Tempo de consolidação e transporte da carga até a chegada em Angola."
+    },
+    trecho_angola_rcs: {
+        title: "Angola → RCS",
+        formula: "Média de (Data de Entrega na RCS - Data Chegada Angola)",
+        source: "Campos DATA_CHEGADA e DATA_ENTREGUE no DocuWare",
+        description: "Tempo necessário para o desembaraço aduaneiro local e transporte terrestre até o armazém final."
+    },
+    grafico_donut_custos: {
+        title: "Composição dos Custos Adicionais da Importação",
+        formula: "Rateio percentual de (Frete + Despachante + RDF + Outros Custos)",
+        source: "Divisão de cada componente aduaneiro e logístico pelo custo adicional consolidado",
+        description: "Identificação da participação de cada custo no acréscimo de nacionalização (excluindo FOB)."
+    },
+    grafico_waterfall: {
+        title: "Análise de Acúmulo de Custo (Cascata)",
+        formula: "Evolução empilhada a partir do FOB, somando sucessivamente Frete, RDF, Despachante e Outros Custos",
+        source: "Construção de barras empilhadas para ilustrar a composição final do Custo de Importação",
+        description: "Visualização didática de como o valor FOB inicial é onerado pelas despesas de importação."
+    },
+    tempo_grupagem: {
+        title: "Tempo Médio de Grupagem",
+        formula: "Média de dias decorridos na etapa de consolidação/grupagem da mercadoria",
+        source: "Histórico de transições de status da carga na origem",
+        description: "Tempo decorrido aguardando lote mínimo ou consolidação logística antes do embarque."
+    },
+    tempo_alfandega: {
+        title: "Tempo na Alfândega",
+        formula: "Média de (Data Despacho/Saída Alfândega - Data Chegada Angola)",
+        source: "Campos DATA_CHEGADA e DATA_SAIDA_ALFANDEGA ou DATA_DESPACHO no DocuWare",
+        description: "Lead time aduaneiro total para liberação da mercadoria nas alfândegas locais."
+    },
+    tempo_medio_trecho: {
+        title: "Tempo Médio por Trecho",
+        formula: "Somas médias dos tempos decorridos entre os marcos logísticos definidos",
+        source: "Campos DATA_SAIDA_PORTUGAL, DATA_ENTRADA_BOLLORE, DATA_CHEGADA e DATA_ENTREGUE no DocuWare",
+        description: "Ciclo de trânsito dividido por fases logísticas para identificação fina de responsabilidade."
+    },
+    dias_medio_despachante: {
+        title: "Média de Dias por Despachante",
+        formula: "Média de dias totais de processos concluídos agrupados pelo parceiro Despachante",
+        source: "Campo DESPACHANTE (DocuWare) e histórico de lead time",
+        description: "Performance de prazo médio de desembaraço entregue por cada parceiro despachante aduaneiro."
+    },
+    dias_medio_tipo_carga: {
+        title: "Dias Médios por Tipo de Carga",
+        formula: "Média de dias totais de processos concluídos agrupados pelo Tipo de Carga",
+        source: "Campo TIPO_DE_CARGA ou TIPO_CARGA (DocuWare) e histórico de lead time",
+        description: "Duração do processo de acordo com a urgência ou natureza do frete (ex: Grupagem vs Especial)."
+    },
+    dias_medio_fornecedor: {
+        title: "Dias Médios por Fornecedor",
+        formula: "Média de dias de processos concluídos agrupados pelo Fornecedor",
+        source: "Campo FORNECEDOR (DocuWare) e histórico de lead time",
+        description: "Prazo logístico médio desde a saída do fornecedor internacional até a entrega final."
+    },
+    top_10_demorados: {
+        title: "Top 10 Processos Mais Demorados",
+        formula: "Os 10 processos ativos ou concluídos com maior número de dias totais decorridos",
+        source: "Ranking ordenado decrescente por (Data Fim / Hoje - Data Início)",
+        description: "Visão executiva prioritária sobre os desvios extremos de prazo para análise de causa raiz."
+    }
+};
+
 const WorkflowAnalyticsPage = () => {
     // --- Date Filter Setup (Default: 6 months ago to today) ---
     const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -471,6 +660,7 @@ const WorkflowAnalyticsPage = () => {
     // Visão Detalhada States
     const [detailSearch, setDetailSearch] = useState('');
     const [detailSort, setDetailSort] = useState({ column: 'docNum', direction: 'asc' });
+    const [activeExplanation, setActiveExplanation] = useState(null);
 
     // Column Filters States
     const [colFilters, setColFilters] = useState({
@@ -1614,32 +1804,95 @@ const WorkflowAnalyticsPage = () => {
                         <div className="space-y-6">
                             {/* Metrics Cards */}
                             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Processos</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Processos</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('total_processos')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-2xl font-black text-slate-800 mt-1">{stats.total}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Em Andamento</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Em Andamento</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('em_andamento')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-2xl font-black text-amber-600 mt-1">{stats.active}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Concluídos</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Concluídos</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('concluidos')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-2xl font-black text-emerald-600 mt-1">{stats.completed}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Em atraso</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Em atraso</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('em_atraso')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-2xl font-black text-rose-600 mt-1">{stats.delayed}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm col-span-1 lg:col-span-2">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valor total em processos abertos</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm col-span-1 lg:col-span-2 relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valor total em processos abertos</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('valor_processos_abertos')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-indigo-700 mt-1 font-mono">{formatKwanza(stats.openProcessValue)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prazo Médio Total</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prazo Médio Total</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('prazo_medio_total')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-xl font-black text-slate-800 mt-1">{stats.avgCycleTimeText}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Parado Etapa Atual</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Parado Etapa Atual</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('parado_etapa_atual')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-xl font-black text-rose-600 mt-1">{stats.avgTimeStoppedText}</div>
                                 </div>
                             </div>
@@ -1655,7 +1908,16 @@ const WorkflowAnalyticsPage = () => {
                             {/* Charts Grid */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5"><FaChartBar /> Distribuição dos processos por etapa</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5"><FaChartBar /> Distribuição dos processos por etapa</h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('grafico_etapas')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
                                     <div className="h-72">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={stageDistributionData} margin={{ top: 20, right: 30, left: -10, bottom: 5 }}>
@@ -1670,7 +1932,16 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5"><FaClock /> Tempo médio por etapa (em dias)</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5"><FaClock /> Tempo médio por etapa (em dias)</h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('grafico_tempo_etapa')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
                                     <div className="h-72">
                                         {avgTimePerStageData.every(d => d['Dias Médios'] === 0) ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -1721,9 +1992,18 @@ const WorkflowAnalyticsPage = () => {
                         <div className="space-y-6">
                             {/* Logistics KPI Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-row items-center justify-between">
-                                    <div>
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prazo Médio da Importação</div>
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-row items-center justify-between relative">
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prazo Médio da Importação</div>
+                                            <button 
+                                                onClick={() => setActiveExplanation('prazo_medio_total')}
+                                                className="text-slate-300 hover:text-indigo-600 transition-colors mr-2"
+                                                title="Ver fórmula e origem"
+                                            >
+                                                <FaInfoCircle className="text-[10px]" />
+                                            </button>
+                                        </div>
                                         <div className="text-2xl font-black text-indigo-600 mt-1">
                                             {logisticsMetrics.avgLogisticsCycle}
                                         </div>
@@ -1737,9 +2017,18 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-row items-center justify-between">
-                                    <div>
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tempo Médio de Grupagem</div>
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-row items-center justify-between relative">
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tempo Médio de Grupagem</div>
+                                            <button 
+                                                onClick={() => setActiveExplanation('tempo_grupagem')}
+                                                className="text-slate-300 hover:text-indigo-600 transition-colors mr-2"
+                                                title="Ver fórmula e origem"
+                                            >
+                                                <FaInfoCircle className="text-[10px]" />
+                                            </button>
+                                        </div>
                                         <div className="text-2xl font-black text-amber-600 mt-1">{logisticsMetrics.avgGrupagem}</div>
                                         <p className="text-[9px] text-slate-400 mt-0.5">Tempo aguardando no lote/grupagem</p>
                                     </div>
@@ -1748,9 +2037,18 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-row items-center justify-between">
-                                    <div>
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tempo na Alfândega</div>
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-row items-center justify-between relative">
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tempo na Alfândega</div>
+                                            <button 
+                                                onClick={() => setActiveExplanation('tempo_alfandega')}
+                                                className="text-slate-300 hover:text-indigo-600 transition-colors mr-2"
+                                                title="Ver fórmula e origem"
+                                            >
+                                                <FaInfoCircle className="text-[10px]" />
+                                            </button>
+                                        </div>
                                         <div className="text-2xl font-black text-rose-600 mt-1">{logisticsMetrics.avgAlfandega}</div>
                                         <p className="text-[9px] text-slate-400 mt-0.5">Entrada na Inspeção até Despacho/Entrega</p>
                                     </div>
@@ -1763,7 +2061,16 @@ const WorkflowAnalyticsPage = () => {
                             {/* Charts & Rankings */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm"><FaTruck className="inline mr-1 text-slate-500" /> Tempo Médio por Trecho (Portugal → Bolloré → Angola → RCS)</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm"><FaTruck className="inline mr-1 text-slate-500" /> Tempo Médio por Trecho (Portugal → Bolloré → Angola → RCS)</h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('tempo_medio_trecho')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
                                     <div className="h-64">
                                         {transitSegmentsData.every(d => d['Dias'] === 0) ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -1782,7 +2089,16 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm"><FaUserShield className="inline mr-1 text-slate-500" /> Média de Dias por Despachante</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm"><FaUserShield className="inline mr-1 text-slate-500" /> Média de Dias por Despachante</h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('dias_medio_despachante')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
                                     <div className="h-64">
                                         {logisticsAverages.broker.length === 0 ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -1801,7 +2117,16 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm">Dias Médios por Tipo de Carga</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm">Dias Médios por Tipo de Carga</h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('dias_medio_tipo_carga')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[11px]" />
+                                        </button>
+                                    </div>
                                     <div className="h-64">
                                         {logisticsAverages.cargo.length === 0 ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -1820,7 +2145,16 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm">Dias Médios por Fornecedor</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm">Dias Médios por Fornecedor</h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('dias_medio_fornecedor')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[11px]" />
+                                        </button>
+                                    </div>
                                     <div className="h-64">
                                         {logisticsAverages.supplier.length === 0 ? (
                                             <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Não existem processos com datas suficientes para calcular este indicador.</div>
@@ -1839,7 +2173,16 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm lg:col-span-2">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm">Top 10 Processos Mais Demorados</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm">Top 10 Processos Mais Demorados</h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('top_10_demorados')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
                                     <div className="overflow-x-auto max-h-80 scrollbar-thin">
                                         <table className="table table-compact w-full text-xs">
                                             <thead>
@@ -1883,47 +2226,137 @@ const WorkflowAnalyticsPage = () => {
                         <div className="space-y-6">
                             {/* Financial Cards Grid */}
                             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mercadoria (FOB)</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mercadoria (FOB)</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('fob')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-slate-800 mt-1 font-mono">{formatKwanza(financialData.totalMercadoria)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frete Total</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frete Total</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('frete')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalFrete)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custos Adicionais</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custos Adicionais</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('custos_adicionais')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-amber-600 mt-1 font-mono">{formatKwanza(financialData.totalCustosAdicionais)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RDF Total</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RDF Total</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('rdf')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalRDF)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IVA Total</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IVA Total</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('iva')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalIVA)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Direitos Aduaneiros</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Direitos Aduaneiros</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('direitos')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalDireitos)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Serviços Despachante</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Serviços Despachante</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('despachante')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalDespachante)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custo de Importação</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custo de Importação</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('custo_importacao')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-lg font-black text-[#4f46e5] mt-1 font-mono">{formatKwanza(financialData.totalImportacao)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Fator de Nacionalização</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Fator de Nacionalização</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('fator_nacionalizacao')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className="text-2xl font-black text-indigo-700 mt-1 font-mono">
                                         {financialData.avgCoef !== 'N/D' ? `${financialData.avgCoef}x` : 'N/D'}
                                     </div>
                                     <div className="text-[9px] text-slate-400">Min: {financialData.minCoef}x | Max: {financialData.maxCoef}x</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Desvio Cambial</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Desvio Cambial</div>
+                                        <button 
+                                            onClick={() => setActiveExplanation('desvio_cambial')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-[10px]" />
+                                        </button>
+                                    </div>
                                     <div className={`text-lg font-black mt-1 font-mono ${financialData.totalDesvioCambial > 0 ? 'text-rose-600' : financialData.totalDesvioCambial < 0 ? 'text-emerald-600' : 'text-slate-800'}`}>
                                         {formatKwanza(financialData.totalDesvioCambial)}
                                     </div>
@@ -1936,9 +2369,18 @@ const WorkflowAnalyticsPage = () => {
                             {/* Charts & Tables Row 1: Donut and Waterfall */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
-                                        <FaChartPie /> Composição dos Custos Adicionais da Importação
-                                    </h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5">
+                                            <FaChartPie /> Composição dos Custos Adicionais da Importação
+                                        </h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('grafico_donut_custos')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
                                     <div className="h-72 flex items-center justify-center">
                                         {financialData.costComposition.length === 0 ? (
                                             <div className="text-slate-400 italic text-xs">Não existem processos com dados suficientes para calcular este indicador.</div>
@@ -1967,9 +2409,18 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
-                                        <FaChartLine /> Análise de Acúmulo de Custo (Cascata)
-                                    </h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5">
+                                            <FaChartLine /> Análise de Acúmulo de Custo (Cascata)
+                                        </h3>
+                                        <button 
+                                            onClick={() => setActiveExplanation('grafico_waterfall')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
                                     <div className="h-72">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={waterfallData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -2300,6 +2751,65 @@ const WorkflowAnalyticsPage = () => {
                     )}
                 </div>
             )}
+            {/* Modal de Explicação de Métrica (CFO Auditoria) */}
+            {activeExplanation && (() => {
+                const exp = METRIC_EXPLANATIONS[activeExplanation];
+                if (!exp) return null;
+                return (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full shadow-2xl p-6 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                            
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+                                        <FaInfoCircle className="text-xl" />
+                                    </div>
+                                    <h3 className="font-extrabold text-slate-800 text-lg leading-tight">{exp.title}</h3>
+                                </div>
+                                <button 
+                                    onClick={() => setActiveExplanation(null)}
+                                    className="btn btn-sm btn-circle btn-ghost text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Fórmula de Cálculo / Regra</h4>
+                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-mono text-xs text-slate-700 font-bold leading-relaxed break-words">
+                                        {exp.formula}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Campos de Origem dos Dados</h4>
+                                    <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-900 font-semibold leading-relaxed">
+                                        {exp.source}
+                                    </div>
+                                </div>
+
+                                <div className="pt-2 border-t border-slate-100">
+                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Significado para a Diretoria (CFO)</h4>
+                                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                        {exp.description}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 flex justify-end">
+                                <button 
+                                    onClick={() => setActiveExplanation(null)}
+                                    className="btn btn-sm bg-indigo-600 hover:bg-indigo-700 border-none text-white font-bold px-6 rounded-xl shadow-sm"
+                                >
+                                    Fechar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 };
