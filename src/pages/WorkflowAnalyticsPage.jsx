@@ -14,7 +14,8 @@ import {
     FaArrowLeft,
     FaList,
     FaSearch,
-    FaExternalLinkAlt
+    FaExternalLinkAlt,
+    FaInfoCircle
 } from 'react-icons/fa';
 import { 
     ResponsiveContainer, 
