@@ -69,11 +69,50 @@ const getDocumentNumber = (doc) => {
 };
 
 const parseCurrency = (val) => {
-    if (!val) return 0;
+    if (val === undefined || val === null) return 0;
     if (typeof val === 'number') return val;
-    const clean = String(val).replace(/[^0-9.,-]/g, '').replace(/\./g, '').replace(',', '.');
-    const num = parseFloat(clean);
-    return isNaN(num) ? 0 : num;
+    const str = String(val).trim();
+    if (!str) return 0;
+    
+    // Se a string contém tanto ponto quanto vírgula
+    if (str.includes('.') && str.includes(',')) {
+        const lastDot = str.lastIndexOf('.');
+        const lastComma = str.lastIndexOf(',');
+        if (lastDot > lastComma) {
+            const clean = str.replace(/[^0-9.-]/g, '');
+            return parseFloat(clean) || 0;
+        } else {
+            const clean = str.replace(/\./g, '').replace(',', '.').replace(/[^0-9.-]/g, '');
+            return parseFloat(clean) || 0;
+        }
+    }
+    
+    // Se contém apenas vírgula
+    if (str.includes(',')) {
+        const commaCount = (str.match(/,/g) || []).length;
+        if (commaCount === 1) {
+            const clean = str.replace(',', '.').replace(/[^0-9.-]/g, '');
+            return parseFloat(clean) || 0;
+        } else {
+            const clean = str.replace(/,/g, '').replace(/[^0-9.-]/g, '');
+            return parseFloat(clean) || 0;
+        }
+    }
+    
+    // Se contém apenas ponto
+    if (str.includes('.')) {
+        const dotCount = (str.match(/\./g) || []).length;
+        if (dotCount === 1) {
+            const clean = str.replace(/[^0-9.-]/g, '');
+            return parseFloat(clean) || 0;
+        } else {
+            const clean = str.replace(/\./g, '').replace(/[^0-9.-]/g, '');
+            return parseFloat(clean) || 0;
+        }
+    }
+    
+    const clean = str.replace(/[^0-9.-]/g, '');
+    return parseFloat(clean) || 0;
 };
 
 const formatKwanza = (value) => {
@@ -424,6 +463,7 @@ const WorkflowAnalyticsPage = () => {
     const [selectedDespachante, setSelectedDespachante] = useState('all');
     const [selectedFornecedor, setSelectedFornecedor] = useState('all');
     const [selectedTipoCarga, setSelectedTipoCarga] = useState('all');
+    const [selectedViaTransporte, setSelectedViaTransporte] = useState('all');
     const [selectedTransportador, setSelectedTransportador] = useState('all');
     const [selectedEstado, setSelectedEstado] = useState('all');
     const [selectedResponsavel, setSelectedResponsavel] = useState('all');
@@ -756,6 +796,11 @@ const WorkflowAnalyticsPage = () => {
                 const val = getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA');
                 if (val !== selectedTipoCarga) return false;
             }
+            // Via de Transporte (Modal)
+            if (selectedViaTransporte !== 'all') {
+                const val = findFieldVal(doc, ['TIPO', 'VIA', 'MODAL', 'MEIO_TRANSPORTE', 'VIA_TRANSPORTE']);
+                if (val !== selectedViaTransporte) return false;
+            }
             // Transportador
             if (selectedTransportador !== 'all') {
                 const val = getDocFieldValue(doc, 'TRANSPORTADOR');
@@ -775,7 +820,7 @@ const WorkflowAnalyticsPage = () => {
 
             return true;
         });
-    }, [documents, documentProgress, selectedDespachante, selectedFornecedor, selectedTipoCarga, selectedTransportador, selectedEstado, selectedResponsavel]);
+    }, [documents, documentProgress, selectedDespachante, selectedFornecedor, selectedTipoCarga, selectedViaTransporte, selectedTransportador, selectedEstado, selectedResponsavel]);
 
     // --- Calculated Details List ---
     const detailedProcesses = useMemo(() => {
@@ -798,22 +843,32 @@ const WorkflowAnalyticsPage = () => {
             const fIva = parseCurrency(getDocFieldValue(doc, 'VALOR_IVA_IMPORTACAO') || getDocFieldValue(doc, 'IVA_IMPORTACAO') || getDocFieldValue(doc, 'IVA'));
             const fDireitos = parseCurrency(getDocFieldValue(doc, 'DIREITOS_ALFANDEGARIOS') || getDocFieldValue(doc, 'DIREITO_ALFANDEGARIOS') || getDocFieldValue(doc, 'DIREITO_ALFAND'));
             const fServicosDespachante = parseCurrency(getDocFieldValue(doc, 'SERVICOS_DESPACHANTES') || getDocFieldValue(doc, 'SERVICO_DESPACHANTE'));
+            
+            // Exchange Rates & Conversions
+            const fValorCambial = parseCurrency(findFieldVal(doc, ['VALOR_CAMBIAL', 'VALOR_CAMBIO', 'CAMBIO', 'TAXA_CAMBIO', 'VALOR CAMBIAL']));
+            const fValorCambialFC = parseCurrency(findFieldVal(doc, ['VAOR_CAMBIAL_FC', 'VALOR_CAMBIAL_FC', 'CAMBIO_FC', 'TAXA_CAMBIO_FC', 'Vaor Cambial_FC']));
+            
+            const fMercKz = fMerc * (fValorCambial || 1);
+            const fFreteKz = fFrete * (fValorCambial || 1);
+            const fCustosAdicionaisKz = fCustosAdicionais * (fValorCambial || 1);
+            const fDesvioCambial = (fValorCambial && fValorCambialFC) ? fMerc * (fValorCambial - fValorCambialFC) : 0;
+            
+            const fCustoImportacao = fMercKz + fRdf + fServicosDespachante + fFreteKz + fCustosAdicionaisKz;
 
             // Stage evaluation
             const stageIdx = evaluateActiveStage(doc, prog.activeTaskName, prog.isFinished);
             const isFinished = stageIdx === 6 || prog.isFinished;
             const stageName = getStageName(stageIdx);
 
-            // Coeficiente calculation
+            // Coeficiente calculation (Landing Factor)
             let coefVal = 'N/D';
             let numericCoef = 0;
-            if (fMerc <= 0) {
+            if (fMercKz <= 0) {
                 coefVal = 'Sem valor da mercadoria';
             } else {
-                const totalCosts = fFrete + fCustosAdicionais + fServicosDespachante + fDireitos + fIva + fRdf;
-                if (totalCosts > 0) {
-                    numericCoef = totalCosts / fMerc;
-                    coefVal = numericCoef.toFixed(2);
+                if (fCustoImportacao > 0) {
+                    numericCoef = fCustoImportacao / fMercKz;
+                    coefVal = numericCoef.toFixed(2) + 'x';
                 }
             }
 
@@ -843,6 +898,8 @@ const WorkflowAnalyticsPage = () => {
                 qualidade = 'Falta custo final';
             }
 
+            const viaTransporte = findFieldVal(doc, ['TIPO', 'VIA', 'MODAL', 'MEIO_TRANSPORTE', 'VIA_TRANSPORTE']) || '-';
+
             return {
                 id: doc.Id,
                 docNum,
@@ -852,6 +909,7 @@ const WorkflowAnalyticsPage = () => {
                 despachante: getDocFieldValue(doc, 'DESPACHANTE') || getDocFieldValue(doc, 'DESPACHADOR') || '-',
                 fornecedor: getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA') || '-',
                 tipoCarga: getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-',
+                viaTransporte,
                 dtBollore: dtBollore ? dtBollore.toLocaleDateString('pt-AO') : '-',
                 dtEnvio: dtEnvio ? dtEnvio.toLocaleDateString('pt-AO') : '-',
                 dtChegada: dtChegada ? dtChegada.toLocaleDateString('pt-AO') : '-',
@@ -862,13 +920,18 @@ const WorkflowAnalyticsPage = () => {
                 dtChegadaRaw: dtChegada,
                 dtSaidaAlfandegaRaw: dtSaidaAlfandega,
                 dtEntregaRCSRaw: dtEntregaRCS,
-                valMercadoria: fMerc,
-                frete: fFrete,
-                custosAdicionais: fCustosAdicionais,
+                valMercadoria: fMercKz, // FOB in Kz
+                valMercadoriaOrig: fMerc, // FOB in foreign currency
+                frete: fFreteKz, // Frete in Kz
+                freteOrig: fFrete,
+                custosAdicionais: fCustosAdicionaisKz, // Despesas Extras in Kz
+                custosAdicionaisOrig: fCustosAdicionais,
                 rdf: fRdf,
                 iva: fIva,
                 direitos: fDireitos,
                 servicosDespachante: fServicosDespachante,
+                desvioCambial: fDesvioCambial,
+                custoImportacao: fCustoImportacao,
                 coeficienteText: coefVal,
                 coeficienteNumeric: numericCoef,
                 diasTotais,
@@ -879,6 +942,33 @@ const WorkflowAnalyticsPage = () => {
             };
         });
     }, [filteredDocuments, documentProgress]);
+
+    const despachantesList = useMemo(() => {
+        const set = new Set();
+        documents.forEach(d => {
+            const val = getDocFieldValue(d, 'DESPACHANTE') || getDocFieldValue(d, 'DESPACHADOR');
+            if (val) set.add(val.trim());
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const viasList = useMemo(() => {
+        const set = new Set();
+        documents.forEach(d => {
+            const val = findFieldVal(d, ['TIPO', 'VIA', 'MODAL', 'MEIO_TRANSPORTE', 'VIA_TRANSPORTE']);
+            if (val) set.add(val.trim());
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const tiposCargaList = useMemo(() => {
+        const set = new Set();
+        documents.forEach(d => {
+            const val = getDocFieldValue(d, 'TIPO_DE_CARGA') || getDocFieldValue(d, 'TIPO_CARGA');
+            if (val) set.add(val.trim());
+        });
+        return Array.from(set).sort();
+    }, [documents]);
 
     // --- Sorted & Filtered Details ---
     const searchedAndSortedDetails = useMemo(() => {
@@ -1193,6 +1283,7 @@ const WorkflowAnalyticsPage = () => {
         let totalDireitos = 0;
         let totalIVA = 0;
         let totalRDF = 0;
+        let totalDesvioCambial = 0;
 
         const coeficients = [];
         const monthlyEvolutionMap = {};
@@ -1205,12 +1296,10 @@ const WorkflowAnalyticsPage = () => {
             totalDireitos += p.direitos;
             totalIVA += p.iva;
             totalRDF += p.rdf;
+            totalDesvioCambial += p.desvioCambial;
 
-            if (p.valMercadoria > 0) {
-                const totalCosts = p.frete + p.custosAdicionais + p.servicosDespachante + p.direitos + p.iva + p.rdf;
-                if (totalCosts > 0) {
-                    coeficients.push(totalCosts / p.valMercadoria);
-                }
+            if (p.coeficienteNumeric > 0) {
+                coeficients.push(p.coeficienteNumeric);
             }
 
             if (p.dtBolloreRaw) {
@@ -1223,12 +1312,13 @@ const WorkflowAnalyticsPage = () => {
                     };
                 }
                 monthlyEvolutionMap[monthLabel].fob += p.valMercadoria;
-                monthlyEvolutionMap[monthLabel].custos += (p.frete + p.custosAdicionais + p.servicosDespachante + p.direitos + p.iva + p.rdf);
+                monthlyEvolutionMap[monthLabel].custos += (p.rdf + p.servicosDespachante + p.frete + p.custosAdicionais);
             }
         });
 
-        const totalCustos = totalFrete + totalCustosAdicionais + totalDespachante + totalDireitos + totalIVA + totalRDF;
-        const totalImportacao = totalMercadoria + totalCustos;
+        // Custo de Importação = FOB_Kz + Montante_RDF + Serviços Despachantes + Frete Total + Despesas Extras
+        const totalImportacao = totalMercadoria + totalRDF + totalDespachante + totalFrete + totalCustosAdicionais;
+        const totalCustos = totalRDF + totalDespachante + totalFrete + totalCustosAdicionais;
 
         const avgCoef = coeficients.length > 0 ? (coeficients.reduce((a, b) => a + b, 0) / coeficients.length) : 0;
         const minCoef = coeficients.length > 0 ? Math.min(...coeficients) : 0;
@@ -1237,15 +1327,13 @@ const WorkflowAnalyticsPage = () => {
         const costComposition = [
             { name: 'Frete', value: totalFrete },
             { name: 'Serviços Despachante', value: totalDespachante },
-            { name: 'Direitos Aduaneiros', value: totalDireitos },
-            { name: 'IVA', value: totalIVA },
-            { name: 'RDF', value: totalRDF },
+            { name: 'RDF (Impostos)', value: totalRDF },
             { name: 'Outros Custos', value: totalCustosAdicionais }
         ].filter(item => item.value > 0);
 
         const monthlyEvolution = Object.keys(monthlyEvolutionMap).sort().map(m => {
             const data = monthlyEvolutionMap[m];
-            const coeficiente = data.fob > 0 ? (data.custos / data.fob) : 0;
+            const coeficiente = data.fob > 0 ? ((data.fob + data.custos) / data.fob) : 0;
             return {
                 periodo: m,
                 'Valor FOB': Math.round(data.fob),
@@ -1280,7 +1368,7 @@ const WorkflowAnalyticsPage = () => {
                 fornecedor: p.fornecedor,
                 despachante: p.despachante,
                 valMercadoria: p.valMercadoria,
-                custoTotal: p.frete + p.custosAdicionais + p.servicosDespachante + p.direitos + p.iva + p.rdf,
+                custoTotal: p.custoImportacao,
                 coeficienteText: p.coeficienteText
             }))
             .sort((a, b) => b.custoTotal - a.custoTotal);
@@ -1295,6 +1383,7 @@ const WorkflowAnalyticsPage = () => {
             totalRDF,
             totalCustos,
             totalImportacao,
+            totalDesvioCambial,
             avgCoef: avgCoef > 0 ? avgCoef.toFixed(2) : 'N/D',
             minCoef: minCoef > 0 ? minCoef.toFixed(2) : 'N/D',
             maxCoef: maxCoef > 0 ? maxCoef.toFixed(2) : 'N/D',
@@ -1305,6 +1394,24 @@ const WorkflowAnalyticsPage = () => {
             supplierCoef: mapCoefAvg(supplierCoef)
         };
     }, [detailedProcesses]);
+
+    const waterfallData = useMemo(() => {
+        const fob = financialData.totalMercadoria;
+        const frete = financialData.totalFrete;
+        const rdf = financialData.totalRDF;
+        const desp = financialData.totalDespachante;
+        const outros = financialData.totalCustosAdicionais;
+        const total = financialData.totalImportacao;
+
+        return [
+            { name: 'FOB (Base)', border: 0, value: fob, display: fob, color: '#4f46e5' },
+            { name: 'Frete', border: fob, value: frete, display: frete, color: '#10b981' },
+            { name: 'RDF (Impostos)', border: fob + frete, value: rdf, display: rdf, color: '#f59e0b' },
+            { name: 'Despachante', border: fob + frete + rdf, value: desp, display: desp, color: '#ec4899' },
+            { name: 'Outros Custos', border: fob + frete + rdf + desp, value: outros, display: outros, color: '#8b5cf6' },
+            { name: 'Custo Importação', border: 0, value: total, display: total, color: '#312e81' }
+        ];
+    }, [financialData]);
 
     // --- 4. Performance dos Despachantes Metrics ---
     const despachantesPerformance = useMemo(() => {
@@ -1389,7 +1496,7 @@ const WorkflowAnalyticsPage = () => {
                             </button>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-3 max-w-xs">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                             {/* Período */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase">Data Inicial</label>
@@ -1409,6 +1516,51 @@ const WorkflowAnalyticsPage = () => {
                                     value={dateRange[1]}
                                     onChange={(e) => setDateRange([dateRange[0], e.target.value])}
                                 />
+                            </div>
+
+                            {/* Despachante */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase">Despachante</label>
+                                <select 
+                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
+                                    value={selectedDespachante}
+                                    onChange={(e) => setSelectedDespachante(e.target.value)}
+                                >
+                                    <option value="all">Todos os Despachantes</option>
+                                    {despachantesList.map(d => (
+                                        <option key={d} value={d}>{d}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Via (Modal) */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase">Via (Modal)</label>
+                                <select 
+                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
+                                    value={selectedViaTransporte}
+                                    onChange={(e) => setSelectedViaTransporte(e.target.value)}
+                                >
+                                    <option value="all">Todas as Vias</option>
+                                    {viasList.map(v => (
+                                        <option key={v} value={v}>{v}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Tipo de Carga */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase">Tipo de Carga</label>
+                                <select 
+                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
+                                    value={selectedTipoCarga}
+                                    onChange={(e) => setSelectedTipoCarga(e.target.value)}
+                                >
+                                    <option value="all">Todos os Tipos</option>
+                                    {tiposCargaList.map(t => (
+                                        <option key={t} value={t}>{t}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -1763,17 +1915,30 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custo de Importação</div>
                                     <div className="text-lg font-black text-[#4f46e5] mt-1 font-mono">{formatKwanza(financialData.totalImportacao)}</div>
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm col-span-2 lg:col-span-1 bg-indigo-50 border-indigo-200">
-                                    <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Coeficiente Médio</div>
-                                    <div className="text-2xl font-black text-indigo-700 mt-1 font-mono">{financialData.avgCoef}</div>
-                                    <div className="text-[9px] text-slate-400">Min: {financialData.minCoef} | Max: {financialData.maxCoef}</div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
+                                    <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Fator de Nacionalização</div>
+                                    <div className="text-2xl font-black text-indigo-700 mt-1 font-mono">
+                                        {financialData.avgCoef !== 'N/D' ? `${financialData.avgCoef}x` : 'N/D'}
+                                    </div>
+                                    <div className="text-[9px] text-slate-400">Min: {financialData.minCoef}x | Max: {financialData.maxCoef}x</div>
+                                </div>
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Desvio Cambial</div>
+                                    <div className={`text-lg font-black mt-1 font-mono ${financialData.totalDesvioCambial > 0 ? 'text-rose-600' : financialData.totalDesvioCambial < 0 ? 'text-emerald-600' : 'text-slate-800'}`}>
+                                        {formatKwanza(financialData.totalDesvioCambial)}
+                                    </div>
+                                    <div className="text-[9px] text-slate-400">
+                                        {financialData.totalDesvioCambial > 0 ? 'Custo extra por depreciação' : financialData.totalDesvioCambial < 0 ? 'Economia por valorização' : 'Sem desvio'}
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Cost Composition Chart */}
+                            {/* Charts & Tables Row 1: Donut and Waterfall */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5"><FaChartPie /> Composição dos custos da importação</h3>
+                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
+                                        <FaChartPie /> Composição dos Custos Adicionais da Importação
+                                    </h3>
                                     <div className="h-72 flex items-center justify-center">
                                         {financialData.costComposition.length === 0 ? (
                                             <div className="text-slate-400 italic text-xs">Não existem processos com dados suficientes para calcular este indicador.</div>
@@ -1802,13 +1967,40 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
 
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5"><FaDollarSign /> Tabela Resumo Financeiro</h3>
+                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
+                                        <FaChartLine /> Análise de Acúmulo de Custo (Cascata)
+                                    </h3>
+                                    <div className="h-72">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={waterfallData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                                                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `Kz ${(v/1e6).toFixed(1)}M`} />
+                                                <Tooltip formatter={(value, name, props) => [formatKwanza(props.payload.display), props.payload.name]} />
+                                                <Bar dataKey="border" stackId="a" fill="transparent" />
+                                                <Bar dataKey="value" stackId="a">
+                                                    {waterfallData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Tables Row 2: Summary Table */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm lg:col-span-1">
+                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
+                                        <FaDollarSign /> Tabela Resumo Financeiro
+                                    </h3>
                                     <div className="overflow-x-auto">
                                         <table className="table table-compact w-full text-xs">
                                             <thead>
                                                 <tr>
                                                     <th className="bg-slate-50 text-slate-500 font-bold">Categoria de Custo</th>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right">Valor</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right">Valor (Kz)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1844,38 +2036,37 @@ const WorkflowAnalyticsPage = () => {
                                         </table>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Monthly Cost Evolution Chart */}
-                            <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm mt-6">
-                                <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
-                                    <FaChartLine /> Evolução dos custos por mês (Valor FOB vs Custos adicionais vs Coeficiente)
-                                </h3>
-                                <div className="h-80">
-                                    {financialData.monthlyEvolution.length === 0 ? (
-                                        <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">
-                                            Não existem processos com datas suficientes para calcular este indicador.
-                                        </div>
-                                    ) : (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <ComposedChart data={financialData.monthlyEvolution} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                                                <XAxis dataKey="periodo" stroke="#94a3b8" fontSize={11} />
-                                                {/* Left Y-Axis for Values */}
-                                                <YAxis yAxisId="left" stroke="#94a3b8" fontSize={11} label={{ value: 'Valor (Kz)', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' } }} />
-                                                {/* Right Y-Axis for Coefficient */}
-                                                <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={11} label={{ value: 'Coeficiente', angle: 90, position: 'insideRight', style: { fill: '#10b981', fontSize: 10, fontWeight: 'bold' } }} />
-                                                <Tooltip formatter={(value, name) => {
-                                                    if (name === 'Coeficiente') return value;
-                                                    return formatKwanza(value);
-                                                }} />
-                                                <Legend />
-                                                <Bar yAxisId="left" dataKey="Valor FOB" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={24} />
-                                                <Bar yAxisId="left" dataKey="Custos Adicionais" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={24} />
-                                                <Line yAxisId="right" type="monotone" dataKey="Coeficiente" stroke="#10b981" strokeWidth={3} activeDot={{ r: 8 }} />
-                                            </ComposedChart>
-                                        </ResponsiveContainer>
-                                    )}
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm lg:col-span-2">
+                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
+                                        <FaChartLine /> Evolução dos custos por mês (Valor FOB vs Custos adicionais vs Coeficiente)
+                                    </h3>
+                                    <div className="h-80">
+                                        {financialData.monthlyEvolution.length === 0 ? (
+                                            <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">
+                                                Não existem processos com datas suficientes para calcular este indicador.
+                                            </div>
+                                        ) : (
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <ComposedChart data={financialData.monthlyEvolution} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                                    <XAxis dataKey="periodo" stroke="#94a3b8" fontSize={11} />
+                                                    {/* Left Y-Axis for Values */}
+                                                    <YAxis yAxisId="left" stroke="#94a3b8" fontSize={11} label={{ value: 'Valor (Kz)', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' } }} />
+                                                    {/* Right Y-Axis for Coefficient */}
+                                                    <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={11} label={{ value: 'Coeficiente', angle: 90, position: 'insideRight', style: { fill: '#10b981', fontSize: 10, fontWeight: 'bold' } }} />
+                                                    <Tooltip formatter={(value, name) => {
+                                                        if (name === 'Coeficiente') return value;
+                                                        return formatKwanza(value);
+                                                    }} />
+                                                    <Legend />
+                                                    <Bar yAxisId="left" dataKey="Valor FOB" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={24} />
+                                                    <Bar yAxisId="left" dataKey="Custos Adicionais" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={24} />
+                                                    <Line yAxisId="right" type="monotone" dataKey="Coeficiente" stroke="#10b981" strokeWidth={3} activeDot={{ r: 8 }} />
+                                                </ComposedChart>
+                                            </ResponsiveContainer>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
