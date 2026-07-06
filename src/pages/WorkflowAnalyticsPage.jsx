@@ -669,6 +669,36 @@ const METRIC_EXPLANATIONS = {
         formula: "Os 10 processos ativos ou concluídos com maior número de dias totais decorridos",
         source: "Ranking ordenado decrescente por (Data Fim / Hoje - Data Início)",
         description: "Visão executiva prioritária sobre os desvios extremos de prazo para análise de causa raiz."
+    },
+    tempo_medio_desembaraco: {
+        title: "Tempo Médio Desembaraço",
+        formula: "Média de (Data Saída Alfândega - Data Chegada Angola) dos processos concluídos",
+        source: "Campos DATA_CHEGADA e DATA_SAIDA_ALFANDEGA no DocuWare",
+        description: "Tempo médio gasto no processo de desembaraço aduaneiro por este despachante."
+    },
+    tempo_medio_entrega: {
+        title: "Tempo Médio até Entrega",
+        formula: "Média de (Data de Entrega na RCS - Data Saída Alfândega) dos processos concluídos",
+        source: "Campos DATA_SAIDA_ALFANDEGA e DATA_ENTREGUE no DocuWare",
+        description: "Tempo médio gasto no transporte do porto/aeroporto até a entrega final na RCS."
+    },
+    valor_movimentado: {
+        title: "Valor Movimentado",
+        formula: "Soma do Valor FOB em Kwanza das mercadorias de processos atribuídos",
+        source: "Campo VALOR_FOB / FOB / VALOR_MERCADORIA e taxa cambial no DocuWare",
+        description: "Exposição financeira total sob responsabilidade deste despachante."
+    },
+    custo_medio_processo: {
+        title: "Custo Médio / Processo",
+        formula: "Média de (Custo de Importação - Valor FOB) por processo concluído",
+        source: "Componentes adicionais (Frete, Serviços Despachante, Direitos, IVA, RDF, Outros Custos)",
+        description: "Média de custos adicionais incidentes para nacionalização e transporte sob este despachante."
+    },
+    coeficiente_medio: {
+        title: "Coeficiente Médio",
+        formula: "Média dos coeficientes individuais dos processos concluídos (Custo Total / Valor FOB)",
+        source: "Divisão do custo consolidado pelo valor FOB de cada processo",
+        description: "Média do fator de nacionalização (Landing Factor) alcançado nos processos deste despachante."
     }
 };
 
@@ -2468,18 +2498,78 @@ const WorkflowAnalyticsPage = () => {
                             <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
                                 <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5"><FaUserShield /> Performance dos Despachantes (Volume, Prazos e Custos)</h3>
                                 
-                                <div className="overflow-x-auto max-h-96 scrollbar-thin">
+                                <div className="overflow-x-auto max-h-[600px] scrollbar-thin">
                                     <table className="table w-full text-xs">
                                         <thead>
                                             <tr>
                                                 <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-normal">Despachante</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Processos<br />Atribuídos</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Processos<br />Concluídos</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Tempo Médio<br />Desembaraço</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Tempo Médio<br />até Entrega</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Valor<br />Movimentado</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Custo Médio /<br />Processo</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal">Coeficiente<br />Médio</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal relative">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <span>Tempo Médio<br />Desembaraço</span>
+                                                        <button 
+                                                            onClick={() => setActiveExplanation(activeExplanation === 'tempo_medio_desembaraco' ? null : 'tempo_medio_desembaraco')}
+                                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                                            title="Ver fórmula e origem"
+                                                        >
+                                                            <FaInfoCircle className="text-[10px]" />
+                                                        </button>
+                                                    </div>
+                                                    <CardInfoTooltip metricKey="tempo_medio_desembaraco" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
+                                                </th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal relative">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <span>Tempo Médio<br />até Entrega</span>
+                                                        <button 
+                                                            onClick={() => setActiveExplanation(activeExplanation === 'tempo_medio_entrega' ? null : 'tempo_medio_entrega')}
+                                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                                            title="Ver fórmula e origem"
+                                                        >
+                                                            <FaInfoCircle className="text-[10px]" />
+                                                        </button>
+                                                    </div>
+                                                    <CardInfoTooltip metricKey="tempo_medio_entrega" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
+                                                </th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal relative">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <span>Valor<br />Movimentado</span>
+                                                        <button 
+                                                            onClick={() => setActiveExplanation(activeExplanation === 'valor_movimentado' ? null : 'valor_movimentado')}
+                                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                                            title="Ver fórmula e origem"
+                                                        >
+                                                            <FaInfoCircle className="text-[10px]" />
+                                                        </button>
+                                                    </div>
+                                                    <CardInfoTooltip metricKey="valor_movimentado" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
+                                                </th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal relative">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <span>Custo Médio /<br />Processo</span>
+                                                        <button 
+                                                            onClick={() => setActiveExplanation(activeExplanation === 'custo_medio_processo' ? null : 'custo_medio_processo')}
+                                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                                            title="Ver fórmula e origem"
+                                                        >
+                                                            <FaInfoCircle className="text-[10px]" />
+                                                        </button>
+                                                    </div>
+                                                    <CardInfoTooltip metricKey="custo_medio_processo" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
+                                                </th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 whitespace-normal relative">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <span>Coeficiente<br />Médio</span>
+                                                        <button 
+                                                            onClick={() => setActiveExplanation(activeExplanation === 'coeficiente_medio' ? null : 'coeficiente_medio')}
+                                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                                            title="Ver fórmula e origem"
+                                                        >
+                                                            <FaInfoCircle className="text-[10px]" />
+                                                        </button>
+                                                    </div>
+                                                    <CardInfoTooltip metricKey="coeficiente_medio" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
+                                                </th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-24 whitespace-normal">Ação</th>
                                             </tr>
                                         </thead>
