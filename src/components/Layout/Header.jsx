@@ -25,7 +25,7 @@ const Header = () => {
                                 className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#4f46e5] rounded-lg hover:bg-[#4338ca] transition-all shadow-sm"
                             >
                                 <FaBoxes className="text-[10px]" />
-                                <span>Visão Operacional</span>
+                                <span>Visão Geral</span>
                             </Link>
                         ) : (
                             <Link
