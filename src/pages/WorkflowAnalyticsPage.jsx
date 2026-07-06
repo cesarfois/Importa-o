@@ -2504,67 +2504,35 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
+                                {/* Ranking de Custos de Processos */}
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm lg:col-span-2">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
-                                        <FaChartLine /> Evolução dos custos por mês (Valor FOB vs Custos adicionais vs Coeficiente)
-                                    </h3>
-                                    <div className="h-80">
-                                        {financialData.monthlyEvolution.length === 0 ? (
-                                            <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">
-                                                Não existem processos com datas suficientes para calcular este indicador.
-                                            </div>
-                                        ) : (
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <ComposedChart data={financialData.monthlyEvolution} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
-                                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                                                    <XAxis dataKey="periodo" stroke="#94a3b8" fontSize={11} />
-                                                    {/* Left Y-Axis for Values */}
-                                                    <YAxis yAxisId="left" stroke="#94a3b8" fontSize={11} label={{ value: 'Valor (Kz)', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' } }} />
-                                                    {/* Right Y-Axis for Coefficient */}
-                                                    <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={11} label={{ value: 'Coeficiente', angle: 90, position: 'insideRight', style: { fill: '#10b981', fontSize: 10, fontWeight: 'bold' } }} />
-                                                    <Tooltip formatter={(value, name) => {
-                                                        if (name === 'Coeficiente') return value;
-                                                        return formatKwanza(value);
-                                                    }} />
-                                                    <Legend />
-                                                    <Bar yAxisId="left" dataKey="Valor FOB" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={24} />
-                                                    <Bar yAxisId="left" dataKey="Custos Adicionais" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={24} />
-                                                    <Line yAxisId="right" type="monotone" dataKey="Coeficiente" stroke="#10b981" strokeWidth={3} activeDot={{ r: 8 }} />
-                                                </ComposedChart>
-                                            </ResponsiveContainer>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Ranking de Custos de Processos */}
-                            <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                <h3 className="font-bold text-slate-700 mb-4 text-sm">Ranking de Processos com Maior Custo</h3>
-                                <div className="overflow-x-auto max-h-80 scrollbar-thin">
-                                    <table className="table table-compact w-full text-xs">
-                                        <thead>
-                                            <tr>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Processo</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Fornecedor</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Despachante</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Valor Mercadoria</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Custos Adicionais</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Coeficiente</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {financialData.processCostRanking.map((p, idx) => (
-                                                <tr key={idx} className="hover:bg-slate-50/50">
-                                                    <td className="font-bold text-slate-700">{p.docNum}</td>
-                                                    <td>{p.fornecedor}</td>
-                                                    <td>{p.despachante}</td>
-                                                    <td className="text-right font-mono">{formatKwanza(p.valMercadoria)}</td>
-                                                    <td className="text-right font-mono font-bold text-indigo-600">{formatKwanza(p.custoTotal)}</td>
-                                                    <td className="text-center font-mono font-bold text-emerald-600">{p.coeficienteText}</td>
+                                    <h3 className="font-bold text-slate-700 mb-4 text-sm">Ranking de Processos com Maior Custo</h3>
+                                    <div className="overflow-x-auto max-h-80 scrollbar-thin">
+                                        <table className="table table-compact w-full text-xs">
+                                            <thead>
+                                                <tr>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Processo</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Fornecedor</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Despachante</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Valor Mercadoria</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Custos Adicionais</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Coeficiente</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {financialData.processCostRanking.map((p, idx) => (
+                                                    <tr key={idx} className="hover:bg-slate-50/50">
+                                                        <td className="font-bold text-slate-700">{p.docNum}</td>
+                                                        <td>{p.fornecedor}</td>
+                                                        <td>{p.despachante}</td>
+                                                        <td className="text-right font-mono">{formatKwanza(p.valMercadoria)}</td>
+                                                        <td className="text-right font-mono font-bold text-indigo-600">{formatKwanza(p.custoTotal)}</td>
+                                                        <td className="text-center font-mono font-bold text-emerald-600">{p.coeficienteText}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
