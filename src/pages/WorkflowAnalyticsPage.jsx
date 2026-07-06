@@ -218,12 +218,24 @@ const CardInfoTooltip = ({ metricKey, activeKey, setActiveKey }) => {
 
 // Reusable inline alert component for charts and big tables
 const ChartInfoAlert = ({ metricKey, showInfo, setShowInfo }) => {
+    const [showDetails, setShowDetails] = useState(false);
     const exp = METRIC_EXPLANATIONS[metricKey];
+    
+    // Reset showDetails when alert is hidden or metricKey changes
+    useEffect(() => {
+        if (!showInfo) {
+            setShowDetails(false);
+        }
+    }, [showInfo, metricKey]);
+
     if (!exp || !showInfo) return null;
     return (
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative text-xs mb-4 text-left">
             <button 
-                onClick={() => setShowInfo(false)} 
+                onClick={() => {
+                    setShowInfo(false);
+                    setShowDetails(false);
+                }} 
                 className="absolute top-3 right-3.5 text-slate-400 hover:text-slate-600 transition-colors"
             >
                 ✕
@@ -232,9 +244,25 @@ const ChartInfoAlert = ({ metricKey, showInfo, setShowInfo }) => {
                 <FaInfoCircle className="text-indigo-600" /> Regras do Indicador ({exp.title})
             </h4>
             <div className="text-slate-600 space-y-1.5 font-medium leading-relaxed">
-                <p><strong>Fórmula:</strong> {exp.formula}</p>
+                <div><strong>Fórmula:</strong> {exp.formula}</div>
                 <p><strong>Origem dos Dados:</strong> {exp.source}</p>
-                <p className="text-[11px] text-slate-500 mt-1">{exp.description}</p>
+                {exp.description && <p className="text-[11px] text-slate-500 mt-1">{exp.description}</p>}
+                
+                {exp.details && (
+                    <div className="mt-3 pt-3 border-t border-slate-200">
+                        <button 
+                            onClick={() => setShowDetails(!showDetails)}
+                            className="text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 transition-colors"
+                        >
+                            {showDetails ? 'Ocultar Detalhes Técnicos' : 'Ver Detalhes (Mapeamento de Campos do DocuWare)'}
+                        </button>
+                        {showDetails && (
+                            <div className="mt-2 p-3 bg-white border border-slate-200 rounded-lg text-[11px]">
+                                {exp.details}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -684,7 +712,71 @@ const METRIC_EXPLANATIONS = {
             </ul>
         ),
         source: "Campos de valor e datas aduaneiras do DocuWare consolidando custos, FOB, trâmites e tempos de fluxo.",
-        description: "Detalhamento das regras e dados utilizados para avaliar o desempenho de prazos, custos e volumes movimentados por despachante."
+        description: "Detalhamento das regras e dados utilizados para avaliar o desempenho de prazos, custos e volumes movimentados por despachante.",
+        details: (
+            <div className="space-y-3">
+                <p className="font-bold text-slate-700">Mapeamento de Campos de Dados do DocuWare para a Tabela:</p>
+                <div className="overflow-x-auto">
+                    <table className="table table-compact table-xs w-full text-[10px] border border-slate-200">
+                        <thead>
+                            <tr className="bg-slate-100 text-slate-700">
+                                <th className="p-1.5 border border-slate-200 text-left font-bold">Coluna da Tabela</th>
+                                <th className="p-1.5 border border-slate-200 text-left font-bold">Mapeamento e Campos Técnicos do DocuWare (Ordem de Busca)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Despachante</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE, DESPACHADOR</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tempo Médio Desembaraço</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Diferença de dias entre:</span><br />
+                                    • Chegada: DATA_CHEGADA_ANGOLA, DATA_CHEGADA, CHEGADA_AO<br />
+                                    • Saída: DATA_SAIDA_ALFANDEGA, DATA_DESEMBARACO, LIBERACAO, DATA_DESPACHO
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tempo Médio até Entrega</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Diferença de dias entre:</span><br />
+                                    • Saída: DATA_SAIDA_ALFANDEGA, DATA_DESEMBARACO, LIBERACAO, DATA_DESPACHO<br />
+                                    • Entrega: DATA_ENTREGUE, DATA_ENTREGUE_RCS, ENTREGUE
+                                </td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Valor Movimentado</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Soma de FOB + Frete + Custos Adicionais + Impostos + Taxas + Serviços:</span><br />
+                                    • FOB: VALOR_FOB, FOB, VALOR_MERCADORIA, MONTANTE_FACTURA, VALOR<br />
+                                    • Frete: VALOR_FRETE, FRETE<br />
+                                    • Outros Custos: CUSTOS_ADICIONAIS, OUTROS_CUSTOS, OUTRAS_DESPESAS<br />
+                                    • Despachante: SERVICOS_DESPACHANTES, SERVICO_DESPACHANTE<br />
+                                    • Direitos: DIREITOS_ALFANDEGARIOS, DIREITO_ALFANDEGARIOS, DIREITO_ALFAND<br />
+                                    • IVA: VALOR_IVA_IMPORTACAO, IVA_IMPORTACAO, IVA<br />
+                                    • RDF: MONTANTE_RDF, RDF
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Custo Médio / Processo</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Média das despesas totais (soma de Frete + Outros Custos + Despachante + Direitos + IVA + RDF, excluindo FOB) por processo.</span>
+                                </td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Coeficiente Médio</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Média dos Landing Factors de cada processo:</span><br />
+                                    • Fórmula: Custo Total de Importação / Valor FOB (Kwanza)<br />
+                                    • Custo Total: FOB (Kwanza) + RDF + Serviços Despachante + Frete (Kwanza) + Custos Adicionais (Kwanza)
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
     }
 };
 
