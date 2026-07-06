@@ -1814,12 +1814,6 @@ const WorkflowAnalyticsPage = () => {
             {/* Navigation Tabs */}
             <div className="tabs tabs-boxed bg-slate-100 p-1.5 rounded-xl flex flex-wrap gap-1">
                 <button 
-                    onClick={() => setActiveTab('performance_logistica')}
-                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'performance_logistica' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
-                >
-                    <FaTruck /> Performance Logística
-                </button>
-                <button 
                     onClick={() => setActiveTab('analise_financeira')}
                     className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'analise_financeira' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
                 >
@@ -1830,6 +1824,12 @@ const WorkflowAnalyticsPage = () => {
                     className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'performance_despachantes' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
                 >
                     <FaUserShield /> Performance dos Despachantes
+                </button>
+                <button 
+                    onClick={() => setActiveTab('performance_logistica')}
+                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'performance_logistica' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
+                >
+                    <FaTruck /> Performance Logística
                 </button>
                 <button 
                     onClick={() => setActiveTab('visao_detalhada')}
