@@ -15,7 +15,8 @@ import {
     FaList,
     FaSearch,
     FaExternalLinkAlt,
-    FaInfoCircle
+    FaInfoCircle,
+    FaFileAlt
 } from 'react-icons/fa';
 import { 
     ResponsiveContainer, 
@@ -1716,6 +1717,7 @@ const WorkflowAnalyticsPage = () => {
 
         const processCostRanking = [...detailedProcesses]
             .map(p => ({
+                id: p.id,
                 docNum: p.docNum,
                 fornecedor: p.fornecedor,
                 despachante: p.despachante,
@@ -2512,22 +2514,30 @@ const WorkflowAnalyticsPage = () => {
                                             <thead>
                                                 <tr>
                                                     <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Processo</th>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Fornecedor</th>
                                                     <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Despachante</th>
                                                     <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Valor Mercadoria</th>
                                                     <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Custos Adicionais</th>
                                                     <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Coeficiente</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-12"><FaFileAlt className="inline-block text-slate-400" /></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {financialData.processCostRanking.map((p, idx) => (
                                                     <tr key={idx} className="hover:bg-slate-50/50">
                                                         <td className="font-bold text-slate-700">{p.docNum}</td>
-                                                        <td>{p.fornecedor}</td>
                                                         <td>{p.despachante}</td>
                                                         <td className="text-right font-mono">{formatKwanza(p.valMercadoria)}</td>
                                                         <td className="text-right font-mono font-bold text-indigo-600">{formatKwanza(p.custoTotal)}</td>
                                                         <td className="text-center font-mono font-bold text-emerald-600">{p.coeficienteText}</td>
+                                                        <td className="text-center">
+                                                            <button 
+                                                                onClick={() => handleOpenDocument(p.id)}
+                                                                className="text-indigo-600 hover:text-indigo-800 transition-colors p-1"
+                                                                title="Visualizar documento"
+                                                            >
+                                                                <FaExternalLinkAlt className="text-[10px]" />
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
