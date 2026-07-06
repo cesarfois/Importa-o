@@ -791,7 +791,7 @@ const WorkflowAnalyticsPage = () => {
 
     const [dateRange, setDateRange] = useState([getSixMonthsAgoString(), getTodayString()]);
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
-    const [activeTab, setActiveTab] = useState('performance_logistica');
+    const [activeTab, setActiveTab] = useState('analise_financeira');
     const [selectedDespachanteGroup, setSelectedDespachanteGroup] = useState(null);
     const [detectedTypeField, setDetectedTypeField] = useState(null);
     const [detectedDateField, setDetectedDateField] = useState(null);
