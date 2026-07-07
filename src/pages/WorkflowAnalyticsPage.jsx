@@ -636,11 +636,18 @@ const METRIC_EXPLANATIONS = {
         details: "Soma: FOB (em Kz) + RDF + Serviços Despachante + Frete (em Kz) + Custos Adicionais (em Kz)."
     },
     fator_nacionalizacao: {
-        title: "Fator de Nacionalização (Landing Factor)",
-        formula: "Custo de Importação / Valor FOB Convertido (FOB_Kz)",
-        source: "Divisão do custo consolidado pelo FOB total em Kz",
-        description: "Relação multiplicadora de acréscimo de custo logístico sobre o produto. Ex: 1.23x indica 23% de custo adicional.",
-        details: "Fórmula: Custo Importação / FOB (Kwanza)."
+        title: "Coeficiente de Importação (Landing Factor)",
+        formula: "Soma de todas as despesas ÷ Montante Fatura. É exibido como um multiplicador (ex: 1.25x representa 25% de custo adicional sobre o FOB).",
+        source: "Divisão do Custo total de importação pelo valor FOB (Mercadoria).",
+        description: "Compara o Coeficiente Previsto (RDF) e o Coeficiente Realizado (FC).",
+        details: "Previsto (RDF): (FOB_Kz + RDF + Despachante + Frete_Kz + Extras_Kz + Direitos + IVA + IVA_Servicos) / FOB_Kz\nRealizado (FC): (FOB_FC_Kz + Direitos_FC + IVA_FC + Despachante_FC + IVA_Servicos_FC + Frete_Kz + Extras_Kz) / FOB_FC_Kz"
+    },
+    custo_despesas_total: {
+        title: "Custo Despesas Total",
+        formula: "Soma de todos os impostos, taxas, frete e honorários de despachante (excluindo o valor FOB da mercadoria).",
+        source: "Campos de impostos e despesas do DocuWare de Abertura (RDF) e Fechamento (FC).",
+        description: "Mostra o valor consolidado gasto em despesas de importação para nacionalizar a mercadoria.",
+        details: "Previsto (RDF): Frete + Custos Adicionais + RDF + IVA + Direitos + Despachante + IVA Serviços\nRealizado (FC): Frete + Custos Adicionais + Direitos_FC + IVA_FC + Despachante_FC + IVA Serviços_FC"
     },
     desvio_cambial: {
         title: "Desvio Cambial",
@@ -1778,12 +1785,12 @@ const WorkflowAnalyticsPage = () => {
 
             totalDesvioCambial += p.desvioCambial;
 
-            if (p.coeficienteNumeric > 0) {
+            if (p.coeficienteNumeric > 0 && p.coeficienteNumeric < 5.0) {
                 coefsPrevisto.push(p.coeficienteNumeric);
             }
-            if (p.coeficienteNumericFC > 0) {
+            if (p.coeficienteNumericFC > 0 && p.coeficienteNumericFC < 5.0) {
                 coefsRealizado.push(p.coeficienteNumericFC);
-            } else if (p.coeficienteNumeric > 0) {
+            } else if (p.coeficienteNumeric > 0 && p.coeficienteNumeric < 5.0) {
                 coefsRealizado.push(p.coeficienteNumeric);
             }
         });
@@ -2359,16 +2366,22 @@ const WorkflowAnalyticsPage = () => {
                                             <div className="text-3xl font-black text-indigo-600 mt-1 font-mono">{financialData.avgCoefRealizado > 0 ? `${financialData.avgCoefRealizado.toFixed(2)}x` : 'N/D'}</div>
                                         </div>
                                     </div>
-                                    <CardInfoTooltip metricKey="fator_nacionalizacao" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
 
                                 {/* Card 2: Montante Fatura */}
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-1 flex flex-col justify-between">
-                                    <div>
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-1 flex flex-col justify-between relative">
+                                    <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Montante Fatura</div>
-                                        <div className="text-xl font-black text-slate-800 mt-3 font-mono">
-                                            {formatKwanza(financialData.blendedFobTotal)}
-                                        </div>
+                                        <button 
+                                            onClick={() => setActiveExplanation(activeExplanation === 'fob' ? null : 'fob')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver regra de cálculo"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
+                                    <div className="text-xl font-black text-slate-800 mt-3 font-mono">
+                                        {formatKwanza(financialData.blendedFobTotal)}
                                     </div>
                                     <p className="text-[9px] text-slate-400 mt-4 leading-tight">
                                         FOB / Fechamento dependendo do status do processo.
@@ -2376,18 +2389,42 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
 
                                 {/* Card 3: Custo Total Despesas */}
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-1 flex flex-col justify-between">
-                                    <div>
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-1 flex flex-col justify-between relative">
+                                    <div className="flex justify-between items-start">
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custo Despesas Total</div>
-                                        <div className="text-xl font-black text-slate-700 mt-3 font-mono">
-                                            {formatKwanza(financialData.totalDespesasRealizado > 0 ? financialData.totalDespesasRealizado : financialData.totalDespesasPrevisto)}
-                                        </div>
+                                        <button 
+                                            onClick={() => setActiveExplanation(activeExplanation === 'custo_despesas_total' ? null : 'custo_despesas_total')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver regra de cálculo"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
+                                    <div className="text-xl font-black text-slate-700 mt-3 font-mono">
+                                        {formatKwanza(financialData.totalDespesasRealizado > 0 ? financialData.totalDespesasRealizado : financialData.totalDespesasPrevisto)}
                                     </div>
                                     <p className="text-[9px] text-slate-400 mt-4 leading-tight">
                                         Soma de todos os impostos, taxas e despachante.
                                     </p>
                                 </div>
                             </div>
+
+                            {/* Detailed explanations for KPI cards (using the same style as tables) */}
+                            <ChartInfoAlert 
+                                metricKey="fator_nacionalizacao" 
+                                showInfo={activeExplanation === 'fator_nacionalizacao'} 
+                                setShowInfo={(val) => setActiveExplanation(val ? 'fator_nacionalizacao' : null)} 
+                            />
+                            <ChartInfoAlert 
+                                metricKey="fob" 
+                                showInfo={activeExplanation === 'fob'} 
+                                setShowInfo={(val) => setActiveExplanation(val ? 'fob' : null)} 
+                            />
+                            <ChartInfoAlert 
+                                metricKey="custo_despesas_total" 
+                                showInfo={activeExplanation === 'custo_despesas_total'} 
+                                setShowInfo={(val) => setActiveExplanation(val ? 'custo_despesas_total' : null)} 
+                            />
 
                             {/* Row 2: simple chart and comparative table */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
