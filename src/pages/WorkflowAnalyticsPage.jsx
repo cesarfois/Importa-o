@@ -1826,12 +1826,12 @@ const WorkflowAnalyticsPage = () => {
         const total = financialData.totalImportacao;
 
         return [
-            { name: 'FOB (Base)', border: 0, value: fob, display: fob, color: '#4f46e5' },
-            { name: 'Frete', border: fob, value: frete, display: frete, color: '#10b981' },
-            { name: 'RDF (Impostos)', border: fob + frete, value: rdf, display: rdf, color: '#f59e0b' },
-            { name: 'Despachante', border: fob + frete + rdf, value: desp, display: desp, color: '#ec4899' },
-            { name: 'Outros Custos', border: fob + frete + rdf + desp, value: outros, display: outros, color: '#8b5cf6' },
-            { name: 'Custo Importação', border: 0, value: total, display: total, color: '#312e81' }
+            { name: 'FOB (Base)', border: 0, value: fob, display: fob, color: '#4f46e5', total: fob },
+            { name: 'Frete', border: fob, value: frete, display: frete, color: '#10b981', total: fob + frete },
+            { name: 'RDF (Impostos)', border: fob + frete, value: rdf, display: rdf, color: '#f59e0b', total: fob + frete + rdf },
+            { name: 'Despachante', border: fob + frete + rdf, value: desp, display: desp, color: '#ec4899', total: fob + frete + rdf + desp },
+            { name: 'Outros Custos', border: fob + frete + rdf + desp, value: outros, display: outros, color: '#8b5cf6', total: fob + frete + rdf + desp + outros },
+            { name: 'Custo Importação', border: 0, value: total, display: total, color: '#312e81', total: total }
         ];
     }, [financialData]);
 
@@ -2509,7 +2509,7 @@ const WorkflowAnalyticsPage = () => {
                                     />
                                     <div className="h-72">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={waterfallData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                            <ComposedChart data={waterfallData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
                                                 <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `Kz ${(v/1e6).toFixed(1)}M`} />
@@ -2523,7 +2523,16 @@ const WorkflowAnalyticsPage = () => {
                                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                                     ))}
                                                 </Bar>
-                                            </BarChart>
+                                                <Line 
+                                                    type="stepAfter" 
+                                                    dataKey="total" 
+                                                    stroke="#cbd5e1" 
+                                                    strokeWidth={2} 
+                                                    strokeDasharray="4 4" 
+                                                    dot={false} 
+                                                    activeDot={false} 
+                                                />
+                                            </ComposedChart>
                                         </ResponsiveContainer>
                                     </div>
                                 </div>
