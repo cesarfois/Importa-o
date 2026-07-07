@@ -1256,7 +1256,7 @@ const WorkflowAnalyticsPage = () => {
             const dtSaidaAlfandega = parseDWDate(getDocFieldValue(doc, 'DATA_SAIDA_ALFANDEGA') || getDocFieldValue(doc, 'DATA_DESEMBARACO') || getDocFieldValue(doc, 'LIBERACAO') || getDocFieldValue(doc, 'DATA_DESPACHO'));
             const dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
             
-            // Financials
+            // Financials (Previsto / RDF)
             const fMerc = parseCurrency(getDocFieldValue(doc, 'VALOR_FOB') || getDocFieldValue(doc, 'FOB') || getDocFieldValue(doc, 'VALOR_MERCADORIA') || getDocFieldValue(doc, 'MONTANTE_FACTURA') || getDocFieldValue(doc, 'VALOR'));
             const fFrete = parseCurrency(getDocFieldValue(doc, 'VALOR_FRETE') || getDocFieldValue(doc, 'FRETE'));
             const fCustosAdicionais = parseCurrency(getDocFieldValue(doc, 'CUSTOS_ADICIONAIS') || getDocFieldValue(doc, 'OUTROS_CUSTOS') || getDocFieldValue(doc, 'OUTRAS_DESPESAS'));
@@ -1264,17 +1264,27 @@ const WorkflowAnalyticsPage = () => {
             const fIva = parseCurrency(getDocFieldValue(doc, 'VALOR_IVA_IMPORTACAO') || getDocFieldValue(doc, 'IVA_IMPORTACAO') || getDocFieldValue(doc, 'IVA'));
             const fDireitos = parseCurrency(getDocFieldValue(doc, 'DIREITOS_ALFANDEGARIOS') || getDocFieldValue(doc, 'DIREITO_ALFANDEGARIOS') || getDocFieldValue(doc, 'DIREITO_ALFAND'));
             const fServicosDespachante = parseCurrency(getDocFieldValue(doc, 'SERVICOS_DESPACHANTES') || getDocFieldValue(doc, 'SERVICO_DESPACHANTE'));
+            const fIvaServicos = parseCurrency(getDocFieldValue(doc, 'VALOR_IVA_SERVICES') || getDocFieldValue(doc, 'VALOR_IVA_SERVICOS') || getDocFieldValue(doc, 'IVA_SERVICES') || getDocFieldValue(doc, 'IVA_SERVICOS') || getDocFieldValue(doc, 'IVA_DESPACHANTE'));
             
+            // Financials (Realizado / FC)
+            const fMercFC = parseCurrency(getDocFieldValue(doc, 'MONTANTE_FC') || getDocFieldValue(doc, 'VALOR_MERCADORIA_FC') || getDocFieldValue(doc, 'MONTANTE_FACTURA_FC') || getDocFieldValue(doc, 'VALOR_FC'));
+            const fDireitosFC = parseCurrency(getDocFieldValue(doc, 'DIR_ALFANDEGARIOS_TAXAS_FC') || getDocFieldValue(doc, 'DIR_ALFANDEGARIOS_FC') || getDocFieldValue(doc, 'DIREITOS_ALFANDEGARIOS_FC') || getDocFieldValue(doc, 'DIREITOS_FC'));
+            const fIvaFC = parseCurrency(getDocFieldValue(doc, 'IVA_IMPORTACAO_FC') || getDocFieldValue(doc, 'VALOR_IVA_IMPORTACAO_FC') || getDocFieldValue(doc, 'IVA_FC'));
+            const fServicosDespachanteFC = parseCurrency(getDocFieldValue(doc, 'SERVICOS_DESPACHANTE_FC') || getDocFieldValue(doc, 'SERVICO_DESPACHANTE_FC') || getDocFieldValue(doc, 'SERVICOS_DESPACHANTES_FC'));
+            const fIvaServicosFC = parseCurrency(getDocFieldValue(doc, 'IVA_SERV_DESPACHANTE_FC') || getDocFieldValue(doc, 'IVA_SERV_FC') || getDocFieldValue(doc, 'IVA_SERVICES_FC') || getDocFieldValue(doc, 'IVA_SERVICOS_FC'));
+
             // Exchange Rates & Conversions
             const fValorCambial = parseCurrency(findFieldVal(doc, ['VALOR_CAMBIAL', 'VALOR_CAMBIO', 'CAMBIO', 'TAXA_CAMBIO', 'VALOR CAMBIAL']));
             const fValorCambialFC = parseCurrency(findFieldVal(doc, ['VAOR_CAMBIAL_FC', 'VALOR_CAMBIAL_FC', 'CAMBIO_FC', 'TAXA_CAMBIO_FC', 'Vaor Cambial_FC']));
             
             const fMercKz = fMerc * (fValorCambial || 1);
+            const fMercFCKz = fMercFC * (fValorCambialFC || fValorCambial || 1);
             const fFreteKz = fFrete * (fValorCambial || 1);
             const fCustosAdicionaisKz = fCustosAdicionais * (fValorCambial || 1);
             const fDesvioCambial = (fValorCambial && fValorCambialFC) ? fMerc * (fValorCambial - fValorCambialFC) : 0;
             
-            const fCustoImportacao = fMercKz + fRdf + fServicosDespachante + fFreteKz + fCustosAdicionaisKz;
+            const fCustoImportacao = fMercKz + fRdf + fServicosDespachante + fFreteKz + fCustosAdicionaisKz + fIvaServicos + fDireitos + fIva;
+            const fCustoImportacaoFC = fMercFCKz + fDireitosFC + fIvaFC + fServicosDespachanteFC + fIvaServicosFC + fFreteKz + fCustosAdicionaisKz;
 
             // Stage evaluation
             const stageIdx = evaluateActiveStage(doc, prog.activeTaskName, prog.isFinished);
@@ -1291,6 +1301,13 @@ const WorkflowAnalyticsPage = () => {
                     numericCoef = fCustoImportacao / fMercKz;
                     coefVal = numericCoef.toFixed(2) + 'x';
                 }
+            }
+
+            // Realizado Coeficiente
+            let numericCoefFC = 0;
+            const activeFobKz = fMercFCKz > 0 ? fMercFCKz : fMercKz;
+            if (activeFobKz > 0 && fCustoImportacaoFC > 0) {
+                numericCoefFC = fCustoImportacaoFC / activeFobKz;
             }
 
             // Days calculation
@@ -1341,20 +1358,31 @@ const WorkflowAnalyticsPage = () => {
                 dtChegadaRaw: dtChegada,
                 dtSaidaAlfandegaRaw: dtSaidaAlfandega,
                 dtEntregaRCSRaw: dtEntregaRCS,
-                valMercadoria: fMercKz, // FOB in Kz
-                valMercadoriaOrig: fMerc, // FOB in foreign currency
-                frete: fFreteKz, // Frete in Kz
+                valMercadoria: fMercKz, 
+                valMercadoriaOrig: fMerc,
+                valMercadoriaFC: fMercFCKz,
+                valMercadoriaFCOrig: fMercFC,
+                frete: fFreteKz, 
                 freteOrig: fFrete,
-                custosAdicionais: fCustosAdicionaisKz, // Despesas Extras in Kz
+                custosAdicionais: fCustosAdicionaisKz, 
                 custosAdicionaisOrig: fCustosAdicionais,
                 rdf: fRdf,
                 iva: fIva,
                 direitos: fDireitos,
                 servicosDespachante: fServicosDespachante,
+                ivaServicos: fIvaServicos,
+                direitosFC: fDireitosFC,
+                ivaFC: fIvaFC,
+                servicosDespachanteFC: fServicosDespachanteFC,
+                ivaServicosFC: fIvaServicosFC,
+                valorCambial: fValorCambial,
+                valorCambialFC: fValorCambialFC,
                 desvioCambial: fDesvioCambial,
                 custoImportacao: fCustoImportacao,
+                custoImportacaoFC: fCustoImportacaoFC,
                 coeficienteText: coefVal,
                 coeficienteNumeric: numericCoef,
+                coeficienteNumericFC: numericCoefFC,
                 diasTotais,
                 isParcial,
                 diasParado,
@@ -1700,88 +1728,93 @@ const WorkflowAnalyticsPage = () => {
         let totalMercadoria = 0;
         let totalFrete = 0;
         let totalCustosAdicionais = 0;
-        let totalDespachante = 0;
-        let totalDireitos = 0;
-        let totalIVA = 0;
         let totalRDF = 0;
+        let totalIVA = 0;
+        let totalDireitos = 0;
+        let totalDespachante = 0;
+        let totalIvaServicos = 0;
+        let totalValorCambialSum = 0;
+        let totalValorCambialCount = 0;
+
+        let totalMercadoriaFC = 0;
+        let totalDireitosFC = 0;
+        let totalIVAFC = 0;
+        let totalDespachanteFC = 0;
+        let totalIvaServicosFC = 0;
+        let totalValorCambialFCSum = 0;
+        let totalValorCambialFCCount = 0;
+        
         let totalDesvioCambial = 0;
 
-        const coeficients = [];
-        const monthlyEvolutionMap = {};
+        const coefsPrevisto = [];
+        const coefsRealizado = [];
 
         detailedProcesses.forEach(p => {
             totalMercadoria += p.valMercadoria;
             totalFrete += p.frete;
             totalCustosAdicionais += p.custosAdicionais;
-            totalDespachante += p.servicosDespachante;
-            totalDireitos += p.direitos;
-            totalIVA += p.iva;
             totalRDF += p.rdf;
+            totalIVA += p.iva;
+            totalDireitos += p.direitos;
+            totalDespachante += p.servicosDespachante;
+            totalIvaServicos += p.ivaServicos;
+            if (p.valorCambial > 0) {
+                totalValorCambialSum += p.valorCambial;
+                totalValorCambialCount++;
+            }
+
+            // Realizados (use fallback to previsto if realizado field is zero/unpopulated)
+            totalMercadoriaFC += p.valMercadoriaFC > 0 ? p.valMercadoriaFC : p.valMercadoria;
+            totalDireitosFC += p.direitosFC > 0 ? p.direitosFC : p.direitos;
+            totalIVAFC += p.ivaFC > 0 ? p.ivaFC : p.iva;
+            totalDespachanteFC += p.servicosDespachanteFC > 0 ? p.servicosDespachanteFC : p.servicosDespachante;
+            totalIvaServicosFC += p.ivaServicosFC > 0 ? p.ivaServicosFC : p.ivaServicos;
+            
+            const activeVCFC = p.valorCambialFC > 0 ? p.valorCambialFC : p.valorCambial;
+            if (activeVCFC > 0) {
+                totalValorCambialFCSum += activeVCFC;
+                totalValorCambialFCCount++;
+            }
+
             totalDesvioCambial += p.desvioCambial;
 
             if (p.coeficienteNumeric > 0) {
-                coeficients.push(p.coeficienteNumeric);
+                coefsPrevisto.push(p.coeficienteNumeric);
             }
-
-            if (p.dtBolloreRaw) {
-                const monthLabel = `${p.dtBolloreRaw.getFullYear()}-${String(p.dtBolloreRaw.getMonth() + 1).padStart(2, '0')}`;
-                if (!monthlyEvolutionMap[monthLabel]) {
-                    monthlyEvolutionMap[monthLabel] = {
-                        periodo: monthLabel,
-                        fob: 0,
-                        custos: 0
-                    };
-                }
-                monthlyEvolutionMap[monthLabel].fob += p.valMercadoria;
-                monthlyEvolutionMap[monthLabel].custos += (p.rdf + p.servicosDespachante + p.frete + p.custosAdicionais);
+            if (p.coeficienteNumericFC > 0) {
+                coefsRealizado.push(p.coeficienteNumericFC);
+            } else if (p.coeficienteNumeric > 0) {
+                coefsRealizado.push(p.coeficienteNumeric);
             }
         });
 
-        // Custo de Importação = FOB_Kz + Montante_RDF + Serviços Despachantes + Frete Total + Despesas Extras
-        const totalImportacao = totalMercadoria + totalRDF + totalDespachante + totalFrete + totalCustosAdicionais;
-        const totalCustos = totalRDF + totalDespachante + totalFrete + totalCustosAdicionais;
+        // Averaged Coeficients
+        const avgCoefPrevisto = coefsPrevisto.length > 0 ? (coefsPrevisto.reduce((a, b) => a + b, 0) / coefsPrevisto.length) : 0;
+        const avgCoefRealizado = coefsRealizado.length > 0 ? (coefsRealizado.reduce((a, b) => a + b, 0) / coefsRealizado.length) : 0;
 
-        const avgCoef = coeficients.length > 0 ? (coeficients.reduce((a, b) => a + b, 0) / coeficients.length) : 0;
-        const minCoef = coeficients.length > 0 ? Math.min(...coeficients) : 0;
-        const maxCoef = coeficients.length > 0 ? Math.max(...coeficients) : 0;
+        // Despesas totals (excluindo valor FOB da mercadoria)
+        const totalDespesasPrevisto = totalFrete + totalCustosAdicionais + totalRDF + totalIVA + totalDireitos + totalDespachante + totalIvaServicos;
+        const totalDespesasRealizado = totalFrete + totalCustosAdicionais + totalDireitosFC + totalIVAFC + totalDespachanteFC + totalIvaServicosFC;
 
-        const costComposition = [
-            { name: 'Frete', value: totalFrete },
-            { name: 'Serviços Despachante', value: totalDespachante },
-            { name: 'RDF (Impostos)', value: totalRDF },
-            { name: 'Outros Custos', value: totalCustosAdicionais }
-        ].filter(item => item.value > 0);
+        // Exchange rate averages
+        const avgValorCambial = totalValorCambialCount > 0 ? (totalValorCambialSum / totalValorCambialCount) : 0;
+        const avgValorCambialFC = totalValorCambialFCCount > 0 ? (totalValorCambialFCSum / totalValorCambialFCCount) : 0;
 
-        const monthlyEvolution = Object.keys(monthlyEvolutionMap).sort().map(m => {
-            const data = monthlyEvolutionMap[m];
-            const coeficiente = data.fob > 0 ? ((data.fob + data.custos) / data.fob) : 0;
-            return {
-                periodo: m,
-                'Valor FOB': Math.round(data.fob),
-                'Custos Adicionais': Math.round(data.custos),
-                'Coeficiente': parseFloat(coeficiente.toFixed(2))
-            };
-        });
-
-        // Coefficient breakdowns
-        const brokerCoef = {};
-        const supplierCoef = {};
+        // Blended FOB total for the process status card
+        let blendedFobTotal = 0;
         detailedProcesses.forEach(p => {
-            if (typeof p.coeficienteNumeric === 'number' && p.coeficienteNumeric > 0) {
-                if (!brokerCoef[p.despachante]) brokerCoef[p.despachante] = [];
-                brokerCoef[p.despachante].push(p.coeficienteNumeric);
-
-                if (!supplierCoef[p.fornecedor]) supplierCoef[p.fornecedor] = [];
-                supplierCoef[p.fornecedor].push(p.coeficienteNumeric);
+            if (p.statusFinal === 'Concluído') {
+                blendedFobTotal += p.valMercadoriaFC > 0 ? p.valMercadoriaFC : p.valMercadoria;
+            } else {
+                blendedFobTotal += p.valMercadoria;
             }
         });
 
-        const mapCoefAvg = (map) => {
-            return Object.keys(map).map(k => ({
-                name: k,
-                Coeficiente: parseFloat((map[k].reduce((a, b) => a + b, 0) / map[k].length).toFixed(2))
-            })).sort((a, b) => b.Coeficiente - a.Coeficiente);
-        };
+        // Coefficient comparison data for Simple Bar Chart
+        const coefChartData = [
+            { name: 'Previsto (RDF)', Coeficiente: parseFloat(avgCoefPrevisto.toFixed(2)), fill: '#f59e0b' },
+            { name: 'Realizado (FC)', Coeficiente: parseFloat(avgCoefRealizado.toFixed(2)), fill: '#4f46e5' }
+        ];
 
         const processCostRanking = [...detailedProcesses]
             .map(p => ({
@@ -1789,9 +1822,9 @@ const WorkflowAnalyticsPage = () => {
                 docNum: p.docNum,
                 fornecedor: p.fornecedor,
                 despachante: p.despachante,
-                valMercadoria: p.valMercadoria,
-                custoTotal: p.custoImportacao,
-                coeficienteText: p.coeficienteText
+                valMercadoria: p.valMercadoriaFC > 0 ? p.valMercadoriaFC : p.valMercadoria,
+                custoTotal: p.custoImportacaoFC > 0 ? p.custoImportacaoFC : p.custoImportacao,
+                coeficienteText: p.coeficienteNumericFC > 0 ? p.coeficienteNumericFC.toFixed(2) + 'x' : p.coeficienteText
             }))
             .sort((a, b) => b.custoTotal - a.custoTotal);
 
@@ -1799,21 +1832,30 @@ const WorkflowAnalyticsPage = () => {
             totalMercadoria,
             totalFrete,
             totalCustosAdicionais,
-            totalDespachante,
-            totalDireitos,
-            totalIVA,
             totalRDF,
-            totalCustos,
-            totalImportacao,
+            totalIVA,
+            totalDireitos,
+            totalDespachante,
+            totalIvaServicos,
+            avgValorCambial,
+
+            totalMercadoriaFC,
+            totalDireitosFC,
+            totalIVAFC,
+            totalDespachanteFC,
+            totalIvaServicosFC,
+            avgValorCambialFC,
+
+            totalDespesasPrevisto,
+            totalDespesasRealizado,
+            blendedFobTotal,
+
+            avgCoefPrevisto,
+            avgCoefRealizado,
+            coefChartData,
+
             totalDesvioCambial,
-            avgCoef: avgCoef > 0 ? avgCoef.toFixed(2) : 'N/D',
-            minCoef: minCoef > 0 ? minCoef.toFixed(2) : 'N/D',
-            maxCoef: maxCoef > 0 ? maxCoef.toFixed(2) : 'N/D',
-            costComposition,
-            monthlyEvolution,
-            processCostRanking,
-            brokerCoef: mapCoefAvg(brokerCoef),
-            supplierCoef: mapCoefAvg(supplierCoef)
+            processCostRanking
         };
     }, [detailedProcesses]);
 
@@ -2287,260 +2329,94 @@ const WorkflowAnalyticsPage = () => {
                         </div>
                     )}
 
-                    {/* 3. ANÁLISE FINANCEIRA */}
                     {activeTab === 'analise_financeira' && (
                         <div className="space-y-6">
                             {/* Financial Cards Grid */}
-                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mercadoria (FOB)</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'fob' ? null : 'fob')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
-                                    </div>
-                                    <div className="text-lg font-black text-slate-800 mt-1 font-mono">{formatKwanza(financialData.totalMercadoria)}</div>
-                                    <CardInfoTooltip metricKey="fob" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
-                                </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frete Total</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'frete' ? null : 'frete')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
-                                    </div>
-                                    <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalFrete)}</div>
-                                    <CardInfoTooltip metricKey="frete" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
-                                </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custos Adicionais</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'custos_adicionais' ? null : 'custos_adicionais')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
-                                    </div>
-                                    <div className="text-lg font-black text-amber-600 mt-1 font-mono">{formatKwanza(financialData.totalCustosAdicionais)}</div>
-                                    <CardInfoTooltip metricKey="custos_adicionais" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
-                                </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RDF Total</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'rdf' ? null : 'rdf')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
-                                    </div>
-                                    <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalRDF)}</div>
-                                    <CardInfoTooltip metricKey="rdf" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
-                                </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IVA Total</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'iva' ? null : 'iva')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
-                                    </div>
-                                    <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalIVA)}</div>
-                                    <CardInfoTooltip metricKey="iva" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
-                                </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Direitos Aduaneiros</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'direitos' ? null : 'direitos')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
-                                    </div>
-                                    <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalDireitos)}</div>
-                                    <CardInfoTooltip metricKey="direitos" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
-                                </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Serviços Despachante</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'despachante' ? null : 'despachante')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
-                                    </div>
-                                    <div className="text-lg font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalDespachante)}</div>
-                                    <CardInfoTooltip metricKey="despachante" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
-                                </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custo de Importação</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'custo_importacao' ? null : 'custo_importacao')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
-                                    </div>
-                                    <div className="text-lg font-black text-[#4f46e5] mt-1 font-mono">{formatKwanza(financialData.totalImportacao)}</div>
-                                    <CardInfoTooltip metricKey="custo_importacao" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
-                                </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Fator de Nacionalização</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                                {/* Card Principal: Coeficiente de Importação */}
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-full lg:col-span-3 flex flex-col justify-between relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/40 rounded-full -mr-8 -mt-8 pointer-events-none"></div>
+                                    <div className="flex justify-between items-start z-10">
+                                        <div>
+                                            <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest">KPI Destaque</span>
+                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Coeficiente de Importação (Landing Factor)</h4>
+                                        </div>
                                         <button 
                                             onClick={() => setActiveExplanation(activeExplanation === 'fator_nacionalizacao' ? null : 'fator_nacionalizacao')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
+                                            title="Ver regra de cálculo"
                                         >
-                                            <FaInfoCircle className="text-[10px]" />
+                                            <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
-                                    <div className="text-2xl font-black text-indigo-700 mt-1 font-mono">
-                                        {financialData.avgCoef !== 'N/D' ? `${financialData.avgCoef}x` : 'N/D'}
+                                    <div className="grid grid-cols-2 gap-4 mt-4 z-10">
+                                        <div className="border-r border-slate-100 pr-4">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Previsto (RDF)</div>
+                                            <div className="text-3xl font-black text-amber-500 mt-1 font-mono">{financialData.avgCoefPrevisto > 0 ? `${financialData.avgCoefPrevisto.toFixed(2)}x` : 'N/D'}</div>
+                                        </div>
+                                        <div className="pl-4">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Realizado (FC)</div>
+                                            <div className="text-3xl font-black text-indigo-600 mt-1 font-mono">{financialData.avgCoefRealizado > 0 ? `${financialData.avgCoefRealizado.toFixed(2)}x` : 'N/D'}</div>
+                                        </div>
                                     </div>
-                                    <div className="text-[9px] text-slate-400">Min: {financialData.minCoef}x | Max: {financialData.maxCoef}x</div>
                                     <CardInfoTooltip metricKey="fator_nacionalizacao" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
                                 </div>
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Desvio Cambial</div>
-                                        <button 
-                                            onClick={() => setActiveExplanation(activeExplanation === 'desvio_cambial' ? null : 'desvio_cambial')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-[10px]" />
-                                        </button>
+
+                                {/* Card 2: Montante Fatura */}
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-1 flex flex-col justify-between">
+                                    <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Montante Fatura</div>
+                                        <div className="text-xl font-black text-slate-800 mt-3 font-mono">
+                                            {formatKwanza(financialData.blendedFobTotal)}
+                                        </div>
                                     </div>
-                                    <div className={`text-lg font-black mt-1 font-mono ${financialData.totalDesvioCambial > 0 ? 'text-rose-600' : financialData.totalDesvioCambial < 0 ? 'text-emerald-600' : 'text-slate-800'}`}>
-                                        {formatKwanza(financialData.totalDesvioCambial)}
+                                    <p className="text-[9px] text-slate-400 mt-4 leading-tight">
+                                        FOB / Fechamento dependendo do status do processo.
+                                    </p>
+                                </div>
+
+                                {/* Card 3: Custo Total Despesas */}
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-1 flex flex-col justify-between">
+                                    <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custo Despesas Total</div>
+                                        <div className="text-xl font-black text-slate-700 mt-3 font-mono">
+                                            {formatKwanza(financialData.totalDespesasRealizado > 0 ? financialData.totalDespesasRealizado : financialData.totalDespesasPrevisto)}
+                                        </div>
                                     </div>
-                                    <div className="text-[9px] text-slate-400">
-                                        {financialData.totalDesvioCambial > 0 ? 'Custo extra por depreciação' : financialData.totalDesvioCambial < 0 ? 'Economia por valorização' : 'Sem desvio'}
-                                    </div>
-                                    <CardInfoTooltip metricKey="desvio_cambial" activeKey={activeExplanation} setActiveKey={setActiveExplanation} />
+                                    <p className="text-[9px] text-slate-400 mt-4 leading-tight">
+                                        Soma de todos os impostos, taxas e despachante.
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Charts & Tables Row 1: Donut and Waterfall */}
+                            {/* Row 2: simple chart and comparative table */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Simple Bar Chart Comparison */}
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5">
-                                            <FaChartPie /> Composição dos Custos Adicionais da Importação
+                                            <FaChartBar /> Comparação de Coeficientes: Previsto vs Realizado
                                         </h3>
-                                        <button 
-                                            onClick={() => toggleChartExplanation('grafico_donut_custos')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-xs" />
-                                        </button>
                                     </div>
-                                    <ChartInfoAlert 
-                                        metricKey="grafico_donut_custos" 
-                                        showInfo={!!visibleChartExplanations['grafico_donut_custos']} 
-                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, grafico_donut_custos: val}))} 
-                                    />
-                                    <div className="h-72 flex items-center justify-center">
-                                        {financialData.costComposition.length === 0 ? (
-                                            <div className="text-slate-400 italic text-xs">Não existem processos com dados suficientes para calcular este indicador.</div>
-                                        ) : (
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <PieChart>
-                                                    <Pie
-                                                        data={financialData.costComposition}
-                                                        cx="50%"
-                                                        cy="50%"
-                                                        innerRadius={60}
-                                                        outerRadius={80}
-                                                        paddingAngle={5}
-                                                        dataKey="value"
-                                                    >
-                                                        {financialData.costComposition.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                        ))}
-                                                    </Pie>
-                                                    <Tooltip formatter={(value) => formatKwanza(value)} />
-                                                    <Legend />
-                                                </PieChart>
-                                            </ResponsiveContainer>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5">
-                                            <FaChartLine /> Análise de Acúmulo de Custo (Cascata)
-                                        </h3>
-                                        <button 
-                                            onClick={() => toggleChartExplanation('grafico_waterfall')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-xs" />
-                                        </button>
-                                    </div>
-                                    <ChartInfoAlert 
-                                        metricKey="grafico_waterfall" 
-                                        showInfo={!!visibleChartExplanations['grafico_waterfall']} 
-                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, grafico_waterfall: val}))} 
-                                    />
-                                    <div className="h-72">
+                                    <div className="h-64 mt-4">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <ComposedChart data={waterfallData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                            <BarChart data={financialData.coefChartData} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                                                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `Kz ${(v/1e6).toFixed(1)}M`} />
-                                                <Tooltip 
-                                                    filter={(item) => item.dataKey === 'value'}
-                                                    formatter={(value, name, props) => [formatKwanza(props.payload.display), props.payload.name]} 
-                                                />
-                                                <Bar dataKey="border" stackId="a" fill="transparent" />
-                                                <Bar dataKey="value" stackId="a">
-                                                    {waterfallData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} domain={[0, 'dataMax + 0.5']} />
+                                                <Tooltip formatter={(value) => [`${value}x`, 'Coeficiente']} />
+                                                <Bar dataKey="Coeficiente" radius={[6, 6, 0, 0]} barSize={50}>
+                                                    {financialData.coefChartData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.fill} />
                                                     ))}
                                                 </Bar>
-                                                <Line 
-                                                    type="stepAfter" 
-                                                    dataKey="total" 
-                                                    stroke="#cbd5e1" 
-                                                    strokeWidth={2} 
-                                                    strokeDasharray="4 4" 
-                                                    dot={false} 
-                                                    activeDot={false} 
-                                                />
-                                            </ComposedChart>
+                                            </BarChart>
                                         </ResponsiveContainer>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Tables Row 2: Summary Table */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm lg:col-span-1">
+                                {/* Revised Tabela Resumo Financeiro */}
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5">
                                             <FaDollarSign /> Tabela Resumo Financeiro
@@ -2563,94 +2439,102 @@ const WorkflowAnalyticsPage = () => {
                                             <thead>
                                                 <tr>
                                                     <th className="bg-slate-50 text-slate-500 font-bold">Categoria de Custo</th>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right">Valor (Kz)</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right">Previsto (RDF)</th>
+                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right">Realizado (FC)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td className="font-semibold text-slate-600">Frete</td>
-                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalFrete)}</td>
+                                                    <td className="font-semibold text-slate-600">Montante Fatura</td>
+                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalMercadoria)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalMercadoriaFC)}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="font-semibold text-slate-600">Direitos Aduaneiros e Taxas</td>
+                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalDireitos)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalDireitosFC)}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="font-semibold text-slate-600">IVA Importação</td>
+                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalIVA)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalIVAFC)}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="font-semibold text-slate-600">Serviços Despachante</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalDespachante)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalDespachanteFC)}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="font-semibold text-slate-600">Direitos Aduaneiros</td>
-                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalDireitos)}</td>
+                                                    <td className="font-semibold text-slate-600">IVA Serviços</td>
+                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalIvaServicos)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalIvaServicosFC)}</td>
                                                 </tr>
-                                                <tr>
-                                                    <td className="font-semibold text-slate-600">IVA</td>
-                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalIVA)}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="font-semibold text-slate-600">RDF</td>
-                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalRDF)}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="font-semibold text-slate-600">Outros Custos / Adicionais</td>
-                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalCustosAdicionais)}</td>
+                                                <tr className="border-t border-slate-200">
+                                                    <td className="font-semibold text-slate-600">Valor Cambial / Ajustes</td>
+                                                    <td className="text-right text-slate-500 font-mono">{financialData.avgValorCambial > 0 ? financialData.avgValorCambial.toFixed(2) : '-'}</td>
+                                                    <td className="text-right text-slate-500 font-mono font-bold text-indigo-500">{financialData.avgValorCambialFC > 0 ? financialData.avgValorCambialFC.toFixed(2) : '-'}</td>
                                                 </tr>
                                                 <tr className="border-t border-slate-300 font-black bg-slate-50">
-                                                    <td className="text-slate-800">Custo Adicional Total</td>
-                                                    <td className="text-right text-indigo-600 font-mono">{formatKwanza(financialData.totalCustos)}</td>
+                                                    <td className="text-slate-800">Custo Despesas Total</td>
+                                                    <td className="text-right text-amber-600 font-mono">{formatKwanza(financialData.totalDespesasPrevisto)}</td>
+                                                    <td className="text-right text-indigo-600 font-mono">{formatKwanza(financialData.totalDespesasRealizado)}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Ranking de Custos de Processos */}
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm lg:col-span-2">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="font-bold text-slate-700 text-sm">Ranking de Processos com Maior Custo</h3>
-                                        <button 
-                                            onClick={() => toggleChartExplanation('ranking_processos_custo')}
-                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                            title="Ver fórmula e origem"
-                                        >
-                                            <FaInfoCircle className="text-xs" />
-                                        </button>
-                                    </div>
-                                    <ChartInfoAlert 
-                                        metricKey="ranking_processos_custo" 
-                                        showInfo={!!visibleChartExplanations['ranking_processos_custo']} 
-                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, ranking_processos_custo: val}))} 
-                                    />
-                                    <div className="overflow-x-auto max-h-80 scrollbar-thin">
-                                        <table className="table table-compact w-full text-xs">
-                                            <thead>
-                                                <tr>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Processo</th>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Despachante</th>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Valor Mercadoria</th>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Custos Adicionais</th>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Coeficiente</th>
-                                                    <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-12"><FaFileAlt className="inline-block text-slate-400" /></th>
+                            {/* Ranking de Processos com Maior Custo */}
+                            <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-bold text-slate-700 text-sm">Ranking de Processos com Maior Custo</h3>
+                                    <button 
+                                        onClick={() => toggleChartExplanation('ranking_processos_custo')}
+                                        className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                        title="Ver fórmula e origem"
+                                    >
+                                        <FaInfoCircle className="text-xs" />
+                                    </button>
+                                </div>
+                                <ChartInfoAlert 
+                                    metricKey="ranking_processos_custo" 
+                                    showInfo={!!visibleChartExplanations['ranking_processos_custo']} 
+                                    setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, ranking_processos_custo: val}))} 
+                                />
+                                <div className="overflow-x-auto max-h-[600px] scrollbar-thin">
+                                    <table className="table table-compact w-full text-xs">
+                                        <thead>
+                                            <tr>
+                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Processo</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Despachante</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Valor Mercadoria</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Custos Adicionais</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Coeficiente</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-12"><FaFileAlt className="inline-block text-slate-400" /></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {financialData.processCostRanking.map((p, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-50/50">
+                                                    <td className="font-bold text-slate-700">{p.docNum}</td>
+                                                    <td>{p.despachante}</td>
+                                                    <td className="text-right font-mono">{formatKwanza(p.valMercadoria)}</td>
+                                                    <td className="text-right font-mono font-bold text-indigo-600">{formatKwanza(p.custoTotal)}</td>
+                                                    <td className="text-center font-mono font-bold text-emerald-600">{p.coeficienteText}</td>
+                                                    <td className="text-center">
+                                                        <button 
+                                                            onClick={() => handleOpenDocument(p.id)}
+                                                            className="text-indigo-600 hover:text-indigo-800 transition-colors p-1"
+                                                            title="Visualizar documento"
+                                                        >
+                                                            <FaExternalLinkAlt className="text-[10px]" />
+                                                        </button>
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {financialData.processCostRanking.map((p, idx) => (
-                                                    <tr key={idx} className="hover:bg-slate-50/50">
-                                                        <td className="font-bold text-slate-700">{p.docNum}</td>
-                                                        <td>{p.despachante}</td>
-                                                        <td className="text-right font-mono">{formatKwanza(p.valMercadoria)}</td>
-                                                        <td className="text-right font-mono font-bold text-indigo-600">{formatKwanza(p.custoTotal)}</td>
-                                                        <td className="text-center font-mono font-bold text-emerald-600">{p.coeficienteText}</td>
-                                                        <td className="text-center">
-                                                            <button 
-                                                                onClick={() => handleOpenDocument(p.id)}
-                                                                className="text-indigo-600 hover:text-indigo-800 transition-colors p-1"
-                                                                title="Visualizar documento"
-                                                            >
-                                                                <FaExternalLinkAlt className="text-[10px]" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
