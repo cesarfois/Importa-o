@@ -812,6 +812,40 @@ const METRIC_EXPLANATIONS = {
                 </div>
             </div>
         )
+    },
+    tabela_resumo_financeiro: {
+        title: "Tabela Resumo Financeiro",
+        formula: "Soma consolidada das categorias de custo logístico e aduaneiro para todos os processos filtrados. Custo Adicional Total representa a soma de todas as despesas (excluindo o valor FOB da mercadoria).",
+        source: "Dados financeiros extraídos dos campos do DocuWare (VALOR_FRETE, SERVICOS_DESPACHANTES, DIREITOS_ALFANDEGARIOS, VALOR_IVA_IMPORTACAO, MONTANTE_RDF, CUSTOS_ADICIONAIS).",
+        details: (
+            <div className="space-y-2">
+                <p className="font-bold text-slate-700">Campos do DocuWare para o Resumo:</p>
+                <ul className="list-disc pl-4 space-y-1">
+                    <li><strong>Frete:</strong> Soma de `VALOR_FRETE` ou `FRETE` convertidos para Cuanzas.</li>
+                    <li><strong>Serviços Despachante:</strong> Soma de `SERVICOS_DESPACHANTES` ou `SERVICO_DESPACHANTE`.</li>
+                    <li><strong>Direitos Aduaneiros:</strong> Soma de `DIREITOS_ALFANDEGARIOS` ou `DIREITO_ALFANDEGARIOS`.</li>
+                    <li><strong>IVA:</strong> Soma de `VALOR_IVA_IMPORTACAO` ou `IVA`.</li>
+                    <li><strong>RDF:</strong> Soma de `MONTANTE_RDF` ou `RDF`.</li>
+                    <li><strong>Outros Custos / Adicionais:</strong> Soma de `CUSTOS_ADICIONAIS` ou `OUTROS_CUSTOS` convertidos.</li>
+                </ul>
+            </div>
+        )
+    },
+    ranking_processos_custo: {
+        title: "Ranking de Processos com Maior Custo",
+        formula: "Processos listados em ordem decrescente pelo Custo Adicional Total. O Coeficiente (Landing Factor) representa o multiplicador de custos do processo (Custo Total / Valor FOB).",
+        source: "Cálculo comparativo baseado em Valor FOB, despesas logísticas aduaneiras e taxa cambial de cada processo no DocuWare.",
+        details: (
+            <div className="space-y-2">
+                <p className="font-bold text-slate-700">Mapeamento de Colunas da Tabela:</p>
+                <ul className="list-disc pl-4 space-y-1">
+                    <li><strong>Valor Mercadoria:</strong> FOB convertido (FOB * VALOR_CAMBIAL).</li>
+                    <li><strong>Custos Adicionais:</strong> Soma de todas as despesas aduaneiras e de transporte daquele processo.</li>
+                    <li><strong>Coeficiente:</strong> Landing Factor individual (Custo Total de Importação / Valor FOB em Cuanzas).</li>
+                    <li><strong>Botão de Ação:</strong> Atalho direto que abre a ficha do documento no DocuWare utilizando seu ID único de arquivo.</li>
+                </ul>
+            </div>
+        )
     }
 };
 
@@ -2495,9 +2529,23 @@ const WorkflowAnalyticsPage = () => {
                             {/* Tables Row 2: Summary Table */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm lg:col-span-1">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm flex items-center gap-1.5">
-                                        <FaDollarSign /> Tabela Resumo Financeiro
-                                    </h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm flex items-center gap-1.5">
+                                            <FaDollarSign /> Tabela Resumo Financeiro
+                                        </h3>
+                                        <button 
+                                            onClick={() => toggleChartExplanation('tabela_resumo_financeiro')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
+                                    <ChartInfoAlert 
+                                        metricKey="tabela_resumo_financeiro" 
+                                        showInfo={!!visibleChartExplanations['tabela_resumo_financeiro']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, tabela_resumo_financeiro: val}))} 
+                                    />
                                     <div className="overflow-x-auto">
                                         <table className="table table-compact w-full text-xs">
                                             <thead>
@@ -2542,7 +2590,21 @@ const WorkflowAnalyticsPage = () => {
 
                                 {/* Ranking de Custos de Processos */}
                                 <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm lg:col-span-2">
-                                    <h3 className="font-bold text-slate-700 mb-4 text-sm">Ranking de Processos com Maior Custo</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-700 text-sm">Ranking de Processos com Maior Custo</h3>
+                                        <button 
+                                            onClick={() => toggleChartExplanation('ranking_processos_custo')}
+                                            className="text-slate-300 hover:text-indigo-600 transition-colors"
+                                            title="Ver fórmula e origem"
+                                        >
+                                            <FaInfoCircle className="text-xs" />
+                                        </button>
+                                    </div>
+                                    <ChartInfoAlert 
+                                        metricKey="ranking_processos_custo" 
+                                        showInfo={!!visibleChartExplanations['ranking_processos_custo']} 
+                                        setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, ranking_processos_custo: val}))} 
+                                    />
                                     <div className="overflow-x-auto max-h-80 scrollbar-thin">
                                         <table className="table table-compact w-full text-xs">
                                             <thead>
