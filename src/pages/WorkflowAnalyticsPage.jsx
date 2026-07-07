@@ -2513,7 +2513,10 @@ const WorkflowAnalyticsPage = () => {
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
                                                 <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `Kz ${(v/1e6).toFixed(1)}M`} />
-                                                <Tooltip formatter={(value, name, props) => [formatKwanza(props.payload.display), props.payload.name]} />
+                                                <Tooltip 
+                                                    filter={(item) => item.dataKey === 'value'}
+                                                    formatter={(value, name, props) => [formatKwanza(props.payload.display), props.payload.name]} 
+                                                />
                                                 <Bar dataKey="border" stackId="a" fill="transparent" />
                                                 <Bar dataKey="value" stackId="a">
                                                     {waterfallData.map((entry, index) => (
