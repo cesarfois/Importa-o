@@ -198,10 +198,18 @@ const getStageName = (idx) => {
 
 // Reusable Tooltip component for small stats cards (KPIs)
 const CardInfoTooltip = ({ metricKey, activeKey, setActiveKey }) => {
+    const [showDetails, setShowDetails] = useState(false);
     const exp = METRIC_EXPLANATIONS[metricKey];
+
+    useEffect(() => {
+        if (activeKey !== metricKey) {
+            setShowDetails(false);
+        }
+    }, [activeKey, metricKey]);
+
     if (!exp || activeKey !== metricKey) return null;
     return (
-        <div className="absolute z-30 top-9 right-2 bg-[#4f46e5] text-white text-[10px] p-3 rounded-xl shadow-lg max-w-[250px] text-left leading-relaxed">
+        <div className="absolute z-30 top-9 right-2 bg-[#4f46e5] text-white text-[10px] p-3 rounded-xl shadow-lg w-[260px] text-left leading-relaxed">
             <div className="absolute -top-1 right-3.5 w-2 h-2 bg-[#4f46e5] transform rotate-45"></div>
             <div className="flex justify-between items-center mb-1 font-extrabold uppercase tracking-wider text-[9px] text-indigo-200">
                 <span>Regra de Cálculo</span>
@@ -213,6 +221,22 @@ const CardInfoTooltip = ({ metricKey, activeKey, setActiveKey }) => {
             <div className="mt-1.5 pt-1.5 border-t border-indigo-500/50 text-[9px] text-indigo-100 font-medium">
                 Origem: {exp.source}
             </div>
+
+            {exp.details && (
+                <div className="mt-2 pt-2 border-t border-indigo-500/50">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setShowDetails(!showDetails); }}
+                        className="text-[9px] text-indigo-200 hover:text-white font-bold flex items-center gap-1 transition-colors"
+                    >
+                        {showDetails ? 'Ocultar Detalhes Técnicos' : 'Ver Detalhes (Campos DocuWare)'}
+                    </button>
+                    {showDetails && (
+                        <div className="mt-1.5 p-2 bg-indigo-900/50 border border-indigo-700/50 rounded text-[9px] text-indigo-100 font-mono break-words">
+                            {exp.details}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
@@ -559,61 +583,71 @@ const METRIC_EXPLANATIONS = {
         title: "Mercadoria (FOB)",
         formula: "Soma de (Montante_Factura * Valor Cambial)",
         source: "Campos MONTANTE_FACTURA e VALOR_CAMBIAL no DocuWare",
-        description: "Custo de aquisição FOB da mercadoria convertida para a moeda local (Cuanzas)."
+        description: "Custo de aquisição FOB da mercadoria convertida para a moeda local (Cuanzas).",
+        details: "FOB: VALOR_FOB, FOB, VALOR_MERCADORIA, MONTANTE_FACTURA, VALOR.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
     },
     frete: {
         title: "Frete Total",
         formula: "Soma de (Montante_transporte * Valor Cambial)",
         source: "Campos MONTANTE_TRANSPORTE e VALOR_CAMBIAL no DocuWare",
-        description: "Custo total com frete internacional para movimentação das cargas até Angola."
+        description: "Custo total com frete internacional para movimentação das cargas até Angola.",
+        details: "Frete: VALOR_FRETE, FRETE.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
     },
     custos_adicionais: {
         title: "Custos Adicionais",
         formula: "Soma de (Despesas_extras * Valor Cambial)",
         source: "Campos CUSTOS_ADICIONAIS, OUTROS_CUSTOS ou DESPESAS_EXTRAS no DocuWare",
-        description: "Custos diversos e taxas logísticas extraordinárias incorridas durante o trânsito."
+        description: "Custos diversos e taxas logísticas extraordinárias incorridas durante o trânsito.",
+        details: "Custos: CUSTOS_ADICIONAIS, OUTROS_CUSTOS, OUTRAS_DESPESAS.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
     },
     rdf: {
         title: "RDF Total",
         formula: "Soma de Montante_RDF",
         source: "Campo MONTANTE_RDF (Cuanzas) no DocuWare",
-        description: "Total pago em tarifas de importação e impostos via documento de arrecadação aduaneira (RDF)."
+        description: "Total pago em tarifas de importação e impostos via documento de arrecadação aduaneira (RDF).",
+        details: "RDF: MONTANTE_RDF, RDF."
     },
     iva: {
         title: "IVA Total",
         formula: "Soma de Valor IVA_Importação",
         source: "Campo VALOR_IVA_IMPORTACAO no DocuWare",
-        description: "Total acumulado de Imposto sobre o Valor Acrescentado recolhido na importação."
+        description: "Total acumulado de Imposto sobre o Valor Acrescentado recolhido na importação.",
+        details: "IVA: VALOR_IVA_IMPORTACAO, IVA_IMPORTACAO, IVA."
     },
     direitos: {
         title: "Direitos Aduaneiros",
         formula: "Soma de Direito Alfandegários e Taxas",
         source: "Campo DIREITOS_ALFANDEGARIOS ou DIREITO_ALFANDEGARIOS no DocuWare",
-        description: "Taxas aduaneiras e direitos alfandegários recolhidos."
+        description: "Taxas aduaneiras e direitos alfandegários recolhidos.",
+        details: "Direitos: DIREITOS_ALFANDEGARIOS, DIREITO_ALFANDEGARIOS, DIREITO_ALFAND."
     },
     despachante: {
         title: "Serviços Despachante",
         formula: "Soma de Serviços Despachantes",
         source: "Campo SERVICOS_DESPACHANTES (Cuanzas) no DocuWare",
-        description: "Honorários e taxas de serviços pagos aos despachantes oficiais aduaneiros."
+        description: "Honorários e taxas de serviços pagos aos despachantes oficiais aduaneiros.",
+        details: "Despachante: SERVICOS_DESPACHANTES, SERVICO_DESPACHANTE."
     },
     custo_importacao: {
         title: "Custo de Importação",
         formula: "FOB_Kz + Montante_RDF + Serviços Despachantes + Frete_Kz + Despesas_Extras_Kz",
         source: "Fórmula de consolidação corporativa (soma dos componentes acima convertidos)",
-        description: "Custo real desembolsado de ponta a ponta para colocação da mercadoria no inventário da empresa."
+        description: "Custo real desembolsado de ponta a ponta para colocação da mercadoria no inventário da empresa.",
+        details: "Soma: FOB (em Kz) + RDF + Serviços Despachante + Frete (em Kz) + Custos Adicionais (em Kz)."
     },
     fator_nacionalizacao: {
         title: "Fator de Nacionalização (Landing Factor)",
         formula: "Custo de Importação / Valor FOB Convertido (FOB_Kz)",
         source: "Divisão do custo consolidado pelo FOB total em Kz",
-        description: "Relação multiplicadora de acréscimo de custo logístico sobre o produto. Ex: 1.23x indica 23% de custo adicional."
+        description: "Relação multiplicadora de acréscimo de custo logístico sobre o produto. Ex: 1.23x indica 23% de custo adicional.",
+        details: "Fórmula: Custo Importação / FOB (Kwanza)."
     },
     desvio_cambial: {
         title: "Desvio Cambial",
         formula: "Soma de [Montante_Factura * (Valor Cambial - Vaor Cambial_FC)]",
         source: "Diferença entre a taxa cambial do fechamento (Valor Cambial) e da emissão da fatura (Vaor Cambial_FC)",
-        description: "Impacto financeiro acumulado decorrente da variação do Cuanza frente às moedas estrangeiras da compra."
+        description: "Impacto financeiro acumulado decorrente da variação do Cuanza frente às moedas estrangeiras da compra.",
+        details: "Fechamento: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO.\nEmissão (FC): VAOR_CAMBIAL_FC, VALOR_CAMBIAL_FC, CAMBIO_FC, TAXA_CAMBIO_FC."
     },
     grafico_etapas: {
         title: "Distribuição por Etapa",
