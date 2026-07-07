@@ -35,5 +35,4 @@ jobs:
             [ -f tokens.json ] || echo "{}" > tokens.json
             
             # Rebuild and start container
-            docker rm -f rcsvision-app || true
             docker compose up -d --build
