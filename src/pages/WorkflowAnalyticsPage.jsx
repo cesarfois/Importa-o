@@ -117,6 +117,19 @@ const parseCurrency = (val) => {
     return parseFloat(clean) || 0;
 };
 
+const getDWFieldVal = (doc, ...aliases) => {
+    if (!doc || !doc.Fields) return 0;
+    const cleanAliases = aliases.map(a => a.toLowerCase().replace(/[e\s_\-\.\/]/g, ''));
+    const field = doc.Fields.find(f => {
+        const name = (f.FieldName || '').toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+            .replace(/[e\s_\-\.\/]/g, '');
+        return cleanAliases.includes(name);
+    });
+    if (!field) return 0;
+    return parseCurrency(field.Item || field.Value || '');
+};
+
 const formatKwanza = (value) => {
     if (value === undefined || value === null || isNaN(value)) return 'Kz 0,00';
     return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', currencyDisplay: 'code' })
@@ -1264,28 +1277,29 @@ const WorkflowAnalyticsPage = () => {
             const dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
             
             // Financials (Previsto / RDF)
-            const fMerc = parseCurrency(getDocFieldValue(doc, 'VALOR_FOB') || getDocFieldValue(doc, 'FOB') || getDocFieldValue(doc, 'VALOR_MERCADORIA') || getDocFieldValue(doc, 'MONTANTE_FACTURA') || getDocFieldValue(doc, 'VALOR'));
-            const fFrete = parseCurrency(getDocFieldValue(doc, 'VALOR_FRETE') || getDocFieldValue(doc, 'FRETE'));
-            const fCustosAdicionais = parseCurrency(getDocFieldValue(doc, 'CUSTOS_ADICIONAIS') || getDocFieldValue(doc, 'OUTROS_CUSTOS') || getDocFieldValue(doc, 'OUTRAS_DESPESAS'));
-            const fRdf = parseCurrency(getDocFieldValue(doc, 'MONTANTE_RDF') || getDocFieldValue(doc, 'RDF'));
-            const fIva = parseCurrency(getDocFieldValue(doc, 'VALOR_IVA_IMPORTACAO') || getDocFieldValue(doc, 'IVA_IMPORTACAO') || getDocFieldValue(doc, 'IVA'));
-            const fDireitos = parseCurrency(getDocFieldValue(doc, 'DIREITOS_ALFANDEGARIOS') || getDocFieldValue(doc, 'DIREITO_ALFANDEGARIOS') || getDocFieldValue(doc, 'DIREITO_ALFAND'));
-            const fServicosDespachante = parseCurrency(getDocFieldValue(doc, 'SERVICOS_DESPACHANTES') || getDocFieldValue(doc, 'SERVICO_DESPACHANTE'));
-            const fIvaServicos = parseCurrency(getDocFieldValue(doc, 'VALOR_IVA_SERVICES') || getDocFieldValue(doc, 'VALOR_IVA_SERVICOS') || getDocFieldValue(doc, 'IVA_SERVICES') || getDocFieldValue(doc, 'IVA_SERVICOS') || getDocFieldValue(doc, 'IVA_DESPACHANTE'));
+            // Financials (Previsto / RDF)
+            const fMerc = getDWFieldVal(doc, 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'MONTANTE_FACTURA', 'VALOR');
+            const fFrete = getDWFieldVal(doc, 'VALOR_FRETE', 'FRETE', 'MONTANTE_TRANSPORTE', 'TRANSPORTE');
+            const fCustosAdicionais = getDWFieldVal(doc, 'CUSTOS_ADICIONAIS', 'OUTROS_CUSTOS', 'OUTRAS_DESPESAS', 'DESPESAS_EXTRAS', 'EXTRAS');
+            const fRdf = getDWFieldVal(doc, 'MONTANTE_RDF', 'RDF');
+            const fIva = getDWFieldVal(doc, 'VALOR_IVA_IMPORTACAO', 'IVA_IMPORTACAO', 'IVA');
+            const fDireitos = getDWFieldVal(doc, 'DIREITOS_ALFANDEGARIOS', 'DIREITO_ALFANDEGARIOS', 'DIREITO_ALFAND', 'DIREITO_ALFANDEGARIOS_E_TAXAS', 'DIREITO ALFANDEGARIOS E TAXAS');
+            const fServicosDespachante = getDWFieldVal(doc, 'SERVICOS_DESPACHANTES', 'SERVICO_DESPACHANTE');
+            const fIvaServicos = getDWFieldVal(doc, 'VALOR_IVA_SERVICES', 'VALOR_IVA_SERVICOS', 'IVA_SERVICES', 'IVA_SERVICOS', 'IVA_DESPACHANTE');
             
             // Financials (Realizado / FC)
-            const fMercFC = parseCurrency(getDocFieldValue(doc, 'MONTANTE_FC') || getDocFieldValue(doc, 'VALOR_MERCADORIA_FC') || getDocFieldValue(doc, 'MONTANTE_FACTURA_FC') || getDocFieldValue(doc, 'VALOR_FC'));
-            const fDireitosFC = parseCurrency(getDocFieldValue(doc, 'DIR_ALFANDEGARIOS_TAXAS_FC') || getDocFieldValue(doc, 'DIR_ALFANDEGARIOS_FC') || getDocFieldValue(doc, 'DIREITOS_ALFANDEGARIOS_FC') || getDocFieldValue(doc, 'DIREITOS_FC'));
-            const fIvaFC = parseCurrency(getDocFieldValue(doc, 'IVA_IMPORTACAO_FC') || getDocFieldValue(doc, 'VALOR_IVA_IMPORTACAO_FC') || getDocFieldValue(doc, 'IVA_FC'));
-            const fServicosDespachanteFC = parseCurrency(getDocFieldValue(doc, 'SERVICOS_DESPACHANTE_FC') || getDocFieldValue(doc, 'SERVICO_DESPACHANTE_FC') || getDocFieldValue(doc, 'SERVICOS_DESPACHANTES_FC'));
-            const fIvaServicosFC = parseCurrency(getDocFieldValue(doc, 'IVA_SERV_DESPACHANTE_FC') || getDocFieldValue(doc, 'IVA_SERV_FC') || getDocFieldValue(doc, 'IVA_SERVICES_FC') || getDocFieldValue(doc, 'IVA_SERVICOS_FC'));
+            // Note: fMercFC is same as fMerc since invoice FOB is constant, just converted with Vaor Cambial_FC
+            const fDireitosFC = getDWFieldVal(doc, 'DIR_ALFANDEGARIOS_TAXAS_FC', 'DIR_ALFANDEGARIOS_FC', 'DIREITOS_ALFANDEGARIOS_FC', 'DIREITOS_FC', 'Dir_Alfandegarios_e_Taxas_FC', 'Dir_Alfandegarios e Taxas_FC');
+            const fIvaFC = getDWFieldVal(doc, 'IVA_IMPORTACAO_FC', 'VALOR_IVA_IMPORTACAO_FC', 'IVA_FC');
+            const fServicosDespachanteFC = getDWFieldVal(doc, 'SERVICOS_DESPACHANTE_FC', 'SERVICO_DESPACHANTE_FC', 'SERVICOS_DESPACHANTES_FC');
+            const fIvaServicosFC = getDWFieldVal(doc, 'IVA_SERV_DESPACHANTE_FC', 'IVA_SERV_FC', 'IVA_SERVICES_FC', 'IVA_SERVICOS_FC', 'IVA_Serv.Despachante_FC');
 
             // Exchange Rates & Conversions
             const fValorCambial = parseCurrency(findFieldVal(doc, ['VALOR_CAMBIAL', 'VALOR_CAMBIO', 'CAMBIO', 'TAXA_CAMBIO', 'VALOR CAMBIAL']));
             const fValorCambialFC = parseCurrency(findFieldVal(doc, ['VAOR_CAMBIAL_FC', 'VALOR_CAMBIAL_FC', 'CAMBIO_FC', 'TAXA_CAMBIO_FC', 'Vaor Cambial_FC']));
             
             const fMercKz = fMerc * (fValorCambial || 1);
-            const fMercFCKz = fMercFC * (fValorCambialFC || fValorCambial || 1);
+            const fMercFCKz = fMerc * (fValorCambialFC || fValorCambial || 1);
             const fFreteKz = fFrete * (fValorCambial || 1);
             const fCustosAdicionaisKz = fCustosAdicionais * (fValorCambial || 1);
             const fDesvioCambial = (fValorCambial && fValorCambialFC) ? fMerc * (fValorCambial - fValorCambialFC) : 0;
