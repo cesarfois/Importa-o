@@ -593,71 +593,71 @@ const METRIC_EXPLANATIONS = {
         description: "Tempo médio de retenção dos processos nas mãos dos respectivos responsáveis."
     },
     fob: {
-        title: "Mercadoria (FOB)",
+        title: "Valor Mercadoria",
         formula: "Soma de (Montante_Factura * Valor Cambial)",
-        source: "Campos MONTANTE_FACTURA e VALOR_CAMBIAL no DocuWare",
-        description: "Custo de aquisição FOB da mercadoria convertida para a moeda local (Cuanzas).",
-        details: "FOB: VALOR_FOB, FOB, VALOR_MERCADORIA, MONTANTE_FACTURA, VALOR.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
+        source: "Campos Montante_Factura e Valor Cambial no DocuWare",
+        description: "Custo de aquisição da mercadoria convertida para a moeda local (Cuanzas).",
+        details: "Mercadoria: Montante_Factura, VALOR_FOB, FOB, VALOR_MERCADORIA, VALOR.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
     },
     frete: {
         title: "Frete Total",
         formula: "Soma de (Montante_transporte * Valor Cambial)",
-        source: "Campos MONTANTE_TRANSPORTE e VALOR_CAMBIAL no DocuWare",
+        source: "Campos Montante_transporte e Valor Cambial no DocuWare",
         description: "Custo total com frete internacional para movimentação das cargas até Angola.",
-        details: "Frete: VALOR_FRETE, FRETE.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
+        details: "Frete: Montante_transporte, VALOR_FRETE, FRETE.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
     },
     custos_adicionais: {
         title: "Custos Adicionais",
         formula: "Soma de (Despesas_extras * Valor Cambial)",
-        source: "Campos CUSTOS_ADICIONAIS, OUTROS_CUSTOS ou DESPESAS_EXTRAS no DocuWare",
+        source: "Campos Despesas_extras, CUSTOS_ADICIONAIS ou OUTROS_CUSTOS no DocuWare",
         description: "Custos diversos e taxas logísticas extraordinárias incorridas durante o trânsito.",
-        details: "Custos: CUSTOS_ADICIONAIS, OUTROS_CUSTOS, OUTRAS_DESPESAS.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
+        details: "Custos: Despesas_extras, CUSTOS_ADICIONAIS, OUTROS_CUSTOS, OUTRAS_DESPESAS.\nCâmbio: VALOR_CAMBIAL, VALOR_CAMBIO, CAMBIO, TAXA_CAMBIO."
     },
     rdf: {
         title: "RDF Total",
         formula: "Soma de Montante_RDF",
-        source: "Campo MONTANTE_RDF (Cuanzas) no DocuWare",
+        source: "Campo Montante_RDF (Cuanzas) no DocuWare",
         description: "Total pago em tarifas de importação e impostos via documento de arrecadação aduaneira (RDF).",
-        details: "RDF: MONTANTE_RDF, RDF."
+        details: "RDF: Montante_RDF, RDF."
     },
     iva: {
         title: "IVA Total",
         formula: "Soma de Valor IVA_Importação",
-        source: "Campo VALOR_IVA_IMPORTACAO no DocuWare",
+        source: "Campo Valor IVA_Importação no DocuWare",
         description: "Total acumulado de Imposto sobre o Valor Acrescentado recolhido na importação.",
-        details: "IVA: VALOR_IVA_IMPORTACAO, IVA_IMPORTACAO, IVA."
+        details: "IVA: Valor IVA_Importação, IVA_IMPORTACAO, IVA."
     },
     direitos: {
         title: "Direitos Aduaneiros",
         formula: "Soma de Direito Alfandegários e Taxas",
-        source: "Campo DIREITOS_ALFANDEGARIOS ou DIREITO_ALFANDEGARIOS no DocuWare",
+        source: "Campo Direito Alfandegários e Taxas no DocuWare",
         description: "Taxas aduaneiras e direitos alfandegários recolhidos.",
-        details: "Direitos: DIREITOS_ALFANDEGARIOS, DIREITO_ALFANDEGARIOS, DIREITO_ALFAND."
+        details: "Direitos: Direito Alfandegários e Taxas, DIREITOS_ALFANDEGARIOS, DIREITO_ALFANDEGARIOS, DIREITO_ALFAND."
     },
     despachante: {
         title: "Serviços Despachante",
         formula: "Soma de Serviços Despachantes",
-        source: "Campo SERVICOS_DESPACHANTES (Cuanzas) no DocuWare",
+        source: "Campo Serviços Despachantes (Cuanzas) no DocuWare",
         description: "Honorários e taxas de serviços pagos aos despachantes oficiais aduaneiros.",
-        details: "Despachante: SERVICOS_DESPACHANTES, SERVICO_DESPACHANTE."
+        details: "Despachante: Serviços Despachantes, SERVICO_DESPACHANTE."
     },
     custo_importacao: {
         title: "Custo de Importação",
-        formula: "FOB_Kz + Montante_RDF + Serviços Despachantes + Frete_Kz + Despesas_Extras_Kz",
+        formula: "Valor_Mercadoria_Kz + Montante_RDF + Serviços Despachantes + Frete_Kz + Despesas_Extras_Kz",
         source: "Fórmula de consolidação corporativa (soma dos componentes acima convertidos)",
         description: "Custo real desembolsado de ponta a ponta para colocação da mercadoria no inventário da empresa.",
-        details: "Soma: FOB (em Kz) + RDF + Serviços Despachante + Frete (em Kz) + Custos Adicionais (em Kz)."
+        details: "Soma: Valor Mercadoria (em Kz) + RDF + Serviços Despachante + Frete (em Kz) + Custos Adicionais (em Kz)."
     },
     fator_nacionalizacao: {
         title: "Coeficiente de Importação (Landing Factor)",
-        formula: "Soma de todas as despesas ÷ Montante Fatura. É exibido como um multiplicador (ex: 1.25x representa 25% de custo adicional sobre o FOB).",
-        source: "Divisão do Custo total de importação pelo valor FOB (Mercadoria).",
+        formula: "Soma de todas as despesas ÷ Montante Fatura. É exibido como um multiplicador (ex: 1.25x representa 25% de custo adicional sobre a Mercadoria).",
+        source: "Divisão do Custo total de importação pelo valor da mercadoria (Montante_Factura).",
         description: "Compara o Coeficiente Previsto (RDF) e o Coeficiente Realizado (FC).",
-        details: "Previsto (RDF): (FOB_Kz + RDF + Despachante + Frete_Kz + Extras_Kz + Direitos + IVA + IVA_Servicos) / FOB_Kz\nRealizado (FC): (FOB_FC_Kz + Direitos_FC + IVA_FC + Despachante_FC + IVA_Servicos_FC + Frete_Kz + Extras_Kz) / FOB_FC_Kz"
+        details: "Previsto (RDF): (Valor_Mercadoria_Kz + RDF + Despachante + Frete_Kz + Extras_Kz + Direitos + IVA + IVA_Servicos) / Valor_Mercadoria_Kz\nRealizado (FC): (Valor_Mercadoria_FC_Kz + Direitos_FC + IVA_FC + Despachante_FC + IVA_Servicos_FC + Frete_Kz + Extras_Kz) / Valor_Mercadoria_FC_Kz"
     },
     custo_despesas_total: {
         title: "Custo Despesas Total",
-        formula: "Soma de todos os impostos, taxas, frete e honorários de despachante (excluindo o valor FOB da mercadoria).",
+        formula: "Soma de todos os impostos, taxas, frete e honorários de despachante (excluindo o valor da mercadoria).",
         source: "Campos de impostos e despesas do DocuWare de Abertura (RDF) e Fechamento (FC).",
         description: "Mostra o valor consolidado gasto em despesas de importação para nacionalizar a mercadoria.",
         details: "Previsto (RDF): Frete + Custos Adicionais + RDF + IVA + Direitos + Despachante + IVA Serviços\nRealizado (FC): Frete + Custos Adicionais + Direitos_FC + IVA_FC + Despachante_FC + IVA Serviços_FC"
