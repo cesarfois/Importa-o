@@ -1335,7 +1335,7 @@ const WorkflowAnalyticsPage = () => {
             const fServicosDespachanteFCActive = fServicosDespachanteFC > 0 ? fServicosDespachanteFC : fServicosDespachante;
             const fIvaServicosFCActive = fIvaServicosFC > 0 ? fIvaServicosFC : fIvaServicos;
             const fAduaneiroRealizado = fMontanteFC > 0 ? fMontanteFC : (fDireitosFCActive + fIvaFCActive + fServicosDespachanteFCActive + fIvaServicosFCActive);
-            const fDespesasRealizado = fFreteFCKz + fCustosAdicionaisFCKz + fAduaneiroRealizado;
+            const fDespesasRealizado = fAduaneiroRealizado;
 
             const fCustoImportacao = fMercKz + fDespesasPrevisto;
             const activeFobKz = fMercFCKz > 0 ? fMercFCKz : fMercKz;
@@ -1873,10 +1873,13 @@ const WorkflowAnalyticsPage = () => {
             }
         });
 
+        const overallCoefPrevisto = totalMercadoria > 0 ? (1 + (totalDespesasPrevisto / totalMercadoria)) : 0;
+        const overallCoefRealizado = totalMercadoriaFC > 0 ? (1 + (totalDespesasRealizado / totalMercadoriaFC)) : 0;
+
         // Coefficient comparison data for Simple Bar Chart
         const coefChartData = [
-            { name: 'Previsto (RDF)', Coeficiente: parseFloat(avgCoefPrevisto.toFixed(2)), fill: '#f59e0b' },
-            { name: 'Realizado (FC)', Coeficiente: parseFloat(avgCoefRealizado.toFixed(2)), fill: '#4f46e5' }
+            { name: 'Previsto (RDF)', Coeficiente: parseFloat(overallCoefPrevisto.toFixed(2)), fill: '#f59e0b' },
+            { name: 'Realizado (FC)', Coeficiente: parseFloat(overallCoefRealizado.toFixed(2)), fill: '#4f46e5' }
         ];
 
         const processCostRanking = [...detailedProcesses]
@@ -1929,8 +1932,8 @@ const WorkflowAnalyticsPage = () => {
             totalDespesasRealizado,
             blendedFobTotal,
 
-            avgCoefPrevisto,
-            avgCoefRealizado,
+            overallCoefPrevisto,
+            overallCoefRealizado,
             coefChartData,
 
             totalDesvioCambial,
@@ -2411,14 +2414,14 @@ const WorkflowAnalyticsPage = () => {
                     {activeTab === 'analise_financeira' && (
                         <div className="space-y-6">
                             {/* Financial Cards Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                                {/* Card Principal: Coeficiente de Importação */}
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-full lg:col-span-3 flex flex-col justify-between relative overflow-hidden">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Card 1: Coeficiente de Importação */}
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/40 rounded-full -mr-8 -mt-8 pointer-events-none"></div>
                                     <div className="flex justify-between items-start z-10">
                                         <div>
                                             <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest">KPI Destaque</span>
-                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Coeficiente de Importação (Landing Factor)</h4>
+                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Coeficiente (Landing Factor)</h4>
                                         </div>
                                         <button 
                                             onClick={() => setActiveExplanation(activeExplanation === 'fator_nacionalizacao' ? null : 'fator_nacionalizacao')}
@@ -2431,19 +2434,23 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="grid grid-cols-2 gap-4 mt-4 z-10">
                                         <div className="border-r border-slate-100 pr-4">
                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Previsto (RDF)</div>
-                                            <div className="text-3xl font-black text-amber-500 mt-1 font-mono">{financialData.avgCoefPrevisto > 0 ? `${financialData.avgCoefPrevisto.toFixed(2)}x` : 'N/D'}</div>
+                                            <div className="text-2xl font-black text-amber-500 mt-1 font-mono">{financialData.overallCoefPrevisto > 0 ? `${financialData.overallCoefPrevisto.toFixed(2)}x` : 'N/D'}</div>
                                         </div>
                                         <div className="pl-4">
                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Realizado (FC)</div>
-                                            <div className="text-3xl font-black text-indigo-600 mt-1 font-mono">{financialData.avgCoefRealizado > 0 ? `${financialData.avgCoefRealizado.toFixed(2)}x` : 'N/D'}</div>
+                                            <div className="text-2xl font-black text-indigo-600 mt-1 font-mono">{financialData.overallCoefRealizado > 0 ? `${financialData.overallCoefRealizado.toFixed(2)}x` : 'N/D'}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Card 2: Montante Fatura */}
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-1 flex flex-col justify-between relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Montante Fatura</div>
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/40 rounded-full -mr-8 -mt-8 pointer-events-none"></div>
+                                    <div className="flex justify-between items-start z-10">
+                                        <div>
+                                            <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest">FOB</span>
+                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Montante Fatura</h4>
+                                        </div>
                                         <button 
                                             onClick={() => setActiveExplanation(activeExplanation === 'fob' ? null : 'fob')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
@@ -2452,18 +2459,26 @@ const WorkflowAnalyticsPage = () => {
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
-                                    <div className="text-xl font-black text-slate-800 mt-3 font-mono">
-                                        {formatKwanza(financialData.blendedFobTotal)}
+                                    <div className="grid grid-cols-2 gap-4 mt-4 z-10">
+                                        <div className="border-r border-slate-100 pr-4">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Previsto (RDF)</div>
+                                            <div className="text-base font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalMercadoria)}</div>
+                                        </div>
+                                        <div className="pl-4">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Realizado (FC)</div>
+                                            <div className="text-base font-black text-indigo-600 mt-1 font-mono">{formatKwanza(financialData.totalMercadoriaFC)}</div>
+                                        </div>
                                     </div>
-                                    <p className="text-[9px] text-slate-400 mt-4 leading-tight">
-                                        FOB / Fechamento dependendo do status do processo.
-                                    </p>
                                 </div>
 
                                 {/* Card 3: Custo Total Despesas */}
-                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm col-span-1 flex flex-col justify-between relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Custo Despesas Total</div>
+                                <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/40 rounded-full -mr-8 -mt-8 pointer-events-none"></div>
+                                    <div className="flex justify-between items-start z-10">
+                                        <div>
+                                            <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest">Custos & Taxas</span>
+                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Custo Despesas Total</h4>
+                                        </div>
                                         <button 
                                             onClick={() => setActiveExplanation(activeExplanation === 'custo_despesas_total' ? null : 'custo_despesas_total')}
                                             className="text-slate-300 hover:text-indigo-600 transition-colors"
@@ -2472,12 +2487,16 @@ const WorkflowAnalyticsPage = () => {
                                             <FaInfoCircle className="text-xs" />
                                         </button>
                                     </div>
-                                    <div className="text-xl font-black text-slate-700 mt-3 font-mono">
-                                        {formatKwanza(financialData.totalDespesasRealizado > 0 ? financialData.totalDespesasRealizado : financialData.totalDespesasPrevisto)}
+                                    <div className="grid grid-cols-2 gap-4 mt-4 z-10">
+                                        <div className="border-r border-slate-100 pr-4">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Previsto (RDF)</div>
+                                            <div className="text-base font-black text-slate-700 mt-1 font-mono">{formatKwanza(financialData.totalDespesasPrevisto)}</div>
+                                        </div>
+                                        <div className="pl-4">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Realizado (FC)</div>
+                                            <div className="text-base font-black text-indigo-600 mt-1 font-mono">{formatKwanza(financialData.totalDespesasRealizado)}</div>
+                                        </div>
                                     </div>
-                                    <p className="text-[9px] text-slate-400 mt-4 leading-tight">
-                                        Soma de todos os impostos, taxas e despachante.
-                                    </p>
                                 </div>
                             </div>
 
