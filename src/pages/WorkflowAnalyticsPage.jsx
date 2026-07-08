@@ -2477,7 +2477,7 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-start z-10">
                                         <div>
                                             <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest">Custos & Taxas</span>
-                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Custo Despesas Total</h4>
+                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Montante RDF / FC (Despesas)</h4>
                                         </div>
                                         <button 
                                             onClick={() => setActiveExplanation(activeExplanation === 'custo_despesas_total' ? null : 'custo_despesas_total')}
@@ -2607,18 +2607,13 @@ const WorkflowAnalyticsPage = () => {
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalIvaServicos)}</td>
                                                     <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalIvaServicosFC)}</td>
                                                 </tr>
-                                                <tr className="border-t border-slate-200 font-bold bg-slate-50/30">
-                                                    <td className="text-slate-700">Montante Fatura</td>
-                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalRDF)}</td>
-                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalFC)}</td>
-                                                </tr>
                                                 <tr className="border-t border-slate-200">
                                                     <td className="font-semibold text-slate-600">Valor Cambial / Ajustes</td>
                                                     <td className="text-right text-slate-500 font-mono">{financialData.avgValorCambial > 0 ? financialData.avgValorCambial.toFixed(2) : '-'}</td>
                                                     <td className="text-right text-slate-500 font-mono font-bold text-indigo-500">{financialData.avgValorCambialFC > 0 ? financialData.avgValorCambialFC.toFixed(2) : '-'}</td>
                                                 </tr>
                                                 <tr className="border-t border-slate-300 font-black bg-slate-50">
-                                                    <td className="text-slate-800">Custo Despesas Total</td>
+                                                    <td className="text-slate-800">Montante RDF / FC (Despesas)</td>
                                                     <td className="text-right text-amber-600 font-mono">{formatKwanza(financialData.totalDespesasPrevisto)}</td>
                                                     <td className="text-right text-indigo-600 font-mono">{formatKwanza(financialData.totalDespesasRealizado)}</td>
                                                 </tr>
