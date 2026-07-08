@@ -852,36 +852,33 @@ const METRIC_EXPLANATIONS = {
         )
     },
     ranking_processos_custo: {
-        title: "Ranking de Processos com Maior Custo",
-        formula: "Processos listados em ordem decrescente pelo Custo Adicional Total. O Coeficiente (Landing Factor) representa o multiplicador de custos do processo (Custo Total / Valor FOB).",
-        source: "Cálculo comparativo baseado em Valor FOB, despesas logísticas aduaneiras e taxa cambial de cada processo no DocuWare.",
+        title: "Tabela de Auditoria Financeira dos Processos",
+        formula: "Exibição direta de todos os 15 campos financeiros originais de Abertura (Previsto/RDF) e Fechamento (Realizado/FC) extraídos do DocuWare.",
+        source: "Dados financeiros e de câmbio carregados diretamente de cada documento do DocuWare (sem cálculos ou conversões intermediárias).",
         details: (
-            <div className="space-y-2 text-xs">
-                <p className="font-bold text-slate-700">Mapeamento de Colunas da Tabela & Campos do DocuWare:</p>
-                <ul className="list-disc pl-4 space-y-1">
-                    <li>
-                        <strong>Valor Mercadoria:</strong> FOB convertido em Cuanzas.
-                        <br />
-                        <span className="text-[10px] text-slate-500">
-                          - Campo Base (Moeda Estrangeira): <code>MONTANTE_FACTURA</code>, <code>VALOR_FOB</code>, <code>FOB</code>, <code>VALOR_MERCADORIA</code> ou <code>VALOR</code>.
-                          <br />
-                          - Conversão: Multiplicado por <code>VALOR_CAMBIAL</code> (Previsto) ou por <code>Vaor Cambial_FC</code> (Realizado).
-                        </span>
-                    </li>
-                    <li>
-                        <strong>Custos Adicionais:</strong> Soma das despesas adicionais em Cuanzas.
-                        <br />
-                        <span className="text-[10px] text-slate-500">
-                          - No Previsto (RDF): Frete (<code>Montante_transporte</code> ou <code>VALOR_FRETE</code>) + Extras (<code>Despesas_extras</code> ou <code>CUSTOS_ADICIONAIS</code>) + <code>MONTANTE_RDF</code> + Despachante (<code>SERVICOS_DESPACHANTES</code>) + IVA Despachante (<code>VALOR_IVA_SERVICES</code>).
-                          <br />
-                          - No Realizado (FC): Frete + Extras + Impostos Fechamento (<code>Dir_Alfandegários e Taxas_FC</code> + <code>IVA_Importação_FC</code>) + Despachante Fechamento (<code>Serviços Despachante_FC</code> + <code>IVA_Serv.Despachante_FC</code>).
-                        </span>
-                    </li>
-                    <li>
-                        <strong>Coeficiente:</strong> Landing Factor individual. Calculado como: <code>1 + (Soma dos Custos Adicionais / Valor Mercadoria FOB em Cuanzas)</code>.
-                    </li>
-                    <li><strong>Botão de Ação:</strong> Atalho direto que abre a ficha do documento no DocuWare utilizando seu ID único de arquivo.</li>
-                </ul>
+            <div className="space-y-3 text-xs">
+                <p className="font-bold text-slate-700">Explicação das Colunas Financeiras Extraídas:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p className="font-semibold text-slate-600 border-b pb-0.5 mb-1.5">1. Abertura / Previsto (RDF)</p>
+                        <ul className="list-disc pl-4 space-y-1 text-slate-600">
+                            <li><strong>Montante_Factura:</strong> Valor da mercadoria em moeda estrangeira.</li>
+                            <li><strong>Montante_transporte:</strong> Frete estimado em moeda estrangeira.</li>
+                            <li><strong>Despesas_extras:</strong> Outras despesas em moeda estrangeira.</li>
+                            <li><strong>Valor Cambial:</strong> Taxa de câmbio prevista.</li>
+                            <li><strong>Montante_RDF:</strong> Total aduaneiro previsto em Cuanzas (Soma das taxas de Abertura).</li>
+                            <li><strong>Taxas Previstas:</strong> <code>Direito Alfandegários e Taxas</code>, <code>Valor IVA_Importação</code>, <code>Serviços Despachantes</code> e <code>Valor IVA_Serviços</code>.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p className="font-semibold text-slate-600 border-b pb-0.5 mb-1.5">2. Fechamento / Realizado (FC)</p>
+                        <ul className="list-disc pl-4 space-y-1 text-slate-600">
+                            <li><strong>Vaor Cambial_FC:</strong> Taxa de câmbio realizada no fechamento.</li>
+                            <li><strong>Montante_FC:</strong> Total aduaneiro realizado em Cuanzas (Soma das taxas de Fechamento).</li>
+                            <li><strong>Taxas Realizadas:</strong> <code>Dir_Alfandegários e Taxas_FC</code>, <code>IVA_Importação_FC</code>, <code>Serviços Despachante_FC</code> e <code>IVA_Serv.Despachante_FC</code>.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -2580,10 +2577,10 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
                             </div>
 
-                            {/* Ranking de Processos com Maior Custo */}
+                            {/* Auditoria de Valores dos Processos (RDF vs FC) */}
                             <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-slate-700 text-sm">Ranking de Processos com Maior Custo</h3>
+                                    <h3 className="font-bold text-slate-700 text-sm">Auditoria de Valores dos Processos (RDF vs FC)</h3>
                                     <button 
                                         onClick={() => toggleChartExplanation('ranking_processos_custo')}
                                         className="text-slate-300 hover:text-indigo-600 transition-colors"
