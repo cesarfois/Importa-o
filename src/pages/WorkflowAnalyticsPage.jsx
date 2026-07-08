@@ -856,12 +856,30 @@ const METRIC_EXPLANATIONS = {
         formula: "Processos listados em ordem decrescente pelo Custo Adicional Total. O Coeficiente (Landing Factor) representa o multiplicador de custos do processo (Custo Total / Valor FOB).",
         source: "Cálculo comparativo baseado em Valor FOB, despesas logísticas aduaneiras e taxa cambial de cada processo no DocuWare.",
         details: (
-            <div className="space-y-2">
-                <p className="font-bold text-slate-700">Mapeamento de Colunas da Tabela:</p>
+            <div className="space-y-2 text-xs">
+                <p className="font-bold text-slate-700">Mapeamento de Colunas da Tabela & Campos do DocuWare:</p>
                 <ul className="list-disc pl-4 space-y-1">
-                    <li><strong>Valor Mercadoria:</strong> FOB convertido (FOB * VALOR_CAMBIAL).</li>
-                    <li><strong>Custos Adicionais:</strong> Soma de todas as despesas aduaneiras e de transporte daquele processo.</li>
-                    <li><strong>Coeficiente:</strong> Landing Factor individual (Custo Total de Importação / Valor FOB em Cuanzas).</li>
+                    <li>
+                        <strong>Valor Mercadoria:</strong> FOB convertido em Cuanzas.
+                        <br />
+                        <span className="text-[10px] text-slate-500">
+                          - Campo Base (Moeda Estrangeira): <code>MONTANTE_FACTURA</code>, <code>VALOR_FOB</code>, <code>FOB</code>, <code>VALOR_MERCADORIA</code> ou <code>VALOR</code>.
+                          <br />
+                          - Conversão: Multiplicado por <code>VALOR_CAMBIAL</code> (Previsto) ou por <code>Vaor Cambial_FC</code> (Realizado).
+                        </span>
+                    </li>
+                    <li>
+                        <strong>Custos Adicionais:</strong> Soma das despesas adicionais em Cuanzas.
+                        <br />
+                        <span className="text-[10px] text-slate-500">
+                          - No Previsto (RDF): Frete (<code>Montante_transporte</code> ou <code>VALOR_FRETE</code>) + Extras (<code>Despesas_extras</code> ou <code>CUSTOS_ADICIONAIS</code>) + <code>MONTANTE_RDF</code> + Despachante (<code>SERVICOS_DESPACHANTES</code>) + IVA Despachante (<code>VALOR_IVA_SERVICES</code>).
+                          <br />
+                          - No Realizado (FC): Frete + Extras + Impostos Fechamento (<code>Dir_Alfandegários e Taxas_FC</code> + <code>IVA_Importação_FC</code>) + Despachante Fechamento (<code>Serviços Despachante_FC</code> + <code>IVA_Serv.Despachante_FC</code>).
+                        </span>
+                    </li>
+                    <li>
+                        <strong>Coeficiente:</strong> Landing Factor individual. Calculado como: <code>1 + (Soma dos Custos Adicionais / Valor Mercadoria FOB em Cuanzas)</code>.
+                    </li>
                     <li><strong>Botão de Ação:</strong> Atalho direto que abre a ficha do documento no DocuWare utilizando seu ID único de arquivo.</li>
                 </ul>
             </div>
