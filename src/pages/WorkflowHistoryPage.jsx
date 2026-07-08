@@ -2081,6 +2081,9 @@ const WorkflowHistoryPage = () => {
                                                     </span>
                                                     {renderFilterDropdown('docNum', 'Documento', filterDocNum, setFilterDocNum, searchDocNum, setSearchDocNum, uniqueDocNums, true)}
                                                 </th>
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    Nº Factura
+                                                </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('entryDate')}>
                                                     Início {sortField === 'entryDate' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
@@ -2146,6 +2149,11 @@ const WorkflowHistoryPage = () => {
                                                         <td className="py-3 px-2">
                                                             <div className="font-bold text-slate-800 text-xs truncate max-w-[100px]">{docNum}</div>
                                                             <div className="text-[10px] font-mono text-slate-400">ID: {doc.Id}</div>
+                                                        </td>
+
+                                                        {/* Nº Factura */}
+                                                        <td className="py-3 px-2 font-mono text-xs text-slate-600">
+                                                            {getDocFieldValue(doc, 'NO_FACTURA') || '-'}
                                                         </td>
 
                                                         {/* Entry Date */}
