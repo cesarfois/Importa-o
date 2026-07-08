@@ -1290,31 +1290,39 @@ const WorkflowAnalyticsPage = () => {
             const fCustosAdicionaisKz = fCustosAdicionais * (fValorCambial || 1);
             const fDesvioCambial = (fValorCambial && fValorCambialFC) ? fMerc * (fValorCambial - fValorCambialFC) : 0;
             
-            const fCustoImportacao = fMercKz + fRdf + fServicosDespachante + fFreteKz + fCustosAdicionaisKz + fIvaServicos + fDireitos + fIva;
-            const fCustoImportacaoFC = fMercFCKz + fDireitosFC + fIvaFC + fServicosDespachanteFC + fIvaServicosFC + fFreteKz + fCustosAdicionaisKz;
+            // Previsto Despesas (excluding FOB)
+            const fDespesasPrevisto = fFreteKz + fCustosAdicionaisKz + fRdf + fServicosDespachante + fIvaServicos;
+            
+            // Realizado Despesas (excluding FOB - use fallback to previsto if realizado field is zero)
+            const fDireitosFCActive = fDireitosFC > 0 ? fDireitosFC : fDireitos;
+            const fIvaFCActive = fIvaFC > 0 ? fIvaFC : fIva;
+            const fServicosDespachanteFCActive = fServicosDespachanteFC > 0 ? fServicosDespachanteFC : fServicosDespachante;
+            const fIvaServicosFCActive = fIvaServicosFC > 0 ? fIvaServicosFC : fIvaServicos;
+            const fDespesasRealizado = fFreteKz + fCustosAdicionaisKz + fDireitosFCActive + fIvaFCActive + fServicosDespachanteFCActive + fIvaServicosFCActive;
+
+            const fCustoImportacao = fMercKz + fDespesasPrevisto;
+            const activeFobKz = fMercFCKz > 0 ? fMercFCKz : fMercKz;
+            const fCustoImportacaoFC = activeFobKz + fDespesasRealizado;
 
             // Stage evaluation
             const stageIdx = evaluateActiveStage(doc, prog.activeTaskName, prog.isFinished);
             const isFinished = stageIdx === 6 || prog.isFinished;
             const stageName = getStageName(stageIdx);
 
-            // Coeficiente calculation (Landing Factor)
+            // Coeficiente calculation (Landing Factor: 1 + Despesas/FOB)
             let coefVal = 'N/D';
             let numericCoef = 0;
             if (fMercKz <= 0) {
                 coefVal = 'Sem valor da mercadoria';
             } else {
-                if (fCustoImportacao > 0) {
-                    numericCoef = fCustoImportacao / fMercKz;
-                    coefVal = numericCoef.toFixed(2) + 'x';
-                }
+                numericCoef = 1 + (fDespesasPrevisto / fMercKz);
+                coefVal = numericCoef.toFixed(2) + 'x';
             }
 
             // Realizado Coeficiente
             let numericCoefFC = 0;
-            const activeFobKz = fMercFCKz > 0 ? fMercFCKz : fMercKz;
-            if (activeFobKz > 0 && fCustoImportacaoFC > 0) {
-                numericCoefFC = fCustoImportacaoFC / activeFobKz;
+            if (activeFobKz > 0) {
+                numericCoefFC = 1 + (fDespesasRealizado / activeFobKz);
             }
 
             // Days calculation
@@ -1385,6 +1393,8 @@ const WorkflowAnalyticsPage = () => {
                 valorCambial: fValorCambial,
                 valorCambialFC: fValorCambialFC,
                 desvioCambial: fDesvioCambial,
+                despesasPrevisto: fDespesasPrevisto,
+                despesasRealizado: fDespesasRealizado,
                 custoImportacao: fCustoImportacao,
                 custoImportacaoFC: fCustoImportacaoFC,
                 coeficienteText: coefVal,
@@ -1830,7 +1840,7 @@ const WorkflowAnalyticsPage = () => {
                 fornecedor: p.fornecedor,
                 despachante: p.despachante,
                 valMercadoria: p.valMercadoriaFC > 0 ? p.valMercadoriaFC : p.valMercadoria,
-                custoTotal: p.custoImportacaoFC > 0 ? p.custoImportacaoFC : p.custoImportacao,
+                custoTotal: p.despesasRealizado > 0 ? p.despesasRealizado : p.despesasPrevisto,
                 coeficienteText: p.coeficienteNumericFC > 0 ? p.coeficienteNumericFC.toFixed(2) + 'x' : p.coeficienteText
             }))
             .sort((a, b) => b.custoTotal - a.custoTotal);
