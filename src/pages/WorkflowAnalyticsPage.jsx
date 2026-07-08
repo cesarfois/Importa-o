@@ -1312,6 +1312,7 @@ const WorkflowAnalyticsPage = () => {
             const fIvaFC = getDWFieldVal(doc, 'IVA_IMPORTACAO_FC', 'VALOR_IVA_IMPORTACAO_FC', 'IVA_FC');
             const fServicosDespachanteFC = getDWFieldVal(doc, 'SERVICOS_DESPACHANTE_FC', 'SERVICO_DESPACHANTE_FC', 'SERVICOS_DESPACHANTES_FC');
             const fIvaServicosFC = getDWFieldVal(doc, 'IVA_SERV_DESPACHANTE_FC', 'IVA_SERV_FC', 'IVA_SERVICES_FC', 'IVA_SERVICOS_FC', 'IVA_Serv.Despachante_FC');
+            const fMontanteFC = getDWFieldVal(doc, 'MONTANTE_FC');
 
             // Exchange Rates & Conversions
             const fValorCambial = parseCurrency(findFieldVal(doc, ['VALOR_CAMBIAL', 'VALOR_CAMBIO', 'CAMBIO', 'TAXA_CAMBIO', 'VALOR CAMBIAL']));
@@ -1423,6 +1424,7 @@ const WorkflowAnalyticsPage = () => {
                 ivaFC: fIvaFC,
                 servicosDespachanteFC: fServicosDespachanteFC,
                 ivaServicosFC: fIvaServicosFC,
+                montanteFC: fMontanteFC,
                 valorCambial: fValorCambial,
                 valorCambialFC: fValorCambialFC,
                 desvioCambial: fDesvioCambial,
@@ -1872,11 +1874,24 @@ const WorkflowAnalyticsPage = () => {
                 docNum: p.docNum,
                 fornecedor: p.fornecedor,
                 despachante: p.despachante,
-                valMercadoria: p.valMercadoriaFC > 0 ? p.valMercadoriaFC : p.valMercadoria,
-                custoTotal: p.despesasRealizado > 0 ? p.despesasRealizado : p.despesasPrevisto,
-                coeficienteText: p.coeficienteNumericFC > 0 ? p.coeficienteNumericFC.toFixed(2) + 'x' : p.coeficienteText
+                montanteFactura: p.valMercadoriaOrig,
+                montanteTransporte: p.freteOrig,
+                despesasExtras: p.custosAdicionaisOrig,
+                valorCambial: p.valorCambial,
+                montanteRDF: p.rdf,
+                direitoAlfandegarios: p.direitos,
+                valorIvaImportacao: p.iva,
+                servicosDespachantes: p.servicosDespachante,
+                valorIvaServicos: p.ivaServicos,
+                valorCambialFC: p.valorCambialFC,
+                montanteFC: p.montanteFC,
+                dirAlfandegariosFC: p.direitosFC,
+                ivaImportacaoFC: p.ivaFC,
+                servicosDespachanteFC: p.servicosDespachanteFC,
+                ivaServicosFC: p.ivaServicosFC,
+                custoTotalSort: p.despesasRealizado > 0 ? p.despesasRealizado : p.despesasPrevisto
             }))
-            .sort((a, b) => b.custoTotal - a.custoTotal);
+            .sort((a, b) => b.custoTotalSort - a.custoTotalSort);
 
         return {
             totalMercadoria,
@@ -2586,22 +2601,46 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-xs">
                                         <thead>
                                             <tr>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Processo</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0">Despachante</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Valor Mercadoria</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0">Custos Adicionais</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0">Coeficiente</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-nowrap">Processo</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-nowrap">Despachante</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_Factura</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_transporte</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Despesas_extras</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Valor Cambial</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_RDF</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Direito Alfandegários e Taxas</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Valor IVA_Importação</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Serviços Despachantes</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Valor IVA_Serviços</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Vaor Cambial_FC</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_FC</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Dir_Alfandegários e Taxas_FC</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">IVA_Importação_FC</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Serviços Despachante_FC</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">IVA_Serv.Despachante_FC</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-12"><FaFileAlt className="inline-block text-slate-400" /></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {financialData.processCostRanking.map((p, idx) => (
                                                 <tr key={idx} className="hover:bg-slate-50/50">
-                                                    <td className="font-bold text-slate-700">{p.docNum}</td>
-                                                    <td>{p.despachante}</td>
-                                                    <td className="text-right font-mono">{formatKwanza(p.valMercadoria)}</td>
-                                                    <td className="text-right font-mono font-bold text-indigo-600">{formatKwanza(p.custoTotal)}</td>
-                                                    <td className="text-center font-mono font-bold text-emerald-600">{p.coeficienteText}</td>
+                                                    <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
+                                                    <td className="whitespace-nowrap">{p.despachante}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.montanteFactura ? p.montanteFactura.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.despesasExtras ? p.despesasExtras.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.valorCambial ? p.valorCambial.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.montanteRDF ? formatKwanza(p.montanteRDF) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.direitoAlfandegarios ? formatKwanza(p.direitoAlfandegarios) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.valorIvaImportacao ? formatKwanza(p.valorIvaImportacao) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachantes ? formatKwanza(p.servicosDespachantes) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.valorIvaServicos ? formatKwanza(p.valorIvaServicos) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? formatKwanza(p.montanteFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.dirAlfandegariosFC ? formatKwanza(p.dirAlfandegariosFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.ivaImportacaoFC ? formatKwanza(p.ivaImportacaoFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? formatKwanza(p.servicosDespachanteFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? formatKwanza(p.ivaServicosFC) : 'Kz 0,00'}</td>
                                                     <td className="text-center">
                                                         <button 
                                                             onClick={() => handleOpenDocument(p.id)}
