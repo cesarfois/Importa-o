@@ -1296,23 +1296,23 @@ const WorkflowAnalyticsPage = () => {
             
             // Financials (Previsto / RDF)
             // Financials (Previsto / RDF)
-            const fMerc = getDWFieldVal(doc, 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'MONTANTE_FACTURA', 'VALOR');
-            const fFrete = getDWFieldVal(doc, 'VALOR_FRETE', 'FRETE', 'MONTANTE_TRANSPORTE', 'TRANSPORTE');
-            const fCustosAdicionais = getDWFieldVal(doc, 'CUSTOS_ADICIONAIS', 'OUTROS_CUSTOS', 'OUTRAS_DESPESAS', 'DESPESAS_EXTRAS', 'EXTRAS');
+            const fMerc = getDWFieldVal(doc, 'MONTANTE_FACTURA', 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'VALOR');
+            const fFrete = getDWFieldVal(doc, 'MONTANTE_TRANSPORTE', 'VALOR_FRETE', 'FRETE', 'TRANSPORTE');
+            const fCustosAdicionais = getDWFieldVal(doc, 'DESPESAS_EXTRAS', 'CUSTOS_ADICIONAIS', 'OUTROS_CUSTOS', 'OUTRAS_DESPESAS', 'EXTRAS');
             const fRdf = getDWFieldVal(doc, 'MONTANTE_RDF', 'RDF');
-            const fIva = getDWFieldVal(doc, 'VALOR_IVA_IMPORTACAO', 'IVA_IMPORTACAO', 'IVA');
-            const fDireitos = getDWFieldVal(doc, 'DIREITOS_ALFANDEGARIOS', 'DIREITO_ALFANDEGARIOS', 'DIREITO_ALFAND', 'DIREITO_ALFANDEGARIOS_E_TAXAS', 'DIREITO ALFANDEGARIOS E TAXAS');
+            const fIva = getDWFieldVal(doc, 'VALOR_IVA_MERCADORIA', 'VALOR_IVA_IMPORTACAO', 'IVA_IMPORTACAO', 'IVA');
+            const fDireitos = getDWFieldVal(doc, 'DIREITO_ALFANDEGARIOS_E_TAXAS', 'DIREITOS_ALFANDEGARIOS', 'DIREITO_ALFANDEGARIOS', 'DIREITO_ALFAND', 'DIREITO ALFANDEGARIOS E TAXAS');
             const fServicosDespachante = getDWFieldVal(doc, 'SERVICOS_DESPACHANTES', 'SERVICO_DESPACHANTE');
-            const fIvaServicos = getDWFieldVal(doc, 'VALOR_IVA_SERVICES', 'VALOR_IVA_SERVICOS', 'IVA_SERVICES', 'IVA_SERVICOS', 'IVA_DESPACHANTE');
+            const fIvaServicos = getDWFieldVal(doc, 'VALOR_IVA_SERVICOS', 'VALOR_IVA_SERVICES', 'IVA_SERVICES', 'IVA_SERVICOS', 'IVA_DESPACHANTE');
             
             // Financials (Realizado / FC)
             // Note: fMercFC is same as fMerc since invoice FOB is constant, just converted with Vaor Cambial_FC
             const fMercFC = fMerc;
-            const fDireitosFC = getDWFieldVal(doc, 'DIR_ALFANDEGARIOS_TAXAS_FC', 'DIR_ALFANDEGARIOS_FC', 'DIREITOS_ALFANDEGARIOS_FC', 'DIREITOS_FC', 'Dir_Alfandegarios_e_Taxas_FC', 'Dir_Alfandegarios e Taxas_FC');
+            const fDireitosFC = getDWFieldVal(doc, 'DIR_ALFANDEGARIOS_E_TAXAS_FC', 'DIR_ALFANDEGARIOS_TAXAS_FC', 'DIR_ALFANDEGARIOS_FC', 'DIREITOS_ALFANDEGARIOS_FC', 'DIREITOS_FC', 'Dir_Alfandegarios_e_Taxas_FC', 'Dir_Alfandegarios e Taxas_FC');
             const fIvaFC = getDWFieldVal(doc, 'IVA_IMPORTACAO_FC', 'VALOR_IVA_IMPORTACAO_FC', 'IVA_FC');
             const fServicosDespachanteFC = getDWFieldVal(doc, 'SERVICOS_DESPACHANTE_FC', 'SERVICO_DESPACHANTE_FC', 'SERVICOS_DESPACHANTES_FC');
             const fIvaServicosFC = getDWFieldVal(doc, 'IVA_SERV_DESPACHANTE_FC', 'IVA_SERV_FC', 'IVA_SERVICES_FC', 'IVA_SERVICOS_FC', 'IVA_Serv.Despachante_FC');
-            const fMontanteFC = getDWFieldVal(doc, 'MONTANTE_FC');
+            const fMontanteFC = getDWFieldVal(doc, 'MONTANTE_FACTURA_DESPACHANTE', 'MONTANTE_FC');
 
             // Exchange Rates & Conversions
             const fValorCambial = parseCurrency(findFieldVal(doc, ['VALOR_CAMBIAL', 'VALOR_CAMBIO', 'CAMBIO', 'TAXA_CAMBIO', 'VALOR CAMBIAL']));
