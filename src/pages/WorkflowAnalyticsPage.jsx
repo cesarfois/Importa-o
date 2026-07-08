@@ -1389,10 +1389,12 @@ const WorkflowAnalyticsPage = () => {
             }
 
             const viaTransporte = getDocFieldValue(doc, 'TIPO') || getDocFieldValue(doc, 'VIA') || getDocFieldValue(doc, 'MODAL') || getDocFieldValue(doc, 'MEIO_TRANSPORTE') || getDocFieldValue(doc, 'VIA_TRANSPORTE') || '-';
+            const noFactura = getDocFieldValue(doc, 'NO_FACTURA') || '-';
 
             return {
                 id: doc.Id,
                 docNum,
+                noFactura,
                 etapa: stageName,
                 stageIdx,
                 responsavel: prog.responsible || '-',
@@ -1886,6 +1888,7 @@ const WorkflowAnalyticsPage = () => {
             .map(p => ({
                 id: p.id,
                 docNum: p.docNum,
+                noFactura: p.noFactura,
                 fornecedor: p.fornecedor,
                 despachante: p.despachante,
                 montanteFactura: p.valMercadoriaOrig,
@@ -2645,6 +2648,7 @@ const WorkflowAnalyticsPage = () => {
                                         <thead>
                                             <tr>
                                                 <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-nowrap">Processo</th>
+                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-nowrap">Nº Factura</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-nowrap">Despachante</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_Factura</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_transporte</th>
@@ -2668,6 +2672,7 @@ const WorkflowAnalyticsPage = () => {
                                             {financialData.processCostRanking.map((p, idx) => (
                                                 <tr key={idx} className="hover:bg-slate-50/50">
                                                     <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
+                                                    <td className="whitespace-nowrap font-mono">{p.noFactura}</td>
                                                     <td className="whitespace-nowrap">{p.despachante}</td>
                                                     <td className="text-right font-mono whitespace-nowrap">{p.montanteFactura ? p.montanteFactura.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
                                                     <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
