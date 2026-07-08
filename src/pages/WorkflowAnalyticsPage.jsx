@@ -2449,7 +2449,7 @@ const WorkflowAnalyticsPage = () => {
                                     <div className="flex justify-between items-start z-10">
                                         <div>
                                             <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest">FOB</span>
-                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Montante Fatura</h4>
+                                            <h4 className="text-sm font-bold text-slate-700 mt-0.5">Valor FOB (Mercadoria)</h4>
                                         </div>
                                         <button 
                                             onClick={() => setActiveExplanation(activeExplanation === 'fob' ? null : 'fob')}
@@ -2573,7 +2573,7 @@ const WorkflowAnalyticsPage = () => {
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td className="font-semibold text-slate-600">Montante Fatura</td>
+                                                    <td className="font-semibold text-slate-600">Valor FOB (Mercadoria)</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalMercadoria)}</td>
                                                     <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalMercadoriaFC)}</td>
                                                 </tr>
@@ -2606,6 +2606,11 @@ const WorkflowAnalyticsPage = () => {
                                                     <td className="font-semibold text-slate-600">IVA Serviços</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalIvaServicos)}</td>
                                                     <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalIvaServicosFC)}</td>
+                                                </tr>
+                                                <tr className="border-t border-slate-200 font-bold bg-slate-50/30">
+                                                    <td className="text-slate-700">Montante Fatura</td>
+                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalRDF)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalFC)}</td>
                                                 </tr>
                                                 <tr className="border-t border-slate-200">
                                                     <td className="font-semibold text-slate-600">Valor Cambial / Ajustes</td>
