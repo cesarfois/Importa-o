@@ -1299,7 +1299,7 @@ const WorkflowAnalyticsPage = () => {
             const fMerc = getDWFieldVal(doc, 'MONTANTE_FACTURA', 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'VALOR');
             const fFrete = getDWFieldVal(doc, 'MONTANTE_TRANSPORTE', 'VALOR_FRETE', 'FRETE', 'TRANSPORTE');
             const fCustosAdicionais = getDWFieldVal(doc, 'DESPESAS_EXTRAS', 'CUSTOS_ADICIONAIS', 'OUTROS_CUSTOS', 'OUTRAS_DESPESAS', 'EXTRAS');
-            const fRdf = getDWFieldVal(doc, 'MONTANTE_RDF', 'RDF');
+            const fRdf = getDWFieldVal(doc, 'MONTANTE_RDF');
             const fIva = getDWFieldVal(doc, 'VALOR_IVA_MERCADORIA', 'VALOR_IVA_IMPORTACAO', 'IVA_IMPORTACAO', 'IVA');
             const fDireitos = getDWFieldVal(doc, 'DIREITO_ALFANDEGARIOS_E_TAXAS', 'DIREITOS_ALFANDEGARIOS', 'DIREITO_ALFANDEGARIOS', 'DIREITO_ALFAND', 'DIREITO ALFANDEGARIOS E TAXAS');
             const fServicosDespachante = getDWFieldVal(doc, 'SERVICOS_DESPACHANTES', 'SERVICO_DESPACHANTE');
