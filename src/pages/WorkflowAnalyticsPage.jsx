@@ -1289,6 +1289,7 @@ const WorkflowAnalyticsPage = () => {
             
             // Financials (Realizado / FC)
             // Note: fMercFC is same as fMerc since invoice FOB is constant, just converted with Vaor Cambial_FC
+            const fMercFC = fMerc;
             const fDireitosFC = getDWFieldVal(doc, 'DIR_ALFANDEGARIOS_TAXAS_FC', 'DIR_ALFANDEGARIOS_FC', 'DIREITOS_ALFANDEGARIOS_FC', 'DIREITOS_FC', 'Dir_Alfandegarios_e_Taxas_FC', 'Dir_Alfandegarios e Taxas_FC');
             const fIvaFC = getDWFieldVal(doc, 'IVA_IMPORTACAO_FC', 'VALOR_IVA_IMPORTACAO_FC', 'IVA_FC');
             const fServicosDespachanteFC = getDWFieldVal(doc, 'SERVICOS_DESPACHANTE_FC', 'SERVICO_DESPACHANTE_FC', 'SERVICOS_DESPACHANTES_FC');
