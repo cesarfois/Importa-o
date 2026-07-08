@@ -1800,6 +1800,7 @@ const WorkflowAnalyticsPage = () => {
         let totalIVAFC = 0;
         let totalDespachanteFC = 0;
         let totalIvaServicosFC = 0;
+        let totalFC = 0;
         let totalValorCambialFCSum = 0;
         let totalValorCambialFCCount = 0;
         
@@ -1812,7 +1813,7 @@ const WorkflowAnalyticsPage = () => {
             totalMercadoria += p.valMercadoria;
             totalFrete += p.frete;
             totalCustosAdicionais += p.custosAdicionais;
-            totalRDF += p.rdf;
+            totalRDF += p.rdf > 0 ? p.rdf : (p.direitos + p.iva + p.servicosDespachante + p.ivaServicos);
             totalIVA += p.iva;
             totalDireitos += p.direitos;
             totalDespachante += p.servicosDespachante;
@@ -1830,6 +1831,7 @@ const WorkflowAnalyticsPage = () => {
             totalIVAFC += p.ivaFC > 0 ? p.ivaFC : p.iva;
             totalDespachanteFC += p.servicosDespachanteFC > 0 ? p.servicosDespachanteFC : p.servicosDespachante;
             totalIvaServicosFC += p.ivaServicosFC > 0 ? p.ivaServicosFC : p.ivaServicos;
+            totalFC += p.montanteFC > 0 ? p.montanteFC : (p.direitosFC + p.ivaFC + p.servicosDespachanteFC + p.ivaServicosFC);
             
             const activeVCFC = p.valorCambialFC > 0 ? p.valorCambialFC : p.valorCambial;
             if (activeVCFC > 0) {
@@ -1854,8 +1856,8 @@ const WorkflowAnalyticsPage = () => {
         const avgCoefRealizado = coefsRealizado.length > 0 ? (coefsRealizado.reduce((a, b) => a + b, 0) / coefsRealizado.length) : 0;
 
         // Despesas totals (excluindo valor da mercadoria) - strictly sum of components to match summary table rows
-        const totalDespesasPrevisto = totalFrete + totalCustosAdicionais + totalDireitos + totalIVA + totalDespachante + totalIvaServicos;
-        const totalDespesasRealizado = totalFreteFC + totalCustosAdicionaisFC + totalDireitosFC + totalIVAFC + totalDespachanteFC + totalIvaServicosFC;
+        const totalDespesasPrevisto = totalFrete + totalCustosAdicionais + totalRDF;
+        const totalDespesasRealizado = totalFC;
 
         // Exchange rate averages
         const avgValorCambial = totalValorCambialCount > 0 ? (totalValorCambialSum / totalValorCambialCount) : 0;
@@ -1914,6 +1916,7 @@ const WorkflowAnalyticsPage = () => {
             totalDespachante,
             totalIvaServicos,
             avgValorCambial,
+            totalFC,
 
             totalMercadoriaFC,
             totalDireitosFC,
@@ -2558,12 +2561,12 @@ const WorkflowAnalyticsPage = () => {
                                                 <tr>
                                                     <td className="font-semibold text-slate-600">Montante de Transporte</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalFrete)}</td>
-                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalFreteFC)}</td>
+                                                    <td className="text-right text-slate-400 font-mono">-</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="font-semibold text-slate-600">Despesas Extras</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalCustosAdicionais)}</td>
-                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalCustosAdicionaisFC)}</td>
+                                                    <td className="text-right text-slate-400 font-mono">-</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="font-semibold text-slate-600">Direitos Aduaneiros e Taxas</td>
