@@ -835,18 +835,20 @@ const METRIC_EXPLANATIONS = {
     },
     tabela_resumo_financeiro: {
         title: "Tabela Resumo Financeiro",
-        formula: "Soma consolidada das categorias de custo logístico e aduaneiro para todos os processos filtrados. Custo Adicional Total representa a soma de todas as despesas (excluindo o valor FOB da mercadoria).",
-        source: "Dados financeiros extraídos dos campos do DocuWare (VALOR_FRETE, SERVICOS_DESPACHANTES, DIREITOS_ALFANDEGARIOS, VALOR_IVA_IMPORTACAO, MONTANTE_RDF, CUSTOS_ADICIONAIS).",
+        formula: "Soma consolidada de cada uma das despesas e taxas de todos os processos filtrados. Custo Despesas Total representa a soma de todas as despesas (excluindo o valor de Montante Fatura).",
+        source: "Dados financeiros e taxas carregadas diretamente do DocuWare para Previsto (RDF) e Realizado (FC).",
         details: (
-            <div className="space-y-2">
-                <p className="font-bold text-slate-700">Campos do DocuWare para o Resumo:</p>
+            <div className="space-y-2 text-xs">
+                <p className="font-bold text-slate-700">Mapeamento dos Campos de Resumo:</p>
                 <ul className="list-disc pl-4 space-y-1">
-                    <li><strong>Frete:</strong> Soma de `VALOR_FRETE` ou `FRETE` convertidos para Cuanzas.</li>
-                    <li><strong>Serviços Despachante:</strong> Soma de `SERVICOS_DESPACHANTES` ou `SERVICO_DESPACHANTE`.</li>
-                    <li><strong>Direitos Aduaneiros:</strong> Soma de `DIREITOS_ALFANDEGARIOS` ou `DIREITO_ALFANDEGARIOS`.</li>
-                    <li><strong>IVA:</strong> Soma de `VALOR_IVA_IMPORTACAO` ou `IVA`.</li>
-                    <li><strong>RDF:</strong> Soma de `MONTANTE_RDF` ou `RDF`.</li>
-                    <li><strong>Outros Custos / Adicionais:</strong> Soma de `CUSTOS_ADICIONAIS` ou `OUTROS_CUSTOS` convertidos.</li>
+                    <li><strong>Montante Fatura:</strong> Soma do campo <code>MONTANTE_FACTURA</code> convertido para Cuanzas.</li>
+                    <li><strong>Frete:</strong> Soma de <code>MONTANTE_TRANSPORTE</code> convertido para Cuanzas.</li>
+                    <li><strong>Despesas Extras:</strong> Soma de <code>DESPESAS_EXTRAS</code> convertido para Cuanzas.</li>
+                    <li><strong>Direitos Aduaneiros e Taxas:</strong> Soma de <code>DIREITO_ALFANDEGARIOS_E_TAXAS</code> (Previsto) ou <code>DIR_ALFANDEGARIOS_E_TAXAS_FC</code> (Realizado).</li>
+                    <li><strong>IVA Importação:</strong> Soma de <code>VALOR_IVA_MERCADORIA</code> (Previsto) ou <code>IVA_IMPORTACAO_FC</code> (Realizado).</li>
+                    <li><strong>Serviços Despachante:</strong> Soma de <code>SERVICOS_DESPACHANTES</code> (Previsto) ou <code>SERVICOS_DESPACHANTE_FC</code> (Realizado).</li>
+                    <li><strong>IVA Serviços:</strong> Soma de <code>VALOR_IVA_SERVICOS</code> (Previsto) ou <code>IVA_SERV_DESPACHANTE_FC</code> (Realizado).</li>
+                    <li><strong>Custo Despesas Total:</strong> Soma consolidada de todas as despesas (Frete + Despesas Extras + Direitos + IVA Importação + Serviços Despachante + IVA Serviços), excluindo o Montante Fatura.</li>
                 </ul>
             </div>
         )
@@ -1322,14 +1324,16 @@ const WorkflowAnalyticsPage = () => {
             const fDesvioCambial = (fValorCambial && fValorCambialFC) ? fMerc * (fValorCambial - fValorCambialFC) : 0;
             
             // Previsto Despesas (excluding FOB)
-            const fDespesasPrevisto = fFreteKz + fCustosAdicionaisKz + fRdf + fServicosDespachante + fIvaServicos;
+            const fAduaneiroPrevisto = fRdf > 0 ? fRdf : (fDireitos + fIva + fServicosDespachante + fIvaServicos);
+            const fDespesasPrevisto = fFreteKz + fCustosAdicionaisKz + fAduaneiroPrevisto;
             
             // Realizado Despesas (excluding FOB - use fallback to previsto if realizado field is zero)
             const fDireitosFCActive = fDireitosFC > 0 ? fDireitosFC : fDireitos;
             const fIvaFCActive = fIvaFC > 0 ? fIvaFC : fIva;
             const fServicosDespachanteFCActive = fServicosDespachanteFC > 0 ? fServicosDespachanteFC : fServicosDespachante;
             const fIvaServicosFCActive = fIvaServicosFC > 0 ? fIvaServicosFC : fIvaServicos;
-            const fDespesasRealizado = fFreteKz + fCustosAdicionaisKz + fDireitosFCActive + fIvaFCActive + fServicosDespachanteFCActive + fIvaServicosFCActive;
+            const fAduaneiroRealizado = fMontanteFC > 0 ? fMontanteFC : (fDireitosFCActive + fIvaFCActive + fServicosDespachanteFCActive + fIvaServicosFCActive);
+            const fDespesasRealizado = fFreteKz + fCustosAdicionaisKz + fAduaneiroRealizado;
 
             const fCustoImportacao = fMercKz + fDespesasPrevisto;
             const activeFobKz = fMercFCKz > 0 ? fMercFCKz : fMercKz;
@@ -1841,8 +1845,8 @@ const WorkflowAnalyticsPage = () => {
         const avgCoefPrevisto = coefsPrevisto.length > 0 ? (coefsPrevisto.reduce((a, b) => a + b, 0) / coefsPrevisto.length) : 0;
         const avgCoefRealizado = coefsRealizado.length > 0 ? (coefsRealizado.reduce((a, b) => a + b, 0) / coefsRealizado.length) : 0;
 
-        // Despesas totals (excluindo valor FOB da mercadoria)
-        const totalDespesasPrevisto = totalFrete + totalCustosAdicionais + totalRDF + totalIVA + totalDireitos + totalDespachante + totalIvaServicos;
+        // Despesas totals (excluindo valor da mercadoria) - strictly sum of components to match summary table rows
+        const totalDespesasPrevisto = totalFrete + totalCustosAdicionais + totalDireitos + totalIVA + totalDespachante + totalIvaServicos;
         const totalDespesasRealizado = totalFrete + totalCustosAdicionais + totalDireitosFC + totalIVAFC + totalDespachanteFC + totalIvaServicosFC;
 
         // Exchange rate averages
@@ -2540,6 +2544,16 @@ const WorkflowAnalyticsPage = () => {
                                                     <td className="font-semibold text-slate-600">Montante Fatura</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalMercadoria)}</td>
                                                     <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalMercadoriaFC)}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="font-semibold text-slate-600">Frete</td>
+                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalFrete)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalFrete)}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="font-semibold text-slate-600">Despesas Extras</td>
+                                                    <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalCustosAdicionais)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalCustosAdicionais)}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="font-semibold text-slate-600">Direitos Aduaneiros e Taxas</td>
