@@ -2609,12 +2609,12 @@ const WorkflowAnalyticsPage = () => {
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Valor IVA_Importação</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Serviços Despachantes</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Valor IVA_Serviços</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Vaor Cambial_FC</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_FC</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Dir_Alfandegários e Taxas_FC</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">IVA_Importação_FC</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Serviços Despachante_FC</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">IVA_Serv.Despachante_FC</th>
+                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap border-l border-blue-100">Vaor Cambial_FC</th>
+                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap">Montante_FC</th>
+                                                <th className="bg-slate-50/80 bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap">Dir_Alfandegários e Taxas_FC</th>
+                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap">IVA_Importação_FC</th>
+                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap">Serviços Despachante_FC</th>
+                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap border-r border-blue-100">IVA_Serv.Despachante_FC</th>
                                                 <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-12"><FaFileAlt className="inline-block text-slate-400" /></th>
                                             </tr>
                                         </thead>
@@ -2632,12 +2632,12 @@ const WorkflowAnalyticsPage = () => {
                                                     <td className="text-right font-mono whitespace-nowrap">{p.valorIvaImportacao ? formatKwanza(p.valorIvaImportacao) : 'Kz 0,00'}</td>
                                                     <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachantes ? formatKwanza(p.servicosDespachantes) : 'Kz 0,00'}</td>
                                                     <td className="text-right font-mono whitespace-nowrap">{p.valorIvaServicos ? formatKwanza(p.valorIvaServicos) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? formatKwanza(p.montanteFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.dirAlfandegariosFC ? formatKwanza(p.dirAlfandegariosFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.ivaImportacaoFC ? formatKwanza(p.ivaImportacaoFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? formatKwanza(p.servicosDespachanteFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? formatKwanza(p.ivaServicosFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 border-l border-blue-100/40 text-blue-900 font-semibold">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 text-blue-900 font-semibold">{p.montanteFC ? formatKwanza(p.montanteFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 text-blue-900 font-semibold">{p.dirAlfandegariosFC ? formatKwanza(p.dirAlfandegariosFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 text-blue-900 font-semibold">{p.ivaImportacaoFC ? formatKwanza(p.ivaImportacaoFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 text-blue-900 font-semibold">{p.servicosDespachanteFC ? formatKwanza(p.servicosDespachanteFC) : 'Kz 0,00'}</td>
+                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 border-r border-blue-100/40 text-blue-900 font-semibold">{p.ivaServicosFC ? formatKwanza(p.ivaServicosFC) : 'Kz 0,00'}</td>
                                                     <td className="text-center">
                                                         <button 
                                                             onClick={() => handleOpenDocument(p.id)}
