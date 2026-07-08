@@ -2111,9 +2111,6 @@ const WorkflowHistoryPage = () => {
                                                     </span>
                                                     {renderFilterDropdown('comments', 'Comentários', filterComments, setFilterComments, searchComments, setSearchComments, uniqueCommentsList)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('matricula')}>
-                                                    Valor {sortField === 'matricula' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-                                                </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('dataRealizacao')}>
                                                     Previsão {sortField === 'dataRealizacao' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
@@ -2239,17 +2236,6 @@ const WorkflowHistoryPage = () => {
                                                             ) : (
                                                                 <div className="text-slate-600 text-xs truncate max-w-[110px]" title={getDocumentComments(doc) || '-'}>
                                                                     {getDocumentComments(doc) || '-'}
-                                                                </div>
-                                                            )}
-                                                        </td>
-
-                                                        {/* Matricula */}
-                                                        <td className="py-3 px-2">
-                                                            {isProgLoading ? (
-                                                                <span className="inline-block w-12 h-3 bg-slate-100 animate-pulse rounded"></span>
-                                                            ) : (
-                                                                <div className="text-slate-600 text-xs truncate max-w-[90px]" title={getDocFieldValue(doc, 'MATRICULA') || '-'}>
-                                                                    {getDocFieldValue(doc, 'MATRICULA') || '-'}
                                                                 </div>
                                                             )}
                                                         </td>
