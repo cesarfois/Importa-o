@@ -1063,17 +1063,17 @@ const WorkflowAnalyticsPage = () => {
                 }) || textFields[0];
                 setDetectedTypeField(typeF);
 
-                // 2. Detect Date field
+                // 2. Detect Date field (prioritize process DATE/Data over system store date)
                 const systemStoreField = fields.find(f => {
                     const name = (f.DBFieldName || f.FieldName || '').toUpperCase();
                     return name === 'DWSTOREDATETIME' || name === 'DWSTOREDATE';
                 });
-                const dateF = systemStoreField || fields.find(f => {
-                    const name = (f.DBFieldName || f.FieldName || '').toLowerCase();
-                    const disp = (f.DisplayName || '').toLowerCase();
-                    const dateKeywords = ['dwstoredate', 'dwstoredatetime', 'storedate', 'armazenado', 'data', 'date'];
-                    return dateKeywords.some(kw => name.includes(kw) || disp.includes(kw));
-                }) || dateFields[0];
+                const dateF = fields.find(f => {
+                    const name = (f.DBFieldName || f.FieldName || '').toUpperCase();
+                    const disp = (f.DisplayName || '').toUpperCase();
+                    if (name.includes('DWSTORE') || name.includes('DWMOD') || name.includes('DWLASTACCESS')) return false;
+                    return name === 'DATE' || name === 'DATA' || name === 'DATA_PROCESSO' || name === 'DATA_INICIO' || disp === 'DATA' || disp === 'DATE';
+                }) || systemStoreField || dateFields[0];
                 setDetectedDateField(dateF);
 
             } catch (err) {
@@ -1321,6 +1321,8 @@ const WorkflowAnalyticsPage = () => {
             const fMercFCKz = fMerc * (fValorCambialFC || fValorCambial || 1);
             const fFreteKz = fFrete * (fValorCambial || 1);
             const fCustosAdicionaisKz = fCustosAdicionais * (fValorCambial || 1);
+            const fFreteFCKz = fFrete * (fValorCambialFC || fValorCambial || 1);
+            const fCustosAdicionaisFCKz = fCustosAdicionais * (fValorCambialFC || fValorCambial || 1);
             const fDesvioCambial = (fValorCambial && fValorCambialFC) ? fMerc * (fValorCambial - fValorCambialFC) : 0;
             
             // Previsto Despesas (excluding FOB)
@@ -1333,7 +1335,7 @@ const WorkflowAnalyticsPage = () => {
             const fServicosDespachanteFCActive = fServicosDespachanteFC > 0 ? fServicosDespachanteFC : fServicosDespachante;
             const fIvaServicosFCActive = fIvaServicosFC > 0 ? fIvaServicosFC : fIvaServicos;
             const fAduaneiroRealizado = fMontanteFC > 0 ? fMontanteFC : (fDireitosFCActive + fIvaFCActive + fServicosDespachanteFCActive + fIvaServicosFCActive);
-            const fDespesasRealizado = fFreteKz + fCustosAdicionaisKz + fAduaneiroRealizado;
+            const fDespesasRealizado = fFreteFCKz + fCustosAdicionaisFCKz + fAduaneiroRealizado;
 
             const fCustoImportacao = fMercKz + fDespesasPrevisto;
             const activeFobKz = fMercFCKz > 0 ? fMercFCKz : fMercKz;
@@ -1414,8 +1416,10 @@ const WorkflowAnalyticsPage = () => {
                 valMercadoriaFCOrig: fMercFC,
                 frete: fFreteKz, 
                 freteOrig: fFrete,
+                freteFC: fFreteFCKz,
                 custosAdicionais: fCustosAdicionaisKz, 
                 custosAdicionaisOrig: fCustosAdicionais,
+                custosAdicionaisFC: fCustosAdicionaisFCKz,
                 rdf: fRdf,
                 iva: fIva,
                 direitos: fDireitos,
@@ -1790,6 +1794,8 @@ const WorkflowAnalyticsPage = () => {
         let totalValorCambialCount = 0;
 
         let totalMercadoriaFC = 0;
+        let totalFreteFC = 0;
+        let totalCustosAdicionaisFC = 0;
         let totalDireitosFC = 0;
         let totalIVAFC = 0;
         let totalDespachanteFC = 0;
@@ -1818,6 +1824,8 @@ const WorkflowAnalyticsPage = () => {
 
             // Realizados (use fallback to previsto if realizado field is zero/unpopulated)
             totalMercadoriaFC += p.valMercadoriaFC > 0 ? p.valMercadoriaFC : p.valMercadoria;
+            totalFreteFC += p.freteFC > 0 ? p.freteFC : p.frete;
+            totalCustosAdicionaisFC += p.custosAdicionaisFC > 0 ? p.custosAdicionaisFC : p.custosAdicionais;
             totalDireitosFC += p.direitosFC > 0 ? p.direitosFC : p.direitos;
             totalIVAFC += p.ivaFC > 0 ? p.ivaFC : p.iva;
             totalDespachanteFC += p.servicosDespachanteFC > 0 ? p.servicosDespachanteFC : p.servicosDespachante;
@@ -1847,7 +1855,7 @@ const WorkflowAnalyticsPage = () => {
 
         // Despesas totals (excluindo valor da mercadoria) - strictly sum of components to match summary table rows
         const totalDespesasPrevisto = totalFrete + totalCustosAdicionais + totalDireitos + totalIVA + totalDespachante + totalIvaServicos;
-        const totalDespesasRealizado = totalFrete + totalCustosAdicionais + totalDireitosFC + totalIVAFC + totalDespachanteFC + totalIvaServicosFC;
+        const totalDespesasRealizado = totalFreteFC + totalCustosAdicionaisFC + totalDireitosFC + totalIVAFC + totalDespachanteFC + totalIvaServicosFC;
 
         // Exchange rate averages
         const avgValorCambial = totalValorCambialCount > 0 ? (totalValorCambialSum / totalValorCambialCount) : 0;
@@ -1897,7 +1905,9 @@ const WorkflowAnalyticsPage = () => {
         return {
             totalMercadoria,
             totalFrete,
+            totalFreteFC,
             totalCustosAdicionais,
+            totalCustosAdicionaisFC,
             totalRDF,
             totalIVA,
             totalDireitos,
@@ -2548,12 +2558,12 @@ const WorkflowAnalyticsPage = () => {
                                                 <tr>
                                                     <td className="font-semibold text-slate-600">Montante de Transporte</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalFrete)}</td>
-                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalFrete)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalFreteFC)}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="font-semibold text-slate-600">Despesas Extras</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalCustosAdicionais)}</td>
-                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalCustosAdicionais)}</td>
+                                                    <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalCustosAdicionaisFC)}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="font-semibold text-slate-600">Direitos Aduaneiros e Taxas</td>

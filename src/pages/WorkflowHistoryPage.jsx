@@ -547,17 +547,17 @@ const WorkflowHistoryPage = () => {
                     return typeKeywords.some(kw => name.includes(kw) || disp.includes(kw));
                 }) || textFields[0];
                 
-                // 2. Detect Storage Date field (prioritize system fields DWSTOREDATETIME and DWSTOREDATE)
+                // 2. Detect Date field (prioritize process DATE/Data over system store date)
                 const systemStoreField = fields.find(f => {
                     const name = (f.DBFieldName || f.FieldName || '').toUpperCase();
                     return name === 'DWSTOREDATETIME' || name === 'DWSTOREDATE';
                 });
-                const detectedDateField = systemStoreField || fields.find(f => {
-                    const name = (f.DBFieldName || f.FieldName || '').toLowerCase();
-                    const disp = (f.DisplayName || '').toLowerCase();
-                    const dateKeywords = ['dwstoredate', 'dwstoredatetime', 'storedate', 'armazenado', 'data', 'date'];
-                    return dateKeywords.some(kw => name.includes(kw) || disp.includes(kw));
-                }) || dateFields[0];
+                const detectedDateField = fields.find(f => {
+                    const name = (f.DBFieldName || f.FieldName || '').toUpperCase();
+                    const disp = (f.DisplayName || '').toUpperCase();
+                    if (name.includes('DWSTORE') || name.includes('DWMOD') || name.includes('DWLASTACCESS')) return false;
+                    return name === 'DATE' || name === 'DATA' || name === 'DATA_PROCESSO' || name === 'DATA_INICIO' || disp === 'DATA' || disp === 'DATE';
+                }) || systemStoreField || dateFields[0];
 
                 setDetectedTypeField(detectedTypeField);
                 setDetectedDateField(detectedDateField);
