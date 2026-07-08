@@ -842,13 +842,13 @@ const METRIC_EXPLANATIONS = {
                 <p className="font-bold text-slate-700">Mapeamento dos Campos de Resumo:</p>
                 <ul className="list-disc pl-4 space-y-1">
                     <li><strong>Montante Fatura:</strong> Soma do campo <code>MONTANTE_FACTURA</code> convertido para Cuanzas.</li>
-                    <li><strong>Frete:</strong> Soma de <code>MONTANTE_TRANSPORTE</code> convertido para Cuanzas.</li>
+                    <li><strong>Montante de Transporte:</strong> Soma de <code>MONTANTE_TRANSPORTE</code> convertido para Cuanzas.</li>
                     <li><strong>Despesas Extras:</strong> Soma de <code>DESPESAS_EXTRAS</code> convertido para Cuanzas.</li>
                     <li><strong>Direitos Aduaneiros e Taxas:</strong> Soma de <code>DIREITO_ALFANDEGARIOS_E_TAXAS</code> (Previsto) ou <code>DIR_ALFANDEGARIOS_E_TAXAS_FC</code> (Realizado).</li>
                     <li><strong>IVA Importação:</strong> Soma de <code>VALOR_IVA_MERCADORIA</code> (Previsto) ou <code>IVA_IMPORTACAO_FC</code> (Realizado).</li>
                     <li><strong>Serviços Despachante:</strong> Soma de <code>SERVICOS_DESPACHANTES</code> (Previsto) ou <code>SERVICOS_DESPACHANTE_FC</code> (Realizado).</li>
                     <li><strong>IVA Serviços:</strong> Soma de <code>VALOR_IVA_SERVICOS</code> (Previsto) ou <code>IVA_SERV_DESPACHANTE_FC</code> (Realizado).</li>
-                    <li><strong>Custo Despesas Total:</strong> Soma consolidada de todas as despesas (Frete + Despesas Extras + Direitos + IVA Importação + Serviços Despachante + IVA Serviços), excluindo o Montante Fatura.</li>
+                    <li><strong>Custo Despesas Total:</strong> Soma consolidada de todas as despesas (Montante de Transporte + Despesas Extras + Direitos + IVA Importação + Serviços Despachante + IVA Serviços), excluindo o Montante Fatura.</li>
                 </ul>
             </div>
         )
@@ -2546,7 +2546,7 @@ const WorkflowAnalyticsPage = () => {
                                                     <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalMercadoriaFC)}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="font-semibold text-slate-600">Frete</td>
+                                                    <td className="font-semibold text-slate-600">Montante de Transporte</td>
                                                     <td className="text-right text-slate-700 font-mono">{formatKwanza(financialData.totalFrete)}</td>
                                                     <td className="text-right text-slate-700 font-mono font-bold text-indigo-600">{formatKwanza(financialData.totalFrete)}</td>
                                                 </tr>
