@@ -1031,7 +1031,7 @@ const WorkflowAnalyticsPage = () => {
         noFactura: ''
     });
 
-    const renderFilterHeader = (label, colKey, widthClass = '') => {
+    const renderFilterHeader = (label, colKey, widthClass = '', align = 'left') => {
         const uniqueVals = Array.from(new Set(detailedProcesses.map(p => String(p[colKey] || '-').trim()))).sort();
         const selectedVals = colFilters[colKey] || [];
         const searchTerm = colSearchTerms[colKey] || '';
@@ -1059,10 +1059,10 @@ const WorkflowAnalyticsPage = () => {
         const hasActiveFilter = selectedVals.length > 0;
 
         return (
-            <th className={`bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass}`}>
-                <div className="flex items-center justify-between gap-1">
+            <th className={`bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass} ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : ''}`}>
+                <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-between'}`}>
                     <span 
-                        className="cursor-pointer hover:text-indigo-600 flex-1 select-none whitespace-nowrap" 
+                        className="cursor-pointer hover:text-indigo-600 select-none whitespace-nowrap" 
                         onClick={() => setDetailSort({ column: colKey, direction: detailSort.column === colKey && detailSort.direction === 'asc' ? 'desc' : 'asc' })}
                     >
                         {label} {detailSort.column === colKey ? (detailSort.direction === 'asc' ? '↑' : '↓') : ''}
@@ -1606,12 +1606,40 @@ const WorkflowAnalyticsPage = () => {
 
         if (detailSort.column) {
             result.sort((a, b) => {
-                let valA = a[detailSort.column];
-                let valB = b[detailSort.column];
+                let col = detailSort.column;
                 
-                if (typeof valA === 'string') valA = valA.toLowerCase();
-                if (typeof valB === 'string') valB = valB.toLowerCase();
+                // Map display date keys to their Raw Date object counterpart for correct chronological sorting
+                if (col === 'dtFactura') col = 'dtFacturaRaw';
+                else if (col === 'dtChegada') col = 'dtChegadaRaw';
+                else if (col === 'dtEntregaRCS') col = 'dtEntregaRCSRaw';
+                else if (col === 'dtETA') col = 'dtETARaw';
+                
+                let valA = a[col];
+                let valB = b[col];
+                
+                // Handle '-' or nulls/undefined to always be placed at the bottom regardless of sort direction
+                const isAEmpty = valA === undefined || valA === null || valA === '-' || valA === '';
+                const isBEmpty = valB === undefined || valB === null || valB === '-' || valB === '';
+                
+                if (isAEmpty && isBEmpty) return 0;
+                if (isAEmpty) return 1; // puts empty A at bottom
+                if (isBEmpty) return -1; // puts empty B at bottom
 
+                // If comparing Dates
+                if (valA instanceof Date && valB instanceof Date) {
+                    return detailSort.direction === 'asc' 
+                        ? valA.getTime() - valB.getTime() 
+                        : valB.getTime() - valA.getTime();
+                }
+
+                // If strings
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    return detailSort.direction === 'asc' 
+                        ? valA.localeCompare(valB, 'pt-AO', { numeric: true, sensitivity: 'base' })
+                        : valB.localeCompare(valA, 'pt-AO', { numeric: true, sensitivity: 'base' });
+                }
+
+                // Numbers or mixed types
                 if (valA < valB) return detailSort.direction === 'asc' ? -1 : 1;
                 if (valA > valB) return detailSort.direction === 'asc' ? 1 : -1;
                 return 0;
@@ -2785,18 +2813,18 @@ const WorkflowAnalyticsPage = () => {
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
                                                 {renderFilterHeader('Nº PI', 'docNum')}
                                                 {renderFilterHeader('Nº Factura', 'noFactura')}
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Factura</th>
+                                                {renderFilterHeader('Data Factura', 'dtFactura')}
                                                 {renderFilterHeader('Tipo', 'viaTransporte')}
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Chegada AO</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Ent.(RCS)</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2">DIAS Uteis</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold text-right sticky top-0 z-10 p-2">Valor</th>
+                                                {renderFilterHeader('Chegada AO', 'dtChegada')}
+                                                {renderFilterHeader('Data Ent.(RCS)', 'dtEntregaRCS')}
+                                                {renderFilterHeader('DIAS Uteis', 'diasUteis', '', 'center')}
+                                                {renderFilterHeader('Valor', 'valMercadoriaOrig', '', 'right')}
                                                 {renderFilterHeader('Transportador', 'transportador')}
                                                 {renderFilterHeader('Transitario', 'despachante')}
                                                 {renderFilterHeader('Empresa', 'fornecedor')}
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">ETA</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Comentário</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2">Ações</th>
+                                                {renderFilterHeader('ETA', 'dtETA')}
+                                                {renderFilterHeader('Comentário', 'comentario')}
+                                                <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2 border-b border-slate-200">Ações</th>
                                             </tr>
                                         </thead>
                                         <tbody>
