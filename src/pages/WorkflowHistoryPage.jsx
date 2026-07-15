@@ -1058,7 +1058,12 @@ const WorkflowHistoryPage = () => {
                                 }
                             }
 
-                            if (!isFinished && activeNode) {
+                            if (isFinished) {
+                                percent = 100;
+                                remaining = 0;
+                                statusText = 'Concluído';
+                                nextStep = 'Fim';
+                            } else if (activeNode) {
                                 // Search backwards to find the most recent entry for this active node in the history steps
                                 const activeStep = [...analyzedHistory].reverse().find(step => step.isActive || (!step.decision && step.name === activeNode.name));
                                 const activeStart = activeStep ? activeStep.startedAt : (activeNode.executions[activeNode.executions.length - 1]?.startedAt || null);
@@ -1066,46 +1071,38 @@ const WorkflowHistoryPage = () => {
                                     timeStoppedMs = Math.max(0, new Date().getTime() - new Date(activeStart).getTime());
                                 }
                                 const getNextStepName = (nodes, edges, activeNode) => {
-                                 if (!activeNode) return '-';
-                                 const outgoing = edges.filter(e => e.source === activeNode.id);
-                                 if (outgoing.length === 0) return 'Fim';
-                                 const targetNames = outgoing.map(edge => {
-                                     const targetNode = nodes.find(n => n.id === edge.target);
-                                     const label = edge.label ? ` (${edge.label})` : '';
-                                     return targetNode ? `${renameWorkflowTask(targetNode.name)}${label}` : '';
-                                 }).filter(Boolean);
-                                 return targetNames.join(' / ') || 'Fim';
-                             };
-                             nextStep = getNextStepName(nodes, edges, activeNode);
+                                    if (!activeNode) return '-';
+                                    const outgoing = edges.filter(e => e.source === activeNode.id);
+                                    if (outgoing.length === 0) return 'Fim';
+                                    const targetNames = outgoing.map(edge => {
+                                        const targetNode = nodes.find(n => n.id === edge.target);
+                                        const label = edge.label ? ` (${edge.label})` : '';
+                                        return targetNode ? `${renameWorkflowTask(targetNode.name)}${label}` : '';
+                                    }).filter(Boolean);
+                                    return targetNames.join(' / ') || 'Fim';
+                                };
+                                nextStep = getNextStepName(nodes, edges, activeNode);
 
-                             const calculatedStage = evaluateActiveStage(doc, activeNode ? activeNode.name : '', isFinished);
-                             percent = Math.round((calculatedStage / 6) * 100);
+                                const calculatedStage = evaluateActiveStage(doc, activeNode ? activeNode.name : '', isFinished);
+                                percent = Math.round((calculatedStage / 6) * 100);
 
-                             if (isFinished) {
-                                 percent = 100;
-                                 remaining = 0;
-                                 statusText = 'Concluído';
-                             } else {
-                                 if (activeNode) {
-                                     activeTaskName = renameWorkflowTask(activeNode.name);
-                                     remaining = getRemainingTaskCount(nodes, edges, activeNode.id) || 1;
-                                     if (percent >= 100) percent = 99;
-                                     statusText = `Em Andamento (${percent}%)`;
-                                 } else {
-                                      const startNode = nodes.find(n => {
-                                          const type = (n.type || '').toLowerCase();
-                                          return type === 'start' || type.includes('start');
-                                      });
-                                     if (startNode) {
-                                         remaining = getRemainingTaskCount(nodes, edges, startNode.id);
-                                         percent = 0;
-                                         statusText = 'Pendente';
-                                     } else {
-                                         percent = 0;
-                                         statusText = 'Em Processamento';
-                                     }
-                                 }
-                             }
+                                activeTaskName = renameWorkflowTask(activeNode.name);
+                                remaining = getRemainingTaskCount(nodes, edges, activeNode.id) || 1;
+                                if (percent >= 100) percent = 99;
+                                statusText = `Em Andamento (${percent}%)`;
+                            } else {
+                                const startNode = nodes.find(n => {
+                                    const type = (n.type || '').toLowerCase();
+                                    return type === 'start' || type.includes('start');
+                                });
+                                if (startNode) {
+                                    remaining = getRemainingTaskCount(nodes, edges, startNode.id);
+                                    percent = 0;
+                                    statusText = 'Pendente';
+                                } else {
+                                    percent = 0;
+                                    statusText = 'Em Processamento';
+                                }
                             }
                         }
 
