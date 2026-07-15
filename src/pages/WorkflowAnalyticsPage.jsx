@@ -2992,7 +2992,7 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
-                                                {renderFilterHeader('Nº PI', 'docNum')}
+                                                {renderFilterHeader('Nº Processo Importação', 'docNum')}
                                                 {renderFilterHeader('Nº Factura', 'noFactura')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Factura</th>
                                                 {renderFilterHeader('Tipo', 'viaTransporte')}
