@@ -169,51 +169,6 @@ const getBusinessDays = (startDate, endDate) => {
     return count;
 };
 
-const getInitialWorkflowFieldValue = (instances, fieldNames) => {
-    if (!instances || instances.length === 0) return null;
-    
-    const sortedInstances = [...instances].sort((a, b) => (a.Version || 0) - (b.Version || 0));
-    const uppercaseFieldNames = fieldNames.map(f => f.toUpperCase());
-    
-    for (const inst of sortedInstances) {
-        const steps = inst.HistorySteps || [];
-        for (const step of steps) {
-            const infoItem = step.Info?.Item || {};
-            
-            // Check Fields
-            const fields = infoItem.Fields || [];
-            for (const f of fields) {
-                const name = (f.Label || f.FieldName || '').toUpperCase();
-                if (uppercaseFieldNames.some(target => name === target || name.includes(target))) {
-                    const val = f.Value?.Item || f.Value || '';
-                    if (val) return val;
-                }
-            }
-            
-            // Check Assignments
-            const assignments = infoItem.Assignments || [];
-            for (const f of assignments) {
-                const name = (f.Label || f.FieldName || '').toUpperCase();
-                if (uppercaseFieldNames.some(target => name === target || name.includes(target))) {
-                    const val = f.Value?.Item || f.Value || '';
-                    if (val) return val;
-                }
-            }
-
-            // Check InputFields
-            const inputFields = infoItem.InputFields || [];
-            for (const f of inputFields) {
-                const name = (f.Label || f.FieldName || '').toUpperCase();
-                if (uppercaseFieldNames.some(target => name === target || name.includes(target))) {
-                    const val = f.Value?.Item || f.Value || '';
-                    if (val) return val;
-                }
-            }
-        }
-    }
-    return null;
-};
-
 // Evaluate stage index
 const evaluateActiveStage = (doc, activeTaskName, isFinished) => {
     const hasDataEntregue = !!findFieldVal(doc, ['DATA_ENTREGUE', 'DATA_ENTREGUE_RCS', 'ENTREGUE']);
@@ -1262,8 +1217,7 @@ const WorkflowAnalyticsPage = () => {
                             completedAt,
                             responsible,
                             timeStoppedMs,
-                            analyzedHistory,
-                            instances
+                            analyzedHistory
                         }
                     }));
                 } catch (err) {
@@ -1357,7 +1311,7 @@ const WorkflowAnalyticsPage = () => {
     const detailedProcesses = useMemo(() => {
         return filteredDocuments.map(doc => {
             const prog = documentProgress[doc.Id] || {};
-            const docNum = getInitialWorkflowFieldValue(prog.instances, ['NO_PROCESSO_IMPORTACAO', 'NUMERO_PROCESSO', 'NO_PROCESSO']) || getDocumentNumber(doc);
+            const docNum = getDocumentNumber(doc);
             
             // Dates
             const dtBollore = parseDWDate(getDocFieldValue(doc, 'DATA_ENTRADA_BOLLORE') || getDocFieldValue(doc, 'BOLLORE'));
@@ -1365,8 +1319,7 @@ const WorkflowAnalyticsPage = () => {
             const dtChegada = parseDWDate(getDocFieldValue(doc, 'DATA_CHEGADA_ANGOLA') || getDocFieldValue(doc, 'DATA_CHEGADA') || getDocFieldValue(doc, 'CHEGADA_AO'));
             const dtSaidaAlfandega = parseDWDate(getDocFieldValue(doc, 'DATA_SAIDA_ALFANDEGA') || getDocFieldValue(doc, 'DATA_DESEMBARACO') || getDocFieldValue(doc, 'LIBERACAO') || getDocFieldValue(doc, 'DATA_DESPACHO'));
             const dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
-            const rawInitialDtFactura = getInitialWorkflowFieldValue(prog.instances, ['DATA_FACTURA', 'DATA_DA_FATURA', 'DATA_INVOICE', 'DATA_DE_FATURA', 'DATA_EMISSAO_FATURA']);
-            const dtFactura = parseDWDate(rawInitialDtFactura || getDocFieldValue(doc, 'DATA_FACTURA') || getDocFieldValue(doc, 'DATA_DA_FATURA') || getDocFieldValue(doc, 'DATA_INVOICE') || getDocFieldValue(doc, 'DATA_DE_FATURA') || getDocFieldValue(doc, 'DATA_EMISSAO_FATURA'));
+            const dtFactura = parseDWDate(getDocFieldValue(doc, 'DATA_FACTURA') || getDocFieldValue(doc, 'DATA_DA_FATURA') || getDocFieldValue(doc, 'DATA_INVOICE') || getDocFieldValue(doc, 'DATA_DE_FATURA') || getDocFieldValue(doc, 'DATA_EMISSAO_FATURA'));
             const dtETA = parseDWDate(getDocFieldValue(doc, 'ETA') || getDocFieldValue(doc, 'DATA_ETA') || getDocFieldValue(doc, 'PREVISAO_CHEGADA') || getDocFieldValue(doc, 'DATA_CHEGADA_PREVISTA'));
             const comentario = getDocFieldValue(doc, 'COMENTARIO') || getDocFieldValue(doc, 'OBSERVACOES') || getDocFieldValue(doc, 'COMENTARIO_JUSTIFICATIVA') || '-';
             const diasUteisVal = getBusinessDays(dtChegada, dtEntregaRCS);
@@ -1467,7 +1420,7 @@ const WorkflowAnalyticsPage = () => {
             }
 
             const viaTransporte = getDocFieldValue(doc, 'TIPO') || getDocFieldValue(doc, 'VIA') || getDocFieldValue(doc, 'MODAL') || getDocFieldValue(doc, 'MEIO_TRANSPORTE') || getDocFieldValue(doc, 'VIA_TRANSPORTE') || '-';
-            const noFactura = getInitialWorkflowFieldValue(prog.instances, ['NO_FACTURA', 'NUMERO_FACTURA']) || getDocFieldValue(doc, 'NO_FACTURA') || '-';
+            const noFactura = getDocFieldValue(doc, 'NO_FACTURA') || '-';
 
             return {
                 id: doc.Id,
@@ -3039,17 +2992,17 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
-                                                {renderFilterHeader('Tipo', 'viaTransporte')}
+                                                {renderFilterHeader('Nº PI', 'docNum')}
+                                                {renderFilterHeader('Nº Factura', 'noFactura')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Factura</th>
+                                                {renderFilterHeader('Tipo', 'viaTransporte')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Chegada AO</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Ent.(RCS)</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2">DIAS Uteis</th>
-                                                {renderFilterHeader('Nº PI', 'docNum')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-right sticky top-0 z-10 p-2">Valor</th>
                                                 {renderFilterHeader('Transportador', 'transportador')}
                                                 {renderFilterHeader('Transitario', 'despachante')}
                                                 {renderFilterHeader('Empresa', 'fornecedor')}
-                                                {renderFilterHeader('Nº Factura', 'noFactura')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">ETA</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Comentário</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2">Ações</th>
@@ -3063,17 +3016,17 @@ const WorkflowAnalyticsPage = () => {
                                                 
                                                 return (
                                                     <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-100">
-                                                        <td className="font-semibold text-slate-700 whitespace-nowrap">{p.viaTransporte}</td>
+                                                        <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
+                                                        <td className="font-mono text-slate-600 whitespace-nowrap">{p.noFactura}</td>
                                                         <td className="whitespace-nowrap">{p.dtFactura || '-'}</td>
+                                                        <td className="font-semibold text-slate-700 whitespace-nowrap">{p.viaTransporte}</td>
                                                         <td className="whitespace-nowrap">{p.dtChegada || '-'}</td>
                                                         <td className="whitespace-nowrap">{p.dtEntregaRCS || '-'}</td>
                                                         <td className="text-center font-mono font-semibold text-indigo-600">{p.diasUteis}</td>
-                                                        <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
                                                         <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
                                                         <td className="whitespace-nowrap truncate max-w-[120px]" title={p.transportador}>{p.transportador}</td>
                                                         <td className="whitespace-nowrap truncate max-w-[120px]" title={p.despachante}>{p.despachante}</td>
                                                         <td className="truncate max-w-[150px]" title={p.fornecedor}>{p.fornecedor}</td>
-                                                        <td className="font-mono text-slate-600 whitespace-nowrap">{p.noFactura}</td>
                                                         <td className="whitespace-nowrap">{p.dtETA || '-'}</td>
                                                         <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
                                                         <td className="text-center">
