@@ -169,6 +169,51 @@ const getBusinessDays = (startDate, endDate) => {
     return count;
 };
 
+const getInitialWorkflowFieldValue = (instances, fieldNames) => {
+    if (!instances || instances.length === 0) return null;
+    
+    const sortedInstances = [...instances].sort((a, b) => (a.Version || 0) - (b.Version || 0));
+    const uppercaseFieldNames = fieldNames.map(f => f.toUpperCase());
+    
+    for (const inst of sortedInstances) {
+        const steps = inst.HistorySteps || [];
+        for (const step of steps) {
+            const infoItem = step.Info?.Item || {};
+            
+            // Check Fields
+            const fields = infoItem.Fields || [];
+            for (const f of fields) {
+                const name = (f.Label || f.FieldName || '').toUpperCase();
+                if (uppercaseFieldNames.some(target => name === target || name.includes(target))) {
+                    const val = f.Value?.Item || f.Value || '';
+                    if (val) return val;
+                }
+            }
+            
+            // Check Assignments
+            const assignments = infoItem.Assignments || [];
+            for (const f of assignments) {
+                const name = (f.Label || f.FieldName || '').toUpperCase();
+                if (uppercaseFieldNames.some(target => name === target || name.includes(target))) {
+                    const val = f.Value?.Item || f.Value || '';
+                    if (val) return val;
+                }
+            }
+
+            // Check InputFields
+            const inputFields = infoItem.InputFields || [];
+            for (const f of inputFields) {
+                const name = (f.Label || f.FieldName || '').toUpperCase();
+                if (uppercaseFieldNames.some(target => name === target || name.includes(target))) {
+                    const val = f.Value?.Item || f.Value || '';
+                    if (val) return val;
+                }
+            }
+        }
+    }
+    return null;
+};
+
 // Evaluate stage index
 const evaluateActiveStage = (doc, activeTaskName, isFinished) => {
     const hasDataEntregue = !!findFieldVal(doc, ['DATA_ENTREGUE', 'DATA_ENTREGUE_RCS', 'ENTREGUE']);
@@ -1217,7 +1262,8 @@ const WorkflowAnalyticsPage = () => {
                             completedAt,
                             responsible,
                             timeStoppedMs,
-                            analyzedHistory
+                            analyzedHistory,
+                            instances
                         }
                     }));
                 } catch (err) {
@@ -1311,7 +1357,7 @@ const WorkflowAnalyticsPage = () => {
     const detailedProcesses = useMemo(() => {
         return filteredDocuments.map(doc => {
             const prog = documentProgress[doc.Id] || {};
-            const docNum = getDocumentNumber(doc);
+            const docNum = getInitialWorkflowFieldValue(prog.instances, ['NO_PROCESSO_IMPORTACAO', 'NUMERO_PROCESSO', 'NO_PROCESSO']) || getDocumentNumber(doc);
             
             // Dates
             const dtBollore = parseDWDate(getDocFieldValue(doc, 'DATA_ENTRADA_BOLLORE') || getDocFieldValue(doc, 'BOLLORE'));
@@ -1319,7 +1365,8 @@ const WorkflowAnalyticsPage = () => {
             const dtChegada = parseDWDate(getDocFieldValue(doc, 'DATA_CHEGADA_ANGOLA') || getDocFieldValue(doc, 'DATA_CHEGADA') || getDocFieldValue(doc, 'CHEGADA_AO'));
             const dtSaidaAlfandega = parseDWDate(getDocFieldValue(doc, 'DATA_SAIDA_ALFANDEGA') || getDocFieldValue(doc, 'DATA_DESEMBARACO') || getDocFieldValue(doc, 'LIBERACAO') || getDocFieldValue(doc, 'DATA_DESPACHO'));
             const dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
-            const dtFactura = parseDWDate(getDocFieldValue(doc, 'DATA_FACTURA') || getDocFieldValue(doc, 'DATA_DA_FATURA') || getDocFieldValue(doc, 'DATA_INVOICE') || getDocFieldValue(doc, 'DATA_DE_FATURA') || getDocFieldValue(doc, 'DATA_EMISSAO_FATURA'));
+            const rawInitialDtFactura = getInitialWorkflowFieldValue(prog.instances, ['DATA_FACTURA', 'DATA_DA_FATURA', 'DATA_INVOICE', 'DATA_DE_FATURA', 'DATA_EMISSAO_FATURA']);
+            const dtFactura = parseDWDate(rawInitialDtFactura || getDocFieldValue(doc, 'DATA_FACTURA') || getDocFieldValue(doc, 'DATA_DA_FATURA') || getDocFieldValue(doc, 'DATA_INVOICE') || getDocFieldValue(doc, 'DATA_DE_FATURA') || getDocFieldValue(doc, 'DATA_EMISSAO_FATURA'));
             const dtETA = parseDWDate(getDocFieldValue(doc, 'ETA') || getDocFieldValue(doc, 'DATA_ETA') || getDocFieldValue(doc, 'PREVISAO_CHEGADA') || getDocFieldValue(doc, 'DATA_CHEGADA_PREVISTA'));
             const comentario = getDocFieldValue(doc, 'COMENTARIO') || getDocFieldValue(doc, 'OBSERVACOES') || getDocFieldValue(doc, 'COMENTARIO_JUSTIFICATIVA') || '-';
             const diasUteisVal = getBusinessDays(dtChegada, dtEntregaRCS);
@@ -1420,7 +1467,7 @@ const WorkflowAnalyticsPage = () => {
             }
 
             const viaTransporte = getDocFieldValue(doc, 'TIPO') || getDocFieldValue(doc, 'VIA') || getDocFieldValue(doc, 'MODAL') || getDocFieldValue(doc, 'MEIO_TRANSPORTE') || getDocFieldValue(doc, 'VIA_TRANSPORTE') || '-';
-            const noFactura = getDocFieldValue(doc, 'NO_FACTURA') || '-';
+            const noFactura = getInitialWorkflowFieldValue(prog.instances, ['NO_FACTURA', 'NUMERO_FACTURA']) || getDocFieldValue(doc, 'NO_FACTURA') || '-';
 
             return {
                 id: doc.Id,
