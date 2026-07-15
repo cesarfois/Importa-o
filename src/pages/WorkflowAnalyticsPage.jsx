@@ -169,6 +169,57 @@ const getBusinessDays = (startDate, endDate) => {
     return count;
 };
 
+const extractDateFromHistory = (analyzedHistory, taskKeywords, fieldKeywords) => {
+    if (!analyzedHistory || !Array.isArray(analyzedHistory)) return null;
+    
+    const normTaskKeywords = taskKeywords.map(k => k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+    const normFieldKeywords = fieldKeywords.map(k => k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/_/g, ""));
+
+    const matchingStep = [...analyzedHistory].reverse().find(step => {
+        if (!step.name) return false;
+        const nameNorm = step.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return normTaskKeywords.some(kw => nameNorm.includes(kw));
+    });
+
+    if (!matchingStep) return null;
+
+    const rawStep = matchingStep.raw || {};
+    const infoItem = rawStep.Info?.Item || {};
+    const fieldArrays = [
+        infoItem.Fields || [],
+        infoItem.InputFields || [],
+        infoItem.FileCabinetFields || []
+    ];
+
+    for (const fields of fieldArrays) {
+        if (Array.isArray(fields)) {
+            for (const f of fields) {
+                const label = f.Label || f.FieldName || '';
+                const labelNorm = label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/_/g, "");
+                if (normFieldKeywords.some(kw => labelNorm.includes(kw))) {
+                    const valObj = f.Value || f;
+                    const val = valObj.Item || valObj.Value || '';
+                    if (val) {
+                        const parsed = parseDWDate(val);
+                        if (parsed) return parsed;
+                    }
+                }
+            }
+        }
+    }
+
+    const stepDate = matchingStep.completedAt || matchingStep.startedAt;
+    if (stepDate) {
+        const year = stepDate.getFullYear();
+        if (year >= 1970 && year <= 2100) {
+            return stepDate;
+        }
+    }
+
+    return null;
+};
+
+
 // Evaluate stage index
 const evaluateActiveStage = (doc, activeTaskName, isFinished) => {
     const hasDataEntregue = !!findFieldVal(doc, ['DATA_ENTREGUE', 'DATA_ENTREGUE_RCS', 'ENTREGUE']);
@@ -1316,9 +1367,15 @@ const WorkflowAnalyticsPage = () => {
             // Dates
             const dtBollore = parseDWDate(getDocFieldValue(doc, 'DATA_ENTRADA_BOLLORE') || getDocFieldValue(doc, 'BOLLORE'));
             const dtEnvio = parseDWDate(getDocFieldValue(doc, 'DATA_EXPEDICAO') || getDocFieldValue(doc, 'DATA_ENVIO') || getDocFieldValue(doc, 'DATA_EMBARQUE'));
-            const dtChegada = parseDWDate(getDocFieldValue(doc, 'DATA_CHEGADA_ANGOLA') || getDocFieldValue(doc, 'DATA_CHEGADA') || getDocFieldValue(doc, 'CHEGADA_AO'));
+            let dtChegada = parseDWDate(getDocFieldValue(doc, 'DATA_CHEGADA_ANGOLA') || getDocFieldValue(doc, 'DATA_CHEGADA') || getDocFieldValue(doc, 'CHEGADA_AO'));
+            if (!dtChegada && prog.analyzedHistory) {
+                dtChegada = extractDateFromHistory(prog.analyzedHistory, ['chegada ao', 'chegada angola', 'chegada aeroporto', 'chegada porto', 'chegada'], ['chegada', 'chegada_ao', 'data_chegada']);
+            }
             const dtSaidaAlfandega = parseDWDate(getDocFieldValue(doc, 'DATA_SAIDA_ALFANDEGA') || getDocFieldValue(doc, 'DATA_DESEMBARACO') || getDocFieldValue(doc, 'LIBERACAO') || getDocFieldValue(doc, 'DATA_DESPACHO'));
-            const dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
+            let dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
+            if (!dtEntregaRCS && prog.analyzedHistory) {
+                dtEntregaRCS = extractDateFromHistory(prog.analyzedHistory, ['entrega rcs', 'entregue rcs', 'rcs'], ['entrega', 'entregue', 'rcs', 'data_entregue']);
+            }
             const dtFactura = parseDWDate(getDocFieldValue(doc, 'DATA_FACTURA') || getDocFieldValue(doc, 'DATA_DA_FATURA') || getDocFieldValue(doc, 'DATA_INVOICE') || getDocFieldValue(doc, 'DATA_DE_FATURA') || getDocFieldValue(doc, 'DATA_EMISSAO_FATURA'));
             const dtETA = parseDWDate(getDocFieldValue(doc, 'ETA') || getDocFieldValue(doc, 'DATA_ETA') || getDocFieldValue(doc, 'PREVISAO_CHEGADA') || getDocFieldValue(doc, 'DATA_CHEGADA_PREVISTA'));
             const comentario = getDocFieldValue(doc, 'COMENTARIO') || getDocFieldValue(doc, 'OBSERVACOES') || getDocFieldValue(doc, 'COMENTARIO_JUSTIFICATIVA') || '-';
@@ -2992,7 +3049,7 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
-                                                {renderFilterHeader('Nº Processo Importação', 'docNum')}
+                                                {renderFilterHeader('Nº PI', 'docNum')}
                                                 {renderFilterHeader('Nº Factura', 'noFactura')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Factura</th>
                                                 {renderFilterHeader('Tipo', 'viaTransporte')}
