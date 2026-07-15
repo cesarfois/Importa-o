@@ -960,7 +960,10 @@ const WorkflowAnalyticsPage = () => {
         fornecedor: [],
         tipoCarga: [],
         statusFinal: [],
-        qualidade: []
+        qualidade: [],
+        viaTransporte: [],
+        transportador: [],
+        noFactura: []
     });
 
     const [colSearchTerms, setColSearchTerms] = useState({
@@ -971,7 +974,10 @@ const WorkflowAnalyticsPage = () => {
         fornecedor: '',
         tipoCarga: '',
         statusFinal: '',
-        qualidade: ''
+        qualidade: '',
+        viaTransporte: '',
+        transportador: '',
+        noFactura: ''
     });
 
     const renderFilterHeader = (label, colKey, widthClass = '') => {
@@ -2986,17 +2992,17 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Tipo</th>
+                                                {renderFilterHeader('Tipo', 'viaTransporte')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Factura</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Chegada AO</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Ent.(RCS)</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2">DIAS Uteis</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Nº PI</th>
+                                                {renderFilterHeader('Nº PI', 'docNum')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-right sticky top-0 z-10 p-2">Valor</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Transportador</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Transitario</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Empresa</th>
-                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Nº Factura</th>
+                                                {renderFilterHeader('Transportador', 'transportador')}
+                                                {renderFilterHeader('Transitario', 'despachante')}
+                                                {renderFilterHeader('Empresa', 'fornecedor')}
+                                                {renderFilterHeader('Nº Factura', 'noFactura')}
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">ETA</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Comentário</th>
                                                 <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2">Ações</th>
