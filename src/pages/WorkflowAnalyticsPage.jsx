@@ -16,7 +16,8 @@ import {
     FaSearch,
     FaExternalLinkAlt,
     FaInfoCircle,
-    FaFileAlt
+    FaFileAlt,
+    FaShoppingCart
 } from 'react-icons/fa';
 import { 
     ResponsiveContainer, 
@@ -146,6 +147,26 @@ const parseDWDate = (dateStr) => {
     }
     const d = new Date(dateStr);
     return isNaN(d.getTime()) ? null : d;
+};
+
+const getBusinessDays = (startDate, endDate) => {
+    if (!startDate || !endDate) return '-';
+    let start = new Date(startDate);
+    let end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return '-';
+    if (start > end) return 0;
+    
+    let count = 0;
+    let current = new Date(start);
+    current.setDate(current.getDate() + 1);
+    while (current <= end) {
+        const day = current.getDay();
+        if (day !== 0 && day !== 6) {
+            count++;
+        }
+        current.setDate(current.getDate() + 1);
+    }
+    return count;
 };
 
 // Evaluate stage index
@@ -1292,6 +1313,10 @@ const WorkflowAnalyticsPage = () => {
             const dtChegada = parseDWDate(getDocFieldValue(doc, 'DATA_CHEGADA_ANGOLA') || getDocFieldValue(doc, 'DATA_CHEGADA') || getDocFieldValue(doc, 'CHEGADA_AO'));
             const dtSaidaAlfandega = parseDWDate(getDocFieldValue(doc, 'DATA_SAIDA_ALFANDEGA') || getDocFieldValue(doc, 'DATA_DESEMBARACO') || getDocFieldValue(doc, 'LIBERACAO') || getDocFieldValue(doc, 'DATA_DESPACHO'));
             const dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
+            const dtFactura = parseDWDate(getDocFieldValue(doc, 'DATA_FACTURA') || getDocFieldValue(doc, 'DATA_DA_FATURA') || getDocFieldValue(doc, 'DATA_INVOICE') || getDocFieldValue(doc, 'DATA_DE_FATURA') || getDocFieldValue(doc, 'DATA_EMISSAO_FATURA'));
+            const dtETA = parseDWDate(getDocFieldValue(doc, 'ETA') || getDocFieldValue(doc, 'DATA_ETA') || getDocFieldValue(doc, 'PREVISAO_CHEGADA') || getDocFieldValue(doc, 'DATA_CHEGADA_PREVISTA'));
+            const comentario = getDocFieldValue(doc, 'COMENTARIO') || getDocFieldValue(doc, 'OBSERVACOES') || getDocFieldValue(doc, 'COMENTARIO_JUSTIFICATIVA') || '-';
+            const diasUteisVal = getBusinessDays(dtChegada, dtEntregaRCS);
             
             // Financials (Previsto / RDF)
             // Financials (Previsto / RDF)
@@ -1402,6 +1427,13 @@ const WorkflowAnalyticsPage = () => {
                 fornecedor: getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA') || '-',
                 tipoCarga: getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-',
                 viaTransporte,
+                dtFactura: dtFactura ? dtFactura.toLocaleDateString('pt-AO') : '-',
+                dtFacturaRaw: dtFactura,
+                dtETA: dtETA ? dtETA.toLocaleDateString('pt-AO') : '-',
+                dtETARaw: dtETA,
+                comentario,
+                diasUteis: diasUteisVal,
+                transportador: getDocFieldValue(doc, 'TRANSPORTADOR') || '-',
                 dtBollore: dtBollore ? dtBollore.toLocaleDateString('pt-AO') : '-',
                 dtEnvio: dtEnvio ? dtEnvio.toLocaleDateString('pt-AO') : '-',
                 dtChegada: dtChegada ? dtChegada.toLocaleDateString('pt-AO') : '-',
@@ -1502,7 +1534,10 @@ const WorkflowAnalyticsPage = () => {
                 p.despachante.toLowerCase().includes(s) ||
                 p.fornecedor.toLowerCase().includes(s) ||
                 p.tipoCarga.toLowerCase().includes(s) ||
-                p.qualidade.toLowerCase().includes(s)
+                p.qualidade.toLowerCase().includes(s) ||
+                (p.transportador && p.transportador.toLowerCase().includes(s)) ||
+                (p.comentario && p.comentario.toLowerCase().includes(s)) ||
+                (p.noFactura && p.noFactura.toLowerCase().includes(s))
             );
         }
 
@@ -2141,6 +2176,12 @@ const WorkflowAnalyticsPage = () => {
                     className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'visao_detalhada' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
                 >
                     <FaList /> Visão Detalhada
+                </button>
+                <button 
+                    onClick={() => setActiveTab('diretor_compras')}
+                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'diretor_compras' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
+                >
+                    <FaShoppingCart /> Diretor de Compras
                 </button>
             </div>
 
@@ -2908,6 +2949,95 @@ const WorkflowAnalyticsPage = () => {
                                             {searchedAndSortedDetails.length === 0 && (
                                                 <tr>
                                                     <td colSpan={24} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 6. DIRETOR DE COMPRAS (NEW TAB) */}
+                    {activeTab === 'diretor_compras' && (
+                        <div className="space-y-4">
+                            {/* Search & Actions */}
+                            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                                <div className="relative w-full md:w-80">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                                        <FaSearch />
+                                    </span>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Buscar por PI, Transportador, Transitário..." 
+                                        className="input input-bordered input-sm pl-9 bg-white text-slate-700 w-full rounded-xl"
+                                        value={detailSearch}
+                                        onChange={(e) => setDetailSearch(e.target.value)}
+                                    />
+                                </div>
+                                <div className="text-xs text-slate-500 font-bold">
+                                    Exibindo {searchedAndSortedDetails.length} de {detailedProcesses.length} processos
+                                </div>
+                            </div>
+
+                            {/* Purchasing Director Grid Table */}
+                            <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                                <div className="overflow-x-auto max-h-[500px] scrollbar-thin">
+                                    <table className="table table-compact w-full text-[11px] border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50 text-slate-600 font-bold">
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Tipo</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Factura</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Chegada AO</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Data Ent.(RCS)</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2">DIAS Uteis</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Nº PI</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold text-right sticky top-0 z-10 p-2">Valor</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Transportador</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Transitario</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Empresa</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Nº Factura</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">ETA</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2">Comentário</th>
+                                                <th className="bg-slate-100 text-slate-600 font-bold text-center sticky top-0 z-10 p-2">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {searchedAndSortedDetails.map((p) => {
+                                                const formattedValor = p.valMercadoriaOrig && p.valMercadoriaOrig > 0 
+                                                    ? p.valMercadoriaOrig.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+                                                    : '-';
+                                                
+                                                return (
+                                                    <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-100">
+                                                        <td className="font-semibold text-slate-700 whitespace-nowrap">{p.viaTransporte}</td>
+                                                        <td className="whitespace-nowrap">{p.dtFactura || '-'}</td>
+                                                        <td className="whitespace-nowrap">{p.dtChegada || '-'}</td>
+                                                        <td className="whitespace-nowrap">{p.dtEntregaRCS || '-'}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasUteis}</td>
+                                                        <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
+                                                        <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
+                                                        <td className="whitespace-nowrap truncate max-w-[120px]" title={p.transportador}>{p.transportador}</td>
+                                                        <td className="whitespace-nowrap truncate max-w-[120px]" title={p.despachante}>{p.despachante}</td>
+                                                        <td className="truncate max-w-[150px]" title={p.fornecedor}>{p.fornecedor}</td>
+                                                        <td className="font-mono text-slate-600 whitespace-nowrap">{p.noFactura}</td>
+                                                        <td className="whitespace-nowrap">{p.dtETA || '-'}</td>
+                                                        <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
+                                                        <td className="text-center">
+                                                            <button 
+                                                                onClick={() => handleOpenDocument(p.id)}
+                                                                className="btn btn-xs btn-outline btn-primary font-bold flex items-center gap-1 mx-auto rounded-lg"
+                                                                title="Ver documento no DocuWare"
+                                                            >
+                                                                <FaExternalLinkAlt className="text-[9px]" /> Abrir
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {searchedAndSortedDetails.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={14} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
                                                 </tr>
                                             )}
                                         </tbody>
