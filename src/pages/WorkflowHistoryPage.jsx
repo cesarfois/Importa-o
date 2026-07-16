@@ -1885,8 +1885,8 @@ const WorkflowHistoryPage = () => {
 
             {searched && (
                 <div className="space-y-6">
-                    {/* Dashboard Superior (6 KPI Cards) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    {/* Dashboard Superior (5 KPI Cards) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {/* 1. Total Documentos */}
                         <div 
                             onClick={() => setQuickFilter('all')}
@@ -1946,28 +1946,7 @@ const WorkflowHistoryPage = () => {
                             </div>
                         </div>
 
-                        {/* 4. Reprovados / Cancelados */}
-                        <div
-                            onClick={() => setQuickFilter('rejected')}
-                            className={`bg-white border rounded-xl p-4 shadow-sm flex items-center gap-4 cursor-pointer transition-all duration-200 select-none hover:shadow-md hover:border-slate-300 ${
-                                quickFilter === 'rejected'
-                                    ? 'ring-2 ring-red-500/20 border-red-500 bg-red-50/10'
-                                    : 'border-slate-200'
-                            }`}
-                        >
-                            <div className="p-3 bg-red-50 text-red-600 rounded-lg shrink-0">
-                                <FaTimesCircle className="text-xl" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Reprov./Cancelados</div>
-                                <div className="text-2xl font-black text-red-600 mt-0.5 font-mono">{kpis.rejected}</div>
-                                <div className="text-[10px] text-red-400 mt-0.5 font-semibold truncate">
-                                    {documents.length > 0 ? Math.round((kpis.rejected / documents.length) * 100) : 0}% do total
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 5. Atrasados */}
+                        {/* 4. Atrasados */}
                         <div 
                             onClick={() => setQuickFilter('delayed')}
                             className={`bg-white border rounded-xl p-4 shadow-sm flex items-center gap-4 cursor-pointer transition-all duration-200 select-none hover:shadow-md hover:border-slate-300 ${
