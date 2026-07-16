@@ -1062,7 +1062,7 @@ const WorkflowAnalyticsPage = () => {
             <th className={`bg-slate-100 text-slate-600 font-bold sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass} ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : ''}`}>
                 <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-between'}`}>
                     <span 
-                        className="cursor-pointer hover:text-indigo-600 select-none whitespace-nowrap" 
+                        className={`cursor-pointer hover:text-indigo-600 select-none whitespace-normal break-words leading-tight ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`} 
                         onClick={() => setDetailSort({ column: colKey, direction: detailSort.column === colKey && detailSort.direction === 'asc' ? 'desc' : 'asc' })}
                     >
                         {label} {detailSort.column === colKey ? (detailSort.direction === 'asc' ? '↑' : '↓') : ''}
@@ -2768,11 +2768,11 @@ const WorkflowAnalyticsPage = () => {
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
                                                 {renderFilterHeader('Nº PI', 'docNum')}
                                                 {renderFilterHeader('Nº Factura', 'noFactura')}
-                                                {renderFilterHeader('Data Factura', 'dtFactura')}
+                                                {renderFilterHeader('Data Factura', 'dtFactura', 'max-w-[70px]')}
                                                 {renderFilterHeader('Tipo', 'viaTransporte')}
-                                                {renderFilterHeader('Chegada AO', 'dtChegada')}
-                                                {renderFilterHeader('Data Ent.(RCS)', 'dtEntregaRCS')}
-                                                {renderFilterHeader('DIAS Uteis', 'diasUteis', '', 'center')}
+                                                {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
+                                                {renderFilterHeader('Data Entrada (RCS)', 'dtEntregaRCS', 'max-w-[85px]')}
+                                                {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]', 'center')}
                                                 {renderFilterHeader('Valor', 'valMercadoriaOrig', '', 'right')}
                                                 {renderFilterHeader('Transportador', 'transportador')}
                                                 {renderFilterHeader('Transitario', 'despachante')}
