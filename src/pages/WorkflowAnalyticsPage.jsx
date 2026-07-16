@@ -2171,9 +2171,9 @@ const WorkflowAnalyticsPage = () => {
                             </button>
                         </div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4 max-w-md">
                             {/* Período */}
-                            <div className="flex flex-col gap-1">
+                            <div className="flex-1 flex flex-col gap-1">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase">Data Inicial</label>
                                 <input 
                                     type="date" 
@@ -2183,7 +2183,7 @@ const WorkflowAnalyticsPage = () => {
                                 />
                             </div>
 
-                            <div className="flex flex-col gap-1">
+                            <div className="flex-1 flex flex-col gap-1">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase">Data Final</label>
                                 <input 
                                     type="date" 
@@ -2191,51 +2191,6 @@ const WorkflowAnalyticsPage = () => {
                                     value={dateRange[1]}
                                     onChange={(e) => setDateRange([dateRange[0], e.target.value])}
                                 />
-                            </div>
-
-                            {/* Despachante */}
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Despachante</label>
-                                <select 
-                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
-                                    value={selectedDespachante}
-                                    onChange={(e) => setSelectedDespachante(e.target.value)}
-                                >
-                                    <option value="all">Todos os Despachantes</option>
-                                    {despachantesList.map(d => (
-                                        <option key={d} value={d}>{d}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Via (Modal) */}
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Via (Modal)</label>
-                                <select 
-                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
-                                    value={selectedViaTransporte}
-                                    onChange={(e) => setSelectedViaTransporte(e.target.value)}
-                                >
-                                    <option value="all">Todas as Vias</option>
-                                    {viasList.map(v => (
-                                        <option key={v} value={v}>{v}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Tipo de Carga */}
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Tipo de Carga</label>
-                                <select 
-                                    className="select select-bordered select-sm bg-white text-slate-700 w-full"
-                                    value={selectedTipoCarga}
-                                    onChange={(e) => setSelectedTipoCarga(e.target.value)}
-                                >
-                                    <option value="all">Todos os Tipos</option>
-                                    {tiposCargaList.map(t => (
-                                        <option key={t} value={t}>{t}</option>
-                                    ))}
-                                </select>
                             </div>
                         </div>
                     </div>
