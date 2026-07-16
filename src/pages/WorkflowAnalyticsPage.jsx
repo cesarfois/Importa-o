@@ -1384,8 +1384,19 @@ const WorkflowAnalyticsPage = () => {
                         const nodes = merged.nodes || [];
                         const isEndNode = (n) => {
                             if (!n) return false;
-                            const type = (n.type || '').toLowerCase();
-                            return type.includes('end') || type.includes('fim');
+                            const name = (n.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            
+                            return name === 'end' || 
+                                   name.startsWith('end ') || 
+                                   name.endsWith(' end') || 
+                                   name.includes(' end ') ||
+                                   name.startsWith('fim') ||
+                                   name.includes(' fim') ||
+                                   name.includes('concluid') || 
+                                   name.includes('termin') || 
+                                   name.includes('conclusao') ||
+                                   name.includes('cancelad') ||
+                                   name.includes('reprovad');
                         };
                         const endNode = nodes.find(isEndNode);
                         isFinished = endNode && endNode.status === 'completed';
