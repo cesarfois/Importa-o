@@ -976,8 +976,8 @@ const METRIC_EXPLANATIONS = {
                 <li><strong>Montante FC:</strong> Custo aduaneiro total realizado no fechamento.</li>
                 <li><strong>Transportador:</strong> Transportadora encarregada.</li>
                 <li><strong>Transitario:</strong> Despachante ou transitário responsável.</li>
-                <li><strong>Empresa:</strong> <span className="text-indigo-200">Sem Atribuição direta</span> (Valor atribuído por mapeamento do fornecedor/empresa).</li>
-                <li><strong>ETA:</strong> <span className="text-indigo-200">Sem Atribuição direta</span> (Previsão de chegada estimada).</li>
+                <li><strong>Empresa:</strong> Empresa associada ao processo.</li>
+                <li><strong>ETA:</strong> Previsão de chegada estimada (Sem Atribuição).</li>
                 <li><strong>Comentário:</strong> Observações gerais do processo.</li>
             </ul>
         ),
@@ -997,7 +997,7 @@ const METRIC_EXPLANATIONS = {
                         <tbody className="divide-y divide-slate-100">
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Nº PI</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_PROCESSO_IMPORTACAO, N_PROCESSO_IMPORTACAO, NUM_PROCESSO, NO_DOCUMENTO, NO_PEDIDO___REFERENCIA, NO_TICKET</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_PROCESSO_IMPORTACAO</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Nº Factura</td>
@@ -1005,49 +1005,49 @@ const METRIC_EXPLANATIONS = {
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data Factura</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA, DATA_DA_FATURA, DATA_INVOICE, DATA_DE_FATURA, DATA_EMISSAO_FATURA</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tipo</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO, VIA, MODAL, MEIO_TRANSPORTE, VIA_TRANSPORTE</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO</td>
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada AO</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
-                                    DATA_CHEGADA_ANGOLA, DATA_CHEGADA, CHEGADA_AO.<br />
-                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "chegada ao", "chegada angola", "chegada aeroporto", "chegada porto", "chegada".
+                                    DATA_DE_CHEGADA__AO_<br />
+                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> Data de Chegada (AO)
                                 </td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Entrada (RCS)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
-                                    DATA_ENTREGUE, DATA_ENTREGUE_RCS, ENTREGUE.<br />
-                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "entrega rcs", "entregue rcs", "rcs".
+                                    DATA_ENTREGUE__RCS_<br />
+                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "entrega rcs"
                                 </td>
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dias Úteis</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
-                                    <span className="text-slate-500 font-sans">Diferença calculada de dias úteis entre <strong>Chegada AO</strong> e <strong>Entrada (RCS)</strong>.</span>
+                                    <span className="text-slate-500 font-sans">Diferença calculada de dias úteis entre Chegada AO e Entrada (RCS)</span>
                                 </td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (EU)</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA, VALOR_FOB, FOB, VALOR_MERCADORIA, VALOR</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA</td>
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Cambio FC</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">VAOR_CAMBIAL_FC, VALOR_CAMBIAL_FC, CAMBIO_FC, TAXA_CAMBIO_FC, Vaor Cambial_FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">VAOR_CAMBIAL_FC</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (Kz)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
-                                    <span className="text-slate-500 font-sans">Calculado:</span> FOB * Cambio FC (ou Câmbio de abertura se FC for nulo)
+                                    <span className="text-slate-500 font-sans">Calculado:</span> MONTANTE_FACTURA * VAOR_CAMBIAL_FC
                                 </td>
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante FC</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE, MONTANTE_FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transportador</td>
@@ -1055,19 +1055,19 @@ const METRIC_EXPLANATIONS = {
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitario</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE, DESPACHADOR</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE</td>
                             </tr>
-                            <tr className="bg-slate-50/50 text-slate-400">
-                                <td className="p-1.5 border border-slate-200 font-semibold italic text-slate-400">Empresa (Sem Atribuição)</td>
-                                <td className="p-1.5 border border-slate-200 font-mono italic">FORNECEDOR, EMPRESA <span className="text-slate-400 font-sans">(Sem Atribuição direta nos metadados de processo)</span></td>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Empresa</td>
                             </tr>
                             <tr className="text-slate-400">
                                 <td className="p-1.5 border border-slate-200 font-semibold italic text-slate-400">ETA (Sem Atribuição)</td>
-                                <td className="p-1.5 border border-slate-200 font-mono italic">ETA, DATA_ETA, PREVISAO_CHEGADA, DATA_CHEGADA_PREVISTA <span className="text-slate-400 font-sans">(Sem Atribuição direta nos metadados de processo)</span></td>
+                                <td className="p-1.5 border border-slate-200 font-mono italic">-</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Comentário</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO, OBSERVACOES, COMENTARIO_JUSTIFICATIVA</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1526,23 +1526,23 @@ const WorkflowAnalyticsPage = () => {
             // Dates
             const dtBollore = parseDWDate(getDocFieldValue(doc, 'DATA_ENTRADA_BOLLORE') || getDocFieldValue(doc, 'BOLLORE'));
             const dtEnvio = parseDWDate(getDocFieldValue(doc, 'DATA_EXPEDICAO') || getDocFieldValue(doc, 'DATA_ENVIO') || getDocFieldValue(doc, 'DATA_EMBARQUE'));
-            let dtChegada = parseDWDate(getDocFieldValue(doc, 'DATA_CHEGADA_ANGOLA') || getDocFieldValue(doc, 'DATA_CHEGADA') || getDocFieldValue(doc, 'CHEGADA_AO'));
+            let dtChegada = parseDWDate(getDocFieldValue(doc, 'DATA_DE_CHEGADA__AO_') || getDocFieldValue(doc, 'DATA_CHEGADA_ANGOLA') || getDocFieldValue(doc, 'DATA_CHEGADA') || getDocFieldValue(doc, 'CHEGADA_AO'));
             if (!dtChegada && prog.analyzedHistory) {
-                dtChegada = extractDateFromHistory(prog.analyzedHistory, ['chegada ao', 'chegada angola', 'chegada aeroporto', 'chegada porto', 'chegada'], ['chegada', 'chegada_ao', 'data_chegada']);
+                dtChegada = extractDateFromHistory(prog.analyzedHistory, ['data de chegada (ao)', 'chegada ao', 'chegada angola', 'chegada aeroporto', 'chegada porto', 'chegada'], ['chegada', 'chegada_ao', 'data_chegada', 'data_de_chegada__ao_']);
             }
             const dtSaidaAlfandega = parseDWDate(getDocFieldValue(doc, 'DATA_SAIDA_ALFANDEGA') || getDocFieldValue(doc, 'DATA_DESEMBARACO') || getDocFieldValue(doc, 'LIBERACAO') || getDocFieldValue(doc, 'DATA_DESPACHO'));
-            let dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
+            let dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE__RCS_') || getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
             if (!dtEntregaRCS && prog.analyzedHistory) {
-                dtEntregaRCS = extractDateFromHistory(prog.analyzedHistory, ['entrega rcs', 'entregue rcs', 'rcs'], ['entrega', 'entregue', 'rcs', 'data_entregue']);
+                dtEntregaRCS = extractDateFromHistory(prog.analyzedHistory, ['entrega rcs', 'entregue rcs', 'rcs'], ['entrega', 'entregue', 'rcs', 'data_entregue', 'data_entregue__rcs_']);
             }
-            const dtFactura = parseDWDate(getDocFieldValue(doc, 'DATA_FACTURA') || getDocFieldValue(doc, 'DATA_DA_FATURA') || getDocFieldValue(doc, 'DATA_INVOICE') || getDocFieldValue(doc, 'DATA_DE_FATURA') || getDocFieldValue(doc, 'DATA_EMISSAO_FATURA'));
-            const dtETA = parseDWDate(getDocFieldValue(doc, 'ETA') || getDocFieldValue(doc, 'DATA_ETA') || getDocFieldValue(doc, 'PREVISAO_CHEGADA') || getDocFieldValue(doc, 'DATA_CHEGADA_PREVISTA'));
-            const comentario = getDocFieldValue(doc, 'COMENTARIO') || getDocFieldValue(doc, 'OBSERVACOES') || getDocFieldValue(doc, 'COMENTARIO_JUSTIFICATIVA') || '-';
+            const dtFactura = parseDWDate(getDocFieldValue(doc, 'DATA_FACTURA'));
+            const dtETA = null; // Sem Atribuição
+            const comentario = getDocFieldValue(doc, 'COMENTARIO') || '-';
             const diasUteisVal = getBusinessDays(dtChegada, dtEntregaRCS);
             
             // Financials (Previsto / RDF)
             // Financials (Previsto / RDF)
-            const fMerc = getDWFieldVal(doc, 'MONTANTE_FACTURA', 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'VALOR');
+            const fMerc = getDWFieldVal(doc, 'MONTANTE_FACTURA');
             const fFrete = getDWFieldVal(doc, 'MONTANTE_TRANSPORTE', 'VALOR_FRETE', 'FRETE', 'TRANSPORTE');
             const fCustosAdicionais = getDWFieldVal(doc, 'DESPESAS_EXTRAS', 'CUSTOS_ADICIONAIS', 'OUTROS_CUSTOS', 'OUTRAS_DESPESAS', 'EXTRAS');
             const fRdf = getDWFieldVal(doc, 'MONTANTE_RDF');
@@ -1558,11 +1558,11 @@ const WorkflowAnalyticsPage = () => {
             const fIvaFC = getDWFieldVal(doc, 'IVA_IMPORTACAO_FC', 'VALOR_IVA_IMPORTACAO_FC', 'IVA_FC');
             const fServicosDespachanteFC = getDWFieldVal(doc, 'SERVICOS_DESPACHANTE_FC', 'SERVICO_DESPACHANTE_FC', 'SERVICOS_DESPACHANTES_FC');
             const fIvaServicosFC = getDWFieldVal(doc, 'IVA_SERV_DESPACHANTE_FC', 'IVA_SERV_FC', 'IVA_SERVICES_FC', 'IVA_SERVICOS_FC', 'IVA_Serv.Despachante_FC');
-            const fMontanteFC = getDWFieldVal(doc, 'MONTANTE_FACTURA_DESPACHANTE', 'MONTANTE_FC');
+            const fMontanteFC = getDWFieldVal(doc, 'MONTANTE_FACTURA_DESPACHANTE');
 
             // Exchange Rates & Conversions
             const fValorCambial = parseCurrency(findFieldVal(doc, ['VALOR_CAMBIAL', 'VALOR_CAMBIO', 'CAMBIO', 'TAXA_CAMBIO', 'VALOR CAMBIAL']));
-            const fValorCambialFC = parseCurrency(findFieldVal(doc, ['VAOR_CAMBIAL_FC', 'VALOR_CAMBIAL_FC', 'CAMBIO_FC', 'TAXA_CAMBIO_FC', 'Vaor Cambial_FC']));
+            const fValorCambialFC = parseCurrency(findFieldVal(doc, ['VAOR_CAMBIAL_FC']));
             
             const fMercKz = fMerc * (fValorCambial || 1);
             const fMercFCKz = fMerc * (fValorCambialFC || fValorCambial || 1);
@@ -1635,7 +1635,7 @@ const WorkflowAnalyticsPage = () => {
                 qualidade = 'Falta custo final';
             }
 
-            const viaTransporte = getDocFieldValue(doc, 'TIPO') || getDocFieldValue(doc, 'VIA') || getDocFieldValue(doc, 'MODAL') || getDocFieldValue(doc, 'MEIO_TRANSPORTE') || getDocFieldValue(doc, 'VIA_TRANSPORTE') || '-';
+            const viaTransporte = getDocFieldValue(doc, 'TIPO') || '-';
             const noFactura = getDocFieldValue(doc, 'NO_FACTURA') || '-';
 
             return {
@@ -1645,8 +1645,8 @@ const WorkflowAnalyticsPage = () => {
                 etapa: stageName,
                 stageIdx,
                 responsavel: prog.responsible || '-',
-                despachante: getDocFieldValue(doc, 'DESPACHANTE') || getDocFieldValue(doc, 'DESPACHADOR') || '-',
-                fornecedor: getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA') || '-',
+                despachante: getDocFieldValue(doc, 'DESPACHANTE') || '-',
+                fornecedor: getDocFieldValue(doc, 'Empresa') || '-',
                 tipoCarga: getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-',
                 viaTransporte,
                 dtFactura: dtFactura ? dtFactura.toLocaleDateString('pt-AO') : '-',
