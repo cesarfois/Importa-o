@@ -19,7 +19,8 @@ import {
     FaFileAlt,
     FaShoppingCart,
     FaFolderOpen,
-    FaCheckCircle
+    FaCheckCircle,
+    FaFileExcel
 } from 'react-icons/fa';
 import { 
     ResponsiveContainer, 
@@ -973,6 +974,45 @@ const WorkflowAnalyticsPage = () => {
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
     const [activeTab, setActiveTab] = useState('diretor_compras');
     const [diretorComprasStatusFilter, setDiretorComprasStatusFilter] = useState('all');
+
+    const exportPurchasingToCSV = () => {
+        const headers = [
+            'Nº PI', 'Nº Factura', 'Data Factura', 'Tipo', 'Chegada AO', 'Entrada (RCS)', 
+            'Dias Úteis', 'Factura (EU)', 'Cambio FC', 'Factura (Kz)', 'Montante FC', 
+            'Transportador', 'Transitario', 'Empresa', 'ETA', 'Comentário'
+        ];
+        
+        const csvData = filteredDetailsForPurchasing.map(p => [
+            p.docNum || '',
+            p.noFactura || '',
+            p.dtFactura || '',
+            p.viaTransporte || '',
+            p.dtChegada || '',
+            p.dtEntregaRCS || '',
+            p.diasUteis || '0',
+            p.valMercadoriaOrig || '0',
+            p.valorCambialFC || '0',
+            p.valMercadoriaFC || '0',
+            p.montanteFC || '0',
+            p.transportador || '',
+            p.despachante || '',
+            p.fornecedor || '',
+            p.dtETA || '',
+            p.comentario || ''
+        ]);
+
+        const csvContent = [
+            headers.join(';'),
+            ...csvData.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        ].join('\n');
+
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `diretor_compras_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    };
     const [selectedDespachanteGroup, setSelectedDespachanteGroup] = useState(null);
     const [detectedTypeField, setDetectedTypeField] = useState(null);
     const [detectedDateField, setDetectedDateField] = useState(null);
@@ -1062,7 +1102,7 @@ const WorkflowAnalyticsPage = () => {
         const hasActiveFilter = selectedVals.length > 0;
 
         return (
-            <th className={`bg-slate-50 sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass} ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : ''}`}>
+            <th className={`bg-slate-100 sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass} ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : ''}`}>
                 <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-between'}`}>
                     <span 
                         className={`cursor-pointer hover:text-indigo-600 select-none whitespace-normal break-words leading-tight text-[9px] font-bold tracking-wider uppercase text-slate-500 transition-colors ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`} 
@@ -2822,17 +2862,27 @@ const WorkflowAnalyticsPage = () => {
 
                             {/* Search & Actions */}
                             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                                <div className="relative w-full md:w-80">
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                                        <FaSearch />
-                                    </span>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Buscar por PI, Transportador, Transitário..." 
-                                        className="input input-bordered input-sm pl-9 bg-white text-slate-700 w-full rounded-xl"
-                                        value={detailSearch}
-                                        onChange={(e) => setDetailSearch(e.target.value)}
-                                    />
+                                <div className="flex flex-row gap-2 items-center w-full md:w-auto">
+                                    <div className="relative w-full md:w-80">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                                            <FaSearch />
+                                        </span>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Buscar por PI, Transportador, Transitário..." 
+                                            className="input input-bordered input-sm pl-9 bg-white text-slate-700 w-full rounded-xl"
+                                            value={detailSearch}
+                                            onChange={(e) => setDetailSearch(e.target.value)}
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={exportPurchasingToCSV}
+                                        className="btn btn-sm btn-outline btn-success font-bold flex items-center gap-1.5 rounded-xl border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                                        title="Exportar para Excel"
+                                    >
+                                        <FaFileExcel className="text-sm" />
+                                        <span className="hidden sm:inline">Exportar Excel</span>
+                                    </button>
                                 </div>
                                 <div className="text-xs text-slate-500 font-bold">
                                     Exibindo {filteredDetailsForPurchasing.length} de {searchedAndSortedDetails.length} processos
@@ -2861,7 +2911,7 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Empresa', 'fornecedor')}
                                                 {renderFilterHeader('ETA', 'dtETA')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200">Ações</th>
+                                                <th className="bg-slate-100 text-slate-500 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200">Ações</th>
                                             </tr>
                                         </thead>
                                         <tbody>
