@@ -17,7 +17,9 @@ import {
     FaExternalLinkAlt,
     FaInfoCircle,
     FaFileAlt,
-    FaShoppingCart
+    FaShoppingCart,
+    FaFolderOpen,
+    FaCheckCircle
 } from 'react-icons/fa';
 import { 
     ResponsiveContainer, 
@@ -970,6 +972,7 @@ const WorkflowAnalyticsPage = () => {
     const [dateRange, setDateRange] = useState([getSixMonthsAgoString(), getTodayString()]);
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
     const [activeTab, setActiveTab] = useState('diretor_compras');
+    const [diretorComprasStatusFilter, setDiretorComprasStatusFilter] = useState('all');
     const [selectedDespachanteGroup, setSelectedDespachanteGroup] = useState(null);
     const [detectedTypeField, setDetectedTypeField] = useState(null);
     const [detectedDateField, setDetectedDateField] = useState(null);
@@ -1647,6 +1650,22 @@ const WorkflowAnalyticsPage = () => {
         }
         return result;
     }, [detailedProcesses, detailSearch, detailSort, colFilters]);
+
+    // --- Purchasing Director specific metrics and filtered list ---
+    const directorComprasMetrics = useMemo(() => {
+        const total = searchedAndSortedDetails.length;
+        const concluidos = searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído').length;
+        const emAndamento = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento').length;
+        const pctConcluidos = total > 0 ? Math.round((concluidos / total) * 100) : 0;
+        const pctEmAndamento = total > 0 ? Math.round((emAndamento / total) * 100) : 0;
+        
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento };
+    }, [searchedAndSortedDetails]);
+
+    const filteredDetailsForPurchasing = useMemo(() => {
+        if (diretorComprasStatusFilter === 'all') return searchedAndSortedDetails;
+        return searchedAndSortedDetails.filter(p => p.statusFinal === diretorComprasStatusFilter);
+    }, [searchedAndSortedDetails, diretorComprasStatusFilter]);
 
     // Handle Open DocuWare Document
     const handleOpenDocument = (docId) => {
@@ -2741,6 +2760,66 @@ const WorkflowAnalyticsPage = () => {
                     {/* 6. DIRETOR DE COMPRAS (NEW TAB) */}
                     {activeTab === 'diretor_compras' && (
                         <div className="space-y-4">
+                            {/* KPI Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Total Docs Card */}
+                                <div 
+                                    onClick={() => setDiretorComprasStatusFilter('all')}
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        diretorComprasStatusFilter === 'all' 
+                                            ? 'border-indigo-600 ring-1 ring-indigo-600 bg-indigo-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Docs</span>
+                                        <span className="text-2xl font-black text-slate-800 mt-1">{directorComprasMetrics.total}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Encontrados no lote</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg ${diretorComprasStatusFilter === 'all' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaFolderOpen className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Concluídos Card */}
+                                <div 
+                                    onClick={() => setDiretorComprasStatusFilter('Concluído')}
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        diretorComprasStatusFilter === 'Concluído' 
+                                            ? 'border-emerald-600 ring-1 ring-emerald-600 bg-emerald-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Concluídos</span>
+                                        <span className="text-2xl font-black text-emerald-600 mt-1">{directorComprasMetrics.concluidos}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{directorComprasMetrics.pctConcluidos}% do total</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg ${diretorComprasStatusFilter === 'Concluído' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaCheckCircle className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Em Andamento Card */}
+                                <div 
+                                    onClick={() => setDiretorComprasStatusFilter('Em Andamento')}
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        diretorComprasStatusFilter === 'Em Andamento' 
+                                            ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Em Andamento</span>
+                                        <span className="text-2xl font-black text-amber-600 mt-1">{directorComprasMetrics.emAndamento}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg ${diretorComprasStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaClock className="text-lg" />
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Search & Actions */}
                             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                                 <div className="relative w-full md:w-80">
@@ -2756,7 +2835,7 @@ const WorkflowAnalyticsPage = () => {
                                     />
                                 </div>
                                 <div className="text-xs text-slate-500 font-bold">
-                                    Exibindo {searchedAndSortedDetails.length} de {detailedProcesses.length} processos
+                                    Exibindo {filteredDetailsForPurchasing.length} de {searchedAndSortedDetails.length} processos
                                 </div>
                             </div>
 
@@ -2783,7 +2862,7 @@ const WorkflowAnalyticsPage = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {searchedAndSortedDetails.map((p) => {
+                                            {filteredDetailsForPurchasing.map((p) => {
                                                 const formattedValor = p.valMercadoriaOrig && p.valMercadoriaOrig > 0 
                                                     ? p.valMercadoriaOrig.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
                                                     : '-';
