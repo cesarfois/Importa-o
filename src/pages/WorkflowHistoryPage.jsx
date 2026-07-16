@@ -1042,15 +1042,24 @@ const WorkflowHistoryPage = () => {
 
                             const parseDWDate = (dateStr) => {
                                 if (!dateStr) return null;
+                                let d;
                                 if (typeof dateStr === 'string' && dateStr.startsWith('/Date(')) {
                                     const match = dateStr.match(/-?\d+/);
                                     if (match) {
                                         const ts = parseInt(match[0]);
-                                        return ts > 0 ? new Date(ts) : null;
+                                        d = ts > 0 ? new Date(ts) : null;
                                     }
+                                } else {
+                                    d = new Date(dateStr);
                                 }
-                                const d = new Date(dateStr);
-                                return isNaN(d.getTime()) ? null : d;
+                                if (!d || isNaN(d.getTime())) return null;
+
+                                // Check if it is a pure date (midnight UTC)
+                                if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0) {
+                                    const userTimezoneOffset = d.getTimezoneOffset() * 60000;
+                                    return new Date(d.getTime() + userTimezoneOffset);
+                                }
+                                return d;
                             };
 
                             entryDate = instance ? (instance.StartedAt ? parseDWDate(instance.StartedAt) : (analyzedHistory[0]?.startedAt || null)) : null;
@@ -1542,8 +1551,15 @@ const WorkflowHistoryPage = () => {
         const year = dateObj.getFullYear();
         if (year > 2100 || year < 1900) return '';
 
-        if (simple) return dateObj.toLocaleDateString('pt-BR');
-        return dateObj.toLocaleString('pt-BR');
+        // Check if it is a pure date (midnight UTC)
+        let displayObj = dateObj;
+        if (dateObj.getUTCHours() === 0 && dateObj.getUTCMinutes() === 0 && dateObj.getUTCSeconds() === 0) {
+            const userTimezoneOffset = dateObj.getTimezoneOffset() * 60000;
+            displayObj = new Date(dateObj.getTime() + userTimezoneOffset);
+        }
+
+        if (simple) return displayObj.toLocaleDateString('pt-BR');
+        return displayObj.toLocaleString('pt-BR');
     };
 
     const filteredSteps = (steps) => {

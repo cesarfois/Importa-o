@@ -149,12 +149,21 @@ const formatKwanza = (value) => {
 
 const parseDWDate = (dateStr) => {
     if (!dateStr) return null;
+    let d;
     if (typeof dateStr === 'string' && dateStr.startsWith('/Date(')) {
         const match = dateStr.match(/-?\d+/);
-        if (match) return new Date(parseInt(match[0]));
+        if (match) d = new Date(parseInt(match[0]));
+    } else {
+        d = new Date(dateStr);
     }
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? null : d;
+    if (!d || isNaN(d.getTime())) return null;
+
+    // Check if it is a pure date (midnight UTC)
+    if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0) {
+        const userTimezoneOffset = d.getTimezoneOffset() * 60000;
+        return new Date(d.getTime() + userTimezoneOffset);
+    }
+    return d;
 };
 
 const getBusinessDays = (startDate, endDate) => {
