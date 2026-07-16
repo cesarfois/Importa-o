@@ -1059,7 +1059,7 @@ const METRIC_EXPLANATIONS = {
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Empresa</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMPANY</td>
                             </tr>
                             <tr className="text-slate-400">
                                 <td className="p-1.5 border border-slate-200 font-semibold italic text-slate-400">ETA (Sem Atribuição)</td>
@@ -1447,7 +1447,7 @@ const WorkflowAnalyticsPage = () => {
 
         documents.forEach(doc => {
             const desp = getDocFieldValue(doc, 'DESPACHANTE') || getDocFieldValue(doc, 'DESPACHADOR');
-            const forn = getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA');
+            const forn = getDocFieldValue(doc, 'COMPANY') || getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA');
             const carga = getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA');
             const trans = getDocFieldValue(doc, 'TRANSPORTADOR');
             
@@ -1483,7 +1483,7 @@ const WorkflowAnalyticsPage = () => {
             }
             // Fornecedor
             if (selectedFornecedor !== 'all') {
-                const val = getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA');
+                const val = getDocFieldValue(doc, 'COMPANY') || getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA');
                 if (val !== selectedFornecedor) return false;
             }
             // Tipo de Carga
@@ -1646,7 +1646,7 @@ const WorkflowAnalyticsPage = () => {
                 stageIdx,
                 responsavel: prog.responsible || '-',
                 despachante: getDocFieldValue(doc, 'DESPACHANTE') || '-',
-                fornecedor: getDocFieldValue(doc, 'Empresa') || '-',
+                fornecedor: getDocFieldValue(doc, 'COMPANY') || '-',
                 tipoCarga: getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-',
                 viaTransporte,
                 dtFactura: dtFactura ? dtFactura.toLocaleDateString('pt-AO') : '-',
