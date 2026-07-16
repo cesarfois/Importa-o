@@ -2381,12 +2381,6 @@ const WorkflowAnalyticsPage = () => {
                     <FaShoppingCart /> Diretor de Compras
                 </button>
                 <button 
-                    onClick={() => setActiveTab('analise_financeira')}
-                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'analise_financeira' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
-                >
-                    <FaDollarSign /> Análise Financeira
-                </button>
-                <button 
                     onClick={() => setActiveTab('performance_despachantes')}
                     className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'performance_despachantes' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
                 >
@@ -2410,89 +2404,6 @@ const WorkflowAnalyticsPage = () => {
                 <div className="space-y-6">
 
 
-                    {activeTab === 'analise_financeira' && (
-                        <div className="space-y-6">
-
-                            {/* Auditoria de Valores dos Processos (RDF vs FC) */}
-                            <div className="card bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-slate-700 text-sm">Auditoria de Valores dos Processos (RDF vs FC)</h3>
-                                    <button 
-                                        onClick={() => toggleChartExplanation('ranking_processos_custo')}
-                                        className="text-slate-300 hover:text-indigo-600 transition-colors"
-                                        title="Ver fórmula e origem"
-                                    >
-                                        <FaInfoCircle className="text-xs" />
-                                    </button>
-                                </div>
-                                <ChartInfoAlert 
-                                    metricKey="ranking_processos_custo" 
-                                    showInfo={!!visibleChartExplanations['ranking_processos_custo']} 
-                                    setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, ranking_processos_custo: val}))} 
-                                />
-                                <div className="overflow-x-auto max-h-[600px] scrollbar-thin">
-                                    <table className="table table-compact w-full text-xs">
-                                        <thead>
-                                            <tr>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-nowrap">Processo</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-nowrap">Nº Factura</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold sticky top-0 whitespace-nowrap">Despachante</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_Factura</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_transporte</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Despesas_extras</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Valor Cambial</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Montante_RDF</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Direito Alfandegários e Taxas</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Valor IVA_Importação</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Serviços Despachantes</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-right sticky top-0 whitespace-nowrap">Valor IVA_Serviços</th>
-                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap border-l border-blue-100">Vaor Cambial_FC</th>
-                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap">Montante_FC</th>
-                                                <th className="bg-slate-50/80 bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap">Dir_Alfandegários e Taxas_FC</th>
-                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap">IVA_Importação_FC</th>
-                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap">Serviços Despachante_FC</th>
-                                                <th className="bg-blue-50 text-blue-700 font-bold text-right sticky top-0 whitespace-nowrap border-r border-blue-100">IVA_Serv.Despachante_FC</th>
-                                                <th className="bg-slate-50 text-slate-500 font-bold text-center sticky top-0 w-12"><FaFileAlt className="inline-block text-slate-400" /></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {financialData.processCostRanking.map((p, idx) => (
-                                                <tr key={idx} className="hover:bg-slate-50/50">
-                                                    <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
-                                                    <td className="whitespace-nowrap font-mono">{p.noFactura}</td>
-                                                    <td className="whitespace-nowrap">{p.despachante}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.montanteFactura ? p.montanteFactura.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.despesasExtras ? p.despesasExtras.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.valorCambial ? p.valorCambial.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.montanteRDF ? formatKwanza(p.montanteRDF) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.direitoAlfandegarios ? formatKwanza(p.direitoAlfandegarios) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.valorIvaImportacao ? formatKwanza(p.valorIvaImportacao) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachantes ? formatKwanza(p.servicosDespachantes) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap">{p.valorIvaServicos ? formatKwanza(p.valorIvaServicos) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 border-l border-blue-100/40 text-blue-900 font-semibold">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 text-blue-900 font-semibold">{p.montanteFC ? formatKwanza(p.montanteFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 text-blue-900 font-semibold">{p.dirAlfandegariosFC ? formatKwanza(p.dirAlfandegariosFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 text-blue-900 font-semibold">{p.ivaImportacaoFC ? formatKwanza(p.ivaImportacaoFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 text-blue-900 font-semibold">{p.servicosDespachanteFC ? formatKwanza(p.servicosDespachanteFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-right font-mono whitespace-nowrap bg-blue-50/20 border-r border-blue-100/40 text-blue-900 font-semibold">{p.ivaServicosFC ? formatKwanza(p.ivaServicosFC) : 'Kz 0,00'}</td>
-                                                    <td className="text-center">
-                                                        <button 
-                                                            onClick={() => handleOpenDocument(p.id)}
-                                                            className="text-indigo-600 hover:text-indigo-800 transition-colors p-1"
-                                                            title="Visualizar documento"
-                                                        >
-                                                            <FaExternalLinkAlt className="text-[10px]" />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
                     {/* 4. PERFORMANCE DOS DESPACHANTES */}
                     {activeTab === 'performance_despachantes' && (
