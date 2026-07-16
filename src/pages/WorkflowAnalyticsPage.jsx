@@ -223,6 +223,54 @@ const extractDateFromHistory = (analyzedHistory, taskKeywords, fieldKeywords) =>
 };
 
 
+// Helper to generate chronological fallback graph when no .wfd is uploaded
+const generateFallbackGraph = (analyzedHistory) => {
+    const activities = [];
+    const connections = [];
+
+    analyzedHistory.forEach((step, idx) => {
+        const id = `fallback_${idx}`;
+        let color = '#f6b71b';
+        let icon = 'action-checkbox';
+
+        if (step.type === 'Start' || step.type === 'StartEvent') {
+            color = '#3b49a2';
+            icon = 'start-event';
+        } else if (step.type === 'End' || step.type === 'EndEvent') {
+            color = '#10b981';
+            icon = 'end-event';
+        } else if (step.type === 'Condition') {
+            color = '#40c02e';
+            icon = 'conditions';
+        }
+
+        activities.push({
+            id,
+            name: step.name || 'Tarefa',
+            type: step.type || 'WorkflowTask',
+            description: '',
+            x: 0,
+            y: 0,
+            width: 180,
+            height: 80,
+            color,
+            icon
+        });
+
+        if (idx > 0) {
+            connections.push({
+                id: `fallback_conn_${idx}`,
+                source: `fallback_${idx - 1}`,
+                target: `fallback_${idx}`,
+                label: analyzedHistory[idx - 1].decision || ''
+            });
+        }
+    });
+
+    return { activities, connections };
+};
+
+
 // Evaluate stage index
 const evaluateActiveStage = (doc, activeTaskName, isFinished) => {
     const hasDataEntregue = !!findFieldVal(doc, ['DATA_ENTREGUE', 'DATA_ENTREGUE_RCS', 'ENTREGUE']);
@@ -1378,7 +1426,27 @@ const WorkflowAnalyticsPage = () => {
                         const rawHistory = instance.HistorySteps || [];
                         analyzedHistory = WorkflowHistoryAnalyzer.analyze(rawHistory);
 
-                        const graph = WorkflowGraphBuilder.build(instance.Nodes || [], instance.Relations || []);
+                        let parsedDef = null;
+                        try {
+                            parsedDef = await workflowAnalyticsService.getWfdDefinition(instance.WorkflowId, instance.Name);
+                        } catch (err) {
+                            console.warn('Failed to fetch WFD definition from server:', err);
+                        }
+                        if (!parsedDef) {
+                            const savedWfdStr = localStorage.getItem(`wfd_def_${instance.WorkflowId}`);
+                            if (savedWfdStr) {
+                                try {
+                                    parsedDef = JSON.parse(savedWfdStr);
+                                } catch (err) {
+                                    console.error('[WorkflowAnalytics] Failed to parse stored WFD:', err);
+                                }
+                            }
+                        }
+                        if (!parsedDef) {
+                            parsedDef = generateFallbackGraph(analyzedHistory);
+                        }
+
+                        const graph = WorkflowGraphBuilder.build(parsedDef.activities || [], parsedDef.connections || []);
                         const merged = WorkflowTimelineEngine.merge(graph, analyzedHistory);
 
                         const nodes = merged.nodes || [];
