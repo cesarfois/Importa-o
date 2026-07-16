@@ -2850,11 +2850,11 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Data Factura', 'dtFactura', 'max-w-[70px]')}
                                                 {renderFilterHeader('Tipo', 'viaTransporte')}
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
-                                                {renderFilterHeader('Data IN (RCS)', 'dtEntregaRCS', 'max-w-[70px]')}
+                                                {renderFilterHeader('Entrada (RCS)', 'dtEntregaRCS', 'max-w-[70px]')}
                                                 {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]')}
-                                                {renderFilterHeader('Valor Fatura (EUR)', 'valMercadoriaOrig', 'max-w-[80px]')}
-                                                {renderFilterHeader('Valor Cambiado FC', 'valorCambialFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('Valor Fatura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
+                                                {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Factura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[70px]')}
                                                 {renderFilterHeader('Transportador', 'transportador')}
                                                 {renderFilterHeader('Transitario', 'despachante')}
