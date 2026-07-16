@@ -1382,9 +1382,22 @@ const WorkflowAnalyticsPage = () => {
                         const merged = WorkflowTimelineEngine.merge(graph, analyzedHistory);
 
                         const nodes = merged.nodes || [];
+                        const edges = merged.edges || [];
                         const isEndNode = (n) => {
                             if (!n) return false;
-                            const name = (n.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            const type = (n.type || '').toLowerCase();
+                            const name = (n.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                            
+                            // Ignore assignment steps (e.g. "Atribuir Data Fim")
+                            if (type.includes('assign') || type.includes('atrib') || 
+                                name.includes('atribuir') || name.includes('atribuicao') || name.includes('assignment')) {
+                                return false;
+                            }
+                            
+                            const hasOutgoing = edges.some(e => e.source === n.id);
+                            
+                            if (!hasOutgoing) return true;
+                            if (type.includes('end') || type.includes('fim')) return true;
                             
                             return name === 'end' || 
                                    name.startsWith('end ') || 
