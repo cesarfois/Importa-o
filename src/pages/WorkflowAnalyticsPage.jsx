@@ -1102,10 +1102,10 @@ const WorkflowAnalyticsPage = () => {
         const hasActiveFilter = selectedVals.length > 0;
 
         return (
-            <th className={`bg-slate-100 sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass} ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : ''}`}>
+            <th className={`bg-[#d0ebf8] sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass} ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : ''}`}>
                 <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-between'}`}>
                     <span 
-                        className={`cursor-pointer hover:text-indigo-600 select-none whitespace-normal break-words leading-tight text-[9px] font-bold tracking-wider uppercase text-slate-500 transition-colors ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`} 
+                        className={`cursor-pointer hover:text-indigo-600 select-none whitespace-normal break-words leading-tight text-[9px] font-bold tracking-wider uppercase text-blue-950/80 transition-colors ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`} 
                         onClick={() => setDetailSort({ column: colKey, direction: detailSort.column === colKey && detailSort.direction === 'asc' ? 'desc' : 'asc' })}
                     >
                         {label} {detailSort.column === colKey ? (detailSort.direction === 'asc' ? '↑' : '↓') : ''}
@@ -2911,7 +2911,7 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Empresa', 'fornecedor')}
                                                 {renderFilterHeader('ETA', 'dtETA')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
-                                                <th className="bg-slate-100 text-slate-500 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200">Ações</th>
+                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200">Ações</th>
                                             </tr>
                                         </thead>
                                         <tbody>
