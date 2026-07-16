@@ -1507,7 +1507,7 @@ const WorkflowAnalyticsPage = () => {
             }
             // Estado do Processo
             if (selectedEstado !== 'all') {
-                const isFinished = prog.isFinished || evaluateActiveStage(doc, prog.activeTaskName, prog.isFinished) === 6;
+                const isFinished = !!prog.isFinished;
                 if (selectedEstado === 'concluido' && !isFinished) return false;
                 if (selectedEstado === 'ativo' && isFinished) return false;
                 if (selectedEstado === 'atraso' && (isFinished || (prog.timeStoppedMs || 0) < 15 * 86400000)) return false;
@@ -1590,7 +1590,7 @@ const WorkflowAnalyticsPage = () => {
 
             // Stage evaluation
             const stageIdx = evaluateActiveStage(doc, prog.activeTaskName, prog.isFinished);
-            const isFinished = stageIdx === 6 || prog.isFinished;
+            const isFinished = !!prog.isFinished;
             const stageName = getStageName(stageIdx);
 
             // Coeficiente calculation (Landing Factor: 1 + Despesas/FOB)
