@@ -958,6 +958,122 @@ const METRIC_EXPLANATIONS = {
                 </div>
             </div>
         )
+    },
+    purchasing_director_table: {
+        title: "Tabela de Auditoria e Mapeamento de Campos",
+        formula: (
+            <ul className="list-disc pl-4 space-y-1 mt-1 text-[11px]">
+                <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
+                <li><strong>Nº Factura:</strong> Nº da Fatura Comercial.</li>
+                <li><strong>Data Factura:</strong> Data de emissão da Fatura.</li>
+                <li><strong>Tipo:</strong> Via/Modal de transporte.</li>
+                <li><strong>Chegada AO:</strong> Data de chegada a Angola.</li>
+                <li><strong>Entrada (RCS):</strong> Data de entrega física ou RCS.</li>
+                <li><strong>Dias Úteis:</strong> Tempo decorrido em dias úteis entre Chegada AO e Entrada (RCS).</li>
+                <li><strong>Factura (EU):</strong> Valor original FOB em moeda estrangeira.</li>
+                <li><strong>Cambio FC:</strong> Taxa de câmbio de fechamento de processo (FC).</li>
+                <li><strong>Factura (Kz):</strong> Valor total FOB convertido para Cuanzas pelo câmbio de fechamento.</li>
+                <li><strong>Montante FC:</strong> Custo aduaneiro total realizado no fechamento.</li>
+                <li><strong>Transportador:</strong> Transportadora encarregada.</li>
+                <li><strong>Transitario:</strong> Despachante ou transitário responsável.</li>
+                <li><strong>Empresa:</strong> <span className="text-indigo-200">Sem Atribuição direta</span> (Valor atribuído por mapeamento do fornecedor/empresa).</li>
+                <li><strong>ETA:</strong> <span className="text-indigo-200">Sem Atribuição direta</span> (Previsão de chegada estimada).</li>
+                <li><strong>Comentário:</strong> Observações gerais do processo.</li>
+            </ul>
+        ),
+        source: "Mapeamento direto dos metadados e histórico dos workflows do DocuWare.",
+        description: "Regras de negócio, cálculos operacionais e origem técnica dos dados carregados na tabela.",
+        details: (
+            <div className="space-y-3">
+                <p className="font-bold text-slate-700">Mapeamento de Campos Técnicos do DocuWare:</p>
+                <div className="overflow-x-auto">
+                    <table className="table table-compact table-xs w-full text-[10px] border border-slate-200">
+                        <thead>
+                            <tr className="bg-slate-100 text-slate-700">
+                                <th className="p-1.5 border border-slate-200 text-left font-bold">Coluna da Tabela</th>
+                                <th className="p-1.5 border border-slate-200 text-left font-bold">Campos Técnicos do DocuWare (Ordem de Busca)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Nº PI</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_PROCESSO_IMPORTACAO, N_PROCESSO_IMPORTACAO, NUM_PROCESSO, NO_DOCUMENTO, NO_PEDIDO___REFERENCIA, NO_TICKET</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Nº Factura</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_FACTURA</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data Factura</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA, DATA_DA_FATURA, DATA_INVOICE, DATA_DE_FATURA, DATA_EMISSAO_FATURA</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tipo</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO, VIA, MODAL, MEIO_TRANSPORTE, VIA_TRANSPORTE</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada AO</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    DATA_CHEGADA_ANGOLA, DATA_CHEGADA, CHEGADA_AO.<br />
+                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "chegada ao", "chegada angola", "chegada aeroporto", "chegada porto", "chegada".
+                                </td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Entrada (RCS)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    DATA_ENTREGUE, DATA_ENTREGUE_RCS, ENTREGUE.<br />
+                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "entrega rcs", "entregue rcs", "rcs".
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dias Úteis</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Diferença calculada de dias úteis entre <strong>Chegada AO</strong> e <strong>Entrada (RCS)</strong>.</span>
+                                </td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (EU)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA, VALOR_FOB, FOB, VALOR_MERCADORIA, VALOR</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Cambio FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">VAOR_CAMBIAL_FC, VALOR_CAMBIAL_FC, CAMBIO_FC, TAXA_CAMBIO_FC, Vaor Cambial_FC</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (Kz)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Calculado:</span> FOB * Cambio FC (ou Câmbio de abertura se FC for nulo)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE, MONTANTE_FC</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transportador</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TRANSPORTADOR</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitario</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE, DESPACHADOR</td>
+                            </tr>
+                            <tr className="bg-slate-50/50 text-slate-400">
+                                <td className="p-1.5 border border-slate-200 font-semibold italic text-slate-400">Empresa (Sem Atribuição)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono italic">FORNECEDOR, EMPRESA <span className="text-slate-400 font-sans">(Sem Atribuição direta nos metadados de processo)</span></td>
+                            </tr>
+                            <tr className="text-slate-400">
+                                <td className="p-1.5 border border-slate-200 font-semibold italic text-slate-400">ETA (Sem Atribuição)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono italic">ETA, DATA_ETA, PREVISAO_CHEGADA, DATA_CHEGADA_PREVISTA <span className="text-slate-400 font-sans">(Sem Atribuição direta nos metadados de processo)</span></td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Comentário</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO, OBSERVACOES, COMENTARIO_JUSTIFICATIVA</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
     }
 };
 
@@ -2700,7 +2816,7 @@ const WorkflowAnalyticsPage = () => {
                                 <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
                                     <span>Exibindo {searchedAndSortedDetails.length} de {detailedProcesses.length} processos</span>
                                     <button 
-                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, performance_despachantes_tabela: !prev.performance_despachantes_tabela}))}
+                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: !prev.purchasing_director_table}))}
                                         className="btn btn-xs btn-ghost text-slate-400 hover:text-indigo-600 p-0 hover:bg-transparent"
                                         title="Ver Detalhes do Mapeamento de Campos"
                                     >
@@ -2710,9 +2826,9 @@ const WorkflowAnalyticsPage = () => {
                             </div>
 
                             <ChartInfoAlert 
-                                metricKey="performance_despachantes_tabela" 
-                                showInfo={!!visibleChartExplanations['performance_despachantes_tabela']} 
-                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, performance_despachantes_tabela: val}))} 
+                                metricKey="purchasing_director_table" 
+                                showInfo={!!visibleChartExplanations['purchasing_director_table']} 
+                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: val}))} 
                             />
 
                             {/* Detailed Grid Table */}
@@ -2900,7 +3016,7 @@ const WorkflowAnalyticsPage = () => {
                                 <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
                                     <span>Exibindo {filteredDetailsForPurchasing.length} de {searchedAndSortedDetails.length} processos</span>
                                     <button 
-                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, performance_despachantes_tabela: !prev.performance_despachantes_tabela}))}
+                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: !prev.purchasing_director_table}))}
                                         className="btn btn-xs btn-ghost text-slate-400 hover:text-indigo-600 p-0 hover:bg-transparent"
                                         title="Ver Detalhes do Mapeamento de Campos"
                                     >
@@ -2910,9 +3026,9 @@ const WorkflowAnalyticsPage = () => {
                             </div>
 
                             <ChartInfoAlert 
-                                metricKey="performance_despachantes_tabela" 
-                                showInfo={!!visibleChartExplanations['performance_despachantes_tabela']} 
-                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, performance_despachantes_tabela: val}))} 
+                                metricKey="purchasing_director_table" 
+                                showInfo={!!visibleChartExplanations['purchasing_director_table']} 
+                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: val}))} 
                             />
 
                             {/* Purchasing Director Grid Table */}
