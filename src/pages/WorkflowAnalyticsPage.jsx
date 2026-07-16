@@ -2853,6 +2853,9 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Data IN (RCS)', 'dtEntregaRCS', 'max-w-[70px]')}
                                                 {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]')}
                                                 {renderFilterHeader('Valor', 'valMercadoriaOrig')}
+                                                {renderFilterHeader('Valor Cambiado FC', 'valorCambialFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Valor em Kwanzas', 'valMercadoriaFC', 'max-w-[85px]')}
+                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[70px]')}
                                                 {renderFilterHeader('Transportador', 'transportador')}
                                                 {renderFilterHeader('Transitario', 'despachante')}
                                                 {renderFilterHeader('Empresa', 'fornecedor')}
@@ -2877,6 +2880,9 @@ const WorkflowAnalyticsPage = () => {
                                                         <td className="whitespace-nowrap">{p.dtEntregaRCS || '-'}</td>
                                                         <td className="text-center font-mono font-semibold text-indigo-600">{p.diasUteis}</td>
                                                         <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.valMercadoriaFC ? p.valMercadoriaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                         <td className="whitespace-nowrap truncate max-w-[120px]" title={p.transportador}>{p.transportador}</td>
                                                         <td className="whitespace-nowrap truncate max-w-[120px]" title={p.despachante}>{p.despachante}</td>
                                                         <td className="truncate max-w-[150px]" title={p.fornecedor}>{p.fornecedor}</td>
