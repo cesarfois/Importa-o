@@ -2887,7 +2887,7 @@ const WorkflowAnalyticsPage = () => {
                                                         {/* Histórico */}
                                                         <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
                                                             <button
-                                                                onClick={() => navigate(`/importacao?fc=${selectedCabinet}&did=${p.id}`)}
+                                                                onClick={() => navigate(`/importacao?fc=${selectedCabinet}&did=${p.id}&view=timeline`)}
                                                                 className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
                                                                 title="Visualizar Histórico"
                                                             >

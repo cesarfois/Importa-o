@@ -501,9 +501,16 @@ const WorkflowHistoryPage = () => {
                         if (doc) {
                             setDocuments([doc]);
                             setSelectedDoc(doc);
-                            setIsDrawerOpen(false); // Keep side drawer closed
-                            setActiveSubTab('diagram'); // Target diagram tab
-                            setShowDiagramModal(true); // Open full-screen diagram modal immediately!
+                            const urlView = queryParams.get('view');
+                            if (urlView === 'timeline' || urlView === 'history') {
+                                setIsDrawerOpen(true);
+                                setActiveSubTab('timeline');
+                                setShowDiagramModal(false);
+                            } else {
+                                setIsDrawerOpen(false); // Keep side drawer closed
+                                setActiveSubTab('diagram'); // Target diagram tab
+                                setShowDiagramModal(true); // Open full-screen diagram modal immediately!
+                            }
                         } else {
                             throw new Error("Documento não retornado pelo serviço.");
                         }
