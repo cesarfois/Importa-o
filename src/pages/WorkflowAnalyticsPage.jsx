@@ -23,7 +23,9 @@ import {
     FaCheckCircle,
     FaFileExcel,
     FaHistory,
-    FaProjectDiagram
+    FaProjectDiagram,
+    FaUser,
+    FaRegCopy
 } from 'react-icons/fa';
 import { 
     ResponsiveContainer, 
@@ -1142,6 +1144,91 @@ const WorkflowAnalyticsPage = () => {
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
     const [activeTab, setActiveTab] = useState('diretor_compras');
     const [diretorComprasStatusFilter, setDiretorComprasStatusFilter] = useState('all');
+
+    // Drawer/History details states
+    const [selectedDoc, setSelectedDoc] = useState(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyInstances, setHistoryInstances] = useState(null);
+    const [activeHistoryTab, setActiveHistoryTab] = useState(0); 
+    const [activeSubTab, setActiveSubTab] = useState('timeline');
+    const [documentFields, setDocumentFields] = useState([]);
+    const [showAutoActivities, setShowAutoActivities] = useState(false);
+
+    // Helpers
+    const isTaskType = (typeStr) => {
+        if (!typeStr) return false;
+        const t = typeStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+        if (t.includes('start') || t.includes('inicio')) return false;
+        if (t.includes('end') || t.includes('fim') || t.includes('concluid') || t.includes('termin')) return false;
+        if (t.includes('condition') || t.includes('condicao') || t.includes('decision') || t.includes('condicionar')) return false;
+        if (t.includes('assignment') || t.includes('atribuirdados') || t.includes('atribuir')) return false;
+        if (t.includes('webservice') || t.includes('web')) return false;
+        if (t.includes('email') || t.includes('mail') || t.includes('notification') || t.includes('notificacao')) return false;
+        return true;
+    };
+
+    const renameWorkflowTask = (name) => {
+        if (!name) return '';
+        const trimmed = name.trim();
+        if (trimmed === 'EP_Operador Importação' || trimmed === 'EP Operador Importação') {
+            return 'Operador Importação';
+        }
+        if (trimmed === '26 Importação Despachantes') {
+            return 'Despachante / Processo Aduaneiro';
+        }
+        if (trimmed === 'DAF_Contas a Pagar_2') {
+            return 'DAF - Custos e Pagamentos';
+        }
+        return trimmed;
+    };
+
+    const filteredSteps = (steps) => {
+        if (!steps) return [];
+        return showAutoActivities
+            ? steps
+            : steps.filter(step => {
+                const type = step.ActivityType || step.type;
+                return isTaskType(type) ||
+                    type === 'StartEvent' ||
+                    type === 'Start' ||
+                    type === 'EndEvent' ||
+                    type === 'End';
+            });
+    };
+
+    const copyToClipboard = async (text) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    };
+
+    const handleSelectDocument = async (p) => {
+        setSelectedDoc({ Id: p.id, docNum: p.docNum || '' });
+        setIsDrawerOpen(true);
+        setHistoryLoading(true);
+        setHistoryInstances(null);
+        setActiveHistoryTab(0);
+        setActiveSubTab('timeline');
+
+        try {
+            const fullDoc = await docuwareService.getDocument(selectedCabinet, p.id);
+            if (fullDoc) {
+                setSelectedDoc(fullDoc);
+                setDocumentFields(fullDoc.Fields || []);
+            }
+            console.log(`Fetching history for DocID: ${p.id} (Cabinet: ${selectedCabinet})`);
+            const instances = await workflowAnalyticsService.getHistoryByDocId(p.id, selectedCabinet);
+            setHistoryInstances(instances);
+        } catch (err) {
+            console.error("Failed to load history details:", err);
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
 
     const exportPurchasingToCSV = () => {
         const headers = [
@@ -2887,7 +2974,7 @@ const WorkflowAnalyticsPage = () => {
                                                         {/* Histórico */}
                                                         <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
                                                             <button
-                                                                onClick={() => navigate(`/importacao?fc=${selectedCabinet}&did=${p.id}&view=timeline`)}
+                                                                onClick={() => handleSelectDocument(p)}
                                                                 className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
                                                                 title="Visualizar Histórico"
                                                             >
@@ -2919,6 +3006,304 @@ const WorkflowAnalyticsPage = () => {
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Overlay Details Drawer */}
+            {selectedDoc && isDrawerOpen && (
+                <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+                    <div className="absolute inset-0 overflow-hidden">
+                        {/* Blur Backdrop */}
+                        <div 
+                            className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300"
+                            onClick={() => {
+                                setSelectedDoc(null);
+                                setIsDrawerOpen(false);
+                            }} 
+                        />
+
+                        {/* Sliding Panel Container */}
+                        <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                            <div className="pointer-events-auto w-screen max-w-2xl transform transition-transform duration-300 bg-white shadow-2xl flex flex-col h-full border-l border-slate-200 animate-slide-in">
+                                
+                                {/* Drawer Header */}
+                                <div className="bg-slate-50 p-6 border-b border-slate-200 flex justify-between items-start shrink-0">
+                                    <div className="flex flex-col min-w-0 space-y-1.5">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">DOCID</span>
+                                            <span className="bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-mono text-xs font-bold shadow-sm">{selectedDoc.Id}</span>
+                                            <button
+                                                type="button"
+                                                className="btn btn-ghost btn-xs btn-circle text-slate-400 hover:text-indigo-600 transition-colors"
+                                                onClick={async () => {
+                                                    const success = await copyToClipboard(selectedDoc.Id);
+                                                    if (success) {
+                                                        alert("ID copiado com sucesso!");
+                                                    } else {
+                                                        alert("Não foi possível copiar o ID.");
+                                                    }
+                                                }}
+                                                title="Copiar ID"
+                                            >
+                                                <FaRegCopy />
+                                            </button>
+                                        </div>
+                                        <div className="text-xl font-black text-slate-800 tracking-tight">
+                                            Nº Doc: {selectedDoc.docNum || selectedDoc.Id}
+                                        </div>
+                                        {historyInstances && historyInstances[activeHistoryTab] && (
+                                            <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5 flex-wrap" title={historyInstances[activeHistoryTab].Name}>
+                                                <span className="text-slate-400 font-semibold">Fluxo:</span>
+                                                <span className="text-indigo-600 font-bold">{historyInstances[activeHistoryTab].Name}</span>
+                                                {historyInstances[activeHistoryTab].Version && (
+                                                    <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded-full font-medium">
+                                                        v{historyInstances[activeHistoryTab].Version}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Header Action Buttons */}
+                                    <div className="flex items-center gap-2 mt-1 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleOpenDocument(selectedDoc.Id)}
+                                            className="btn btn-sm btn-outline border-slate-200 hover:bg-slate-50 text-slate-700 gap-1.5 rounded-lg font-semibold shadow-sm h-8 min-h-0"
+                                        >
+                                            <FaExternalLinkAlt className="text-[10px]" /> Ver Doc
+                                        </button>
+                                        <a
+                                            href={`${import.meta.env.BASE_URL || '/'}importacao/workflow-diagram?fc=${selectedCabinet}&did=${selectedDoc.Id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-sm btn-outline border-slate-200 hover:bg-slate-50 text-slate-700 gap-1.5 rounded-lg font-semibold shadow-sm h-8 min-h-0 flex items-center text-xs"
+                                        >
+                                            <FaProjectDiagram className="text-[10px]" /> Diagrama
+                                        </a>
+                                        <button
+                                             type="button"
+                                             className="btn btn-sm btn-circle btn-ghost text-slate-400 hover:text-slate-600 hover:bg-slate-100 ml-1"
+                                             onClick={() => {
+                                                 setSelectedDoc(null);
+                                                 setIsDrawerOpen(false);
+                                             }}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Drawer Tabs Navigation */}
+                                <div className="flex border-b border-slate-200 bg-slate-50/50 px-4 py-2 gap-2 shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveSubTab('timeline')}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            activeSubTab === 'timeline'
+                                                ? 'bg-indigo-600 text-white shadow-sm'
+                                                : 'text-slate-500 hover:bg-slate-100'
+                                        }`}
+                                    >
+                                        <span className="flex items-center gap-1.5">
+                                            <FaHistory /> Histórico de Tramitação
+                                        </span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveSubTab('fields')}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            activeSubTab === 'fields'
+                                                ? 'bg-indigo-600 text-white shadow-sm'
+                                                : 'text-slate-500 hover:bg-slate-100'
+                                        }`}
+                                    >
+                                        <span className="flex items-center gap-1.5">
+                                            <FaList /> Campos
+                                        </span>
+                                    </button>
+                                </div>
+
+                                {/* Instances Version Switcher inside Drawer */}
+                                {historyInstances && historyInstances.length > 1 && (
+                                    <div className="px-4 py-2 bg-slate-100/50 border-b border-slate-200 flex gap-2 shrink-0 overflow-x-auto">
+                                        <span className="text-[10px] font-bold text-slate-400 flex items-center shrink-0">Fluxos Atribuídos:</span>
+                                        {historyInstances.map((inst, idx) => (
+                                            <button
+                                                key={inst.Id}
+                                                type="button"
+                                                onClick={() => setActiveHistoryTab(idx)}
+                                                className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all ${
+                                                    activeHistoryTab === idx
+                                                        ? 'bg-white border-indigo-600 text-indigo-600 shadow-sm'
+                                                        : 'bg-transparent border-slate-200 text-slate-500 hover:bg-slate-100'
+                                                }`}
+                                            >
+                                                {inst.Name} (v{inst.Version})
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Drawer Body content */}
+                                <div className="flex-1 overflow-y-auto p-6 min-h-0 bg-white">
+                                    {historyLoading ? (
+                                        <div className="flex flex-col justify-center items-center h-48 gap-2">
+                                            <span className="loading loading-spinner loading-lg text-primary"></span>
+                                            <span className="text-xs text-slate-500 font-medium animate-pulse">Carregando detalhes...</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {/* TAB 1: Chronological Timeline */}
+                                            {activeSubTab === 'timeline' && historyInstances && historyInstances[activeHistoryTab] && (
+                                                <div className="relative border-l-2 border-slate-200 ml-4 pl-6 space-y-6">
+                                                    {(() => {
+                                                        const analyzedSteps = WorkflowHistoryAnalyzer.analyze(historyInstances[activeHistoryTab].HistorySteps || []);
+                                                        const stepsToRender = filteredSteps(analyzedSteps);
+                                                        
+                                                        if (stepsToRender.length === 0) {
+                                                            return (
+                                                                <div className="text-center py-8 text-slate-400 italic text-xs">
+                                                                    Nenhuma atividade humana ou evento relevante registrado.
+                                                                </div>
+                                                            );
+                                                        }
+
+                                                        return stepsToRender.map((step, sIdx) => {
+                                                            const isStart = step.type === 'StartEvent' || step.type === 'Start';
+                                                            const isEnd = step.type === 'EndEvent' || step.type === 'End';
+                                                            const isActive = step.isActive;
+                                                            const hasDecision = !!step.decision;
+
+                                                            // Get decision badge classes
+                                                            const getDecisionStyle = (dec) => {
+                                                                const d = dec.toLowerCase();
+                                                                if (d.includes('aprov') || d.includes('aceit') || d.includes('ok')) {
+                                                                    return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                                                                }
+                                                                if (d.includes('rejeit') || d.includes('recus') || d.includes('cancel')) {
+                                                                    return 'bg-rose-50 text-rose-700 border-rose-200';
+                                                                }
+                                                                return 'bg-slate-50 text-slate-600 border-slate-200';
+                                                            };
+
+                                                            return (
+                                                                <div key={sIdx} className="relative">
+                                                                    {/* Left Timeline Indicator Node */}
+                                                                    <span className={`absolute -left-[35px] top-1.5 flex h-6 w-6 items-center justify-center rounded-full ring-8 ring-white ${
+                                                                        isStart ? 'bg-blue-500 text-white' :
+                                                                        isEnd ? 'bg-emerald-500 text-white' :
+                                                                        isActive ? 'bg-amber-500 text-white animate-pulse' :
+                                                                        'bg-slate-200 text-slate-500'
+                                                                    }`}>
+                                                                        {isStart ? '▶' :
+                                                                         isEnd ? '✓' :
+                                                                         isActive ? '⚡' :
+                                                                         '●'}
+                                                                    </span>
+
+                                                                    {/* Content Panel */}
+                                                                    <div className="bg-slate-50/50 hover:bg-slate-50 p-4 border border-slate-100 rounded-xl transition-colors">
+                                                                        {/* Header: Name and Type */}
+                                                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                                                            <span className="font-bold text-slate-800 text-sm">
+                                                                                {renameWorkflowTask(step.name)}
+                                                                            </span>
+                                                                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                                                                                isStart ? 'bg-blue-100 text-blue-800' :
+                                                                                isEnd ? 'bg-emerald-100 text-emerald-800' :
+                                                                                isActive ? 'bg-amber-100 text-amber-800' :
+                                                                                'bg-slate-100 text-slate-600'
+                                                                            }`}>
+                                                                                {isStart ? 'Início' :
+                                                                                 isEnd ? 'Conclusão' :
+                                                                                 isActive ? 'Em Andamento' :
+                                                                                 'Tarefa'}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        {/* Processor Info */}
+                                                                        {step.user && (
+                                                                            <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-600">
+                                                                                <FaUser className="text-[10px] text-slate-400 shrink-0" />
+                                                                                <span>Processador: <strong className="text-slate-700">{step.user}</strong></span>
+                                                                            </div>
+                                                                        )}
+
+                                                                        {/* Timing details */}
+                                                                        <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-400">
+                                                                            {step.startDate && (
+                                                                                <div>
+                                                                                    Início: <span className="font-medium text-slate-500">{new Date(step.startDate).toLocaleString('pt-BR')}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {step.endDate && (
+                                                                                <div>
+                                                                                    Conclusão: <span className="font-medium text-slate-500">{new Date(step.endDate).toLocaleString('pt-BR')}</span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* Duration info */}
+                                                                        {step.durationText && (
+                                                                            <div className="mt-2 text-[10px] bg-slate-100 text-slate-500 inline-block px-2 py-0.5 rounded font-mono">
+                                                                                Duração: {step.durationText}
+                                                                            </div>
+                                                                        )}
+
+                                                                        {/* Decision badge */}
+                                                                        {hasDecision && (
+                                                                            <div className="mt-2.5 pt-2.5 border-t border-slate-100">
+                                                                                <div className="text-[9px] text-slate-400 uppercase tracking-wider font-bold">Decisão Tomada</div>
+                                                                                <div className={`mt-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border ${getDecisionStyle(step.decision)}`}>
+                                                                                    {step.decision}
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        });
+                                                    })()}
+                                                </div>
+                                            )}
+
+                                            {/* TAB 2: Metadata Fields */}
+                                            {activeSubTab === 'fields' && (
+                                                <div className="overflow-x-auto">
+                                                    <table className="table table-compact w-full text-xs">
+                                                        <thead>
+                                                            <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
+                                                                <th className="py-2.5 px-4 text-left">Campo</th>
+                                                                <th className="py-2.5 px-4 text-left">Valor</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {(documentFields || []).map((f, idx) => (
+                                                                <tr key={idx} className="hover:bg-slate-50 border-b border-slate-100">
+                                                                    <td className="py-2.5 px-4 font-bold text-slate-500 max-w-[150px] truncate" title={f.DisplayName || f.FieldName}>
+                                                                        {f.DisplayName || f.FieldName}
+                                                                    </td>
+                                                                    <td className="py-2.5 px-4 font-mono text-slate-700 break-all select-all">
+                                                                        {String(f.Item || f.Value || '-')}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                            {(documentFields || []).length === 0 && (
+                                                                <tr>
+                                                                    <td colSpan={2} className="text-center py-6 text-slate-400 italic">Nenhum campo carregado.</td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
