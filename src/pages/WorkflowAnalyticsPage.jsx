@@ -1378,7 +1378,7 @@ const WorkflowAnalyticsPage = () => {
                         const rawHistory = instance.HistorySteps || [];
                         analyzedHistory = WorkflowHistoryAnalyzer.analyze(rawHistory);
 
-                        const graph = WorkflowGraphBuilder.build([], []);
+                        const graph = WorkflowGraphBuilder.build(instance.Nodes || [], instance.Relations || []);
                         const merged = WorkflowTimelineEngine.merge(graph, analyzedHistory);
 
                         const nodes = merged.nodes || [];
