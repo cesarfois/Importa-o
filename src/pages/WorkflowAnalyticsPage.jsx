@@ -20,7 +20,9 @@ import {
     FaShoppingCart,
     FaFolderOpen,
     FaCheckCircle,
-    FaFileExcel
+    FaFileExcel,
+    FaHistory,
+    FaProjectDiagram
 } from 'react-icons/fa';
 import { 
     ResponsiveContainer, 
@@ -2847,7 +2849,15 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Empresa', 'fornecedor')}
                                                 {renderFilterHeader('ETA', 'dtETA')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
-                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200">Ações</th>
+                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
+                                                    <FaHistory className="mx-auto text-slate-400" />
+                                                </th>
+                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Ver Documento">
+                                                    <FaFileAlt className="mx-auto text-slate-400" />
+                                                </th>
+                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Visualizar Diagrama">
+                                                    <FaProjectDiagram className="mx-auto text-slate-400" />
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -2874,21 +2884,49 @@ const WorkflowAnalyticsPage = () => {
                                                         <td className="truncate max-w-[150px]" title={p.fornecedor}>{p.fornecedor}</td>
                                                         <td className="whitespace-nowrap">{p.dtETA || '-'}</td>
                                                         <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
-                                                        <td className="text-center">
+                                                        
+                                                        {/* Histórico */}
+                                                        <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
+                                                            <a
+                                                                href={`${import.meta.env.BASE_URL || '/'}importacao?fc=${selectedCabinet}&did=${p.id}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
+                                                                title="Visualizar Histórico"
+                                                            >
+                                                                <FaHistory className="text-xs" />
+                                                            </a>
+                                                        </td>
+
+                                                        {/* Ver Documento */}
+                                                        <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
                                                             <button 
                                                                 onClick={() => handleOpenDocument(p.id)}
-                                                                className="btn btn-xs btn-outline btn-primary font-bold flex items-center gap-1 mx-auto rounded-lg"
-                                                                title="Ver documento no DocuWare"
+                                                                className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
+                                                                title="Abrir no DocuWare"
                                                             >
-                                                                <FaExternalLinkAlt className="text-[9px]" /> Abrir
+                                                                <FaExternalLinkAlt className="text-xs" />
                                                             </button>
+                                                        </td>
+
+                                                        {/* Visualizar Diagrama */}
+                                                        <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
+                                                            <a
+                                                                href={`${import.meta.env.BASE_URL || '/'}importacao/workflow-diagram?fc=${selectedCabinet}&did=${p.id}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
+                                                                title="Visualizar Diagrama"
+                                                            >
+                                                                <FaProjectDiagram className="text-xs" />
+                                                            </a>
                                                         </td>
                                                     </tr>
                                                 );
                                             })}
                                             {searchedAndSortedDetails.length === 0 && (
                                                 <tr>
-                                                    <td colSpan={14} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
+                                                    <td colSpan={19} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
                                                 </tr>
                                             )}
                                         </tbody>
