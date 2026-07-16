@@ -1294,9 +1294,14 @@ const WorkflowHistoryPage = () => {
         setSearchLoading(true);
         setSearched(true);
         setError(null);
-        setSelectedDoc(null);
-        setIsDrawerOpen(false);
-        setHistoryInstances(null);
+        const queryParams = new URLSearchParams(window.location.search);
+        const urlDid = queryParams.get('did') || queryParams.get('docId') || queryParams.get('documentId');
+        
+        if (!urlDid) {
+            setSelectedDoc(null);
+            setIsDrawerOpen(false);
+            setHistoryInstances(null);
+        }
         setDocumentProgress({});
         setQuickFilter('all');
 
@@ -1330,9 +1335,20 @@ const WorkflowHistoryPage = () => {
             const items = response.items || [];
             setDocuments(items);
 
-            // Auto-select first document if results exist
+            // Auto-select first document if results exist, unless deep linking is in progress
             if (items.length > 0) {
-                handleSelectDocument(items[0], 'timeline', false);
+                if (urlDid) {
+                    const matchedDoc = items.find(item => String(item.Id) === String(urlDid));
+                    const urlView = queryParams.get('view');
+                    if (matchedDoc) {
+                        handleSelectDocument(matchedDoc, urlView === 'timeline' ? 'timeline' : 'diagram', urlView === 'timeline');
+                    } else {
+                        // If selectedDoc was loaded by fetchInitialData, we keep it
+                        handleSelectDocument(selectedDoc || items[0], urlView === 'timeline' ? 'timeline' : 'diagram', urlView === 'timeline');
+                    }
+                } else {
+                    handleSelectDocument(items[0], 'timeline', false);
+                }
             }
         } catch (err) {
             if (currentSearchIndex !== searchIndexRef.current) return;
