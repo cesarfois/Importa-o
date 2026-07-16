@@ -2852,9 +2852,9 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
                                                 {renderFilterHeader('Data IN (RCS)', 'dtEntregaRCS', 'max-w-[70px]')}
                                                 {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]')}
-                                                {renderFilterHeader('Valor', 'valMercadoriaOrig')}
+                                                {renderFilterHeader('Valor Fatura (EUR)', 'valMercadoriaOrig', 'max-w-[80px]')}
                                                 {renderFilterHeader('Valor Cambiado FC', 'valorCambialFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('Valor em Kwanzas', 'valMercadoriaFC', 'max-w-[85px]')}
+                                                {renderFilterHeader('Valor Fatura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[70px]')}
                                                 {renderFilterHeader('Transportador', 'transportador')}
                                                 {renderFilterHeader('Transitario', 'despachante')}
