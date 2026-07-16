@@ -2697,10 +2697,23 @@ const WorkflowAnalyticsPage = () => {
                                         onChange={(e) => setDetailSearch(e.target.value)}
                                     />
                                 </div>
-                                <div className="text-xs text-slate-500 font-bold">
-                                    Exibindo {searchedAndSortedDetails.length} de {detailedProcesses.length} processos
+                                <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
+                                    <span>Exibindo {searchedAndSortedDetails.length} de {detailedProcesses.length} processos</span>
+                                    <button 
+                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, performance_despachantes_tabela: !prev.performance_despachantes_tabela}))}
+                                        className="btn btn-xs btn-ghost text-slate-400 hover:text-indigo-600 p-0 hover:bg-transparent"
+                                        title="Ver Detalhes do Mapeamento de Campos"
+                                    >
+                                        <FaInfoCircle className="text-sm" />
+                                    </button>
                                 </div>
                             </div>
+
+                            <ChartInfoAlert 
+                                metricKey="performance_despachantes_tabela" 
+                                showInfo={!!visibleChartExplanations['performance_despachantes_tabela']} 
+                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, performance_despachantes_tabela: val}))} 
+                            />
 
                             {/* Detailed Grid Table */}
                             <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -2884,10 +2897,23 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="hidden sm:inline">Exportar Excel</span>
                                     </button>
                                 </div>
-                                <div className="text-xs text-slate-500 font-bold">
-                                    Exibindo {filteredDetailsForPurchasing.length} de {searchedAndSortedDetails.length} processos
+                                <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
+                                    <span>Exibindo {filteredDetailsForPurchasing.length} de {searchedAndSortedDetails.length} processos</span>
+                                    <button 
+                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, performance_despachantes_tabela: !prev.performance_despachantes_tabela}))}
+                                        className="btn btn-xs btn-ghost text-slate-400 hover:text-indigo-600 p-0 hover:bg-transparent"
+                                        title="Ver Detalhes do Mapeamento de Campos"
+                                    >
+                                        <FaInfoCircle className="text-sm" />
+                                    </button>
                                 </div>
                             </div>
+
+                            <ChartInfoAlert 
+                                metricKey="performance_despachantes_tabela" 
+                                showInfo={!!visibleChartExplanations['performance_despachantes_tabela']} 
+                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, performance_despachantes_tabela: val}))} 
+                            />
 
                             {/* Purchasing Director Grid Table */}
                             <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
