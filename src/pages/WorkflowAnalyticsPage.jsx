@@ -1031,7 +1031,7 @@ const WorkflowAnalyticsPage = () => {
         noFactura: ''
     });
 
-    const renderFilterHeader = (label, colKey, widthClass = '', align = 'left') => {
+    const renderFilterHeader = (label, colKey, widthClass = '', align = 'center') => {
         const uniqueVals = Array.from(new Set(detailedProcesses.map(p => String(p[colKey] || '-').trim()))).sort();
         const selectedVals = colFilters[colKey] || [];
         const searchTerm = colSearchTerms[colKey] || '';
@@ -2771,9 +2771,9 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Data Factura', 'dtFactura', 'max-w-[70px]')}
                                                 {renderFilterHeader('Tipo', 'viaTransporte')}
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
-                                                {renderFilterHeader('Data Entrada (RCS)', 'dtEntregaRCS', 'max-w-[85px]')}
-                                                {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]', 'center')}
-                                                {renderFilterHeader('Valor', 'valMercadoriaOrig', '', 'right')}
+                                                {renderFilterHeader('Data IN (RCS)', 'dtEntregaRCS', 'max-w-[70px]')}
+                                                {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]')}
+                                                {renderFilterHeader('Valor', 'valMercadoriaOrig')}
                                                 {renderFilterHeader('Transportador', 'transportador')}
                                                 {renderFilterHeader('Transitario', 'despachante')}
                                                 {renderFilterHeader('Empresa', 'fornecedor')}
