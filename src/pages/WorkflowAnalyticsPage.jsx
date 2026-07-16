@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
     FaChartBar, 
     FaChartPie, 
@@ -1128,6 +1129,7 @@ const METRIC_EXPLANATIONS = {
 };
 
 const WorkflowAnalyticsPage = () => {
+    const navigate = useNavigate();
     // --- Date Filter Setup (Default: 6 months ago to today) ---
     const getTodayString = () => new Date().toISOString().split('T')[0];
     const getSixMonthsAgoString = () => {
@@ -2855,9 +2857,6 @@ const WorkflowAnalyticsPage = () => {
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Ver Documento">
                                                     <FaFileAlt className="mx-auto text-slate-400" />
                                                 </th>
-                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Visualizar Diagrama">
-                                                    <FaProjectDiagram className="mx-auto text-slate-400" />
-                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -2887,15 +2886,13 @@ const WorkflowAnalyticsPage = () => {
                                                         
                                                         {/* Histórico */}
                                                         <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
-                                                            <a
-                                                                href={`${import.meta.env.BASE_URL || '/'}importacao?fc=${selectedCabinet}&did=${p.id}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
+                                                            <button
+                                                                onClick={() => navigate(`/importacao?fc=${selectedCabinet}&did=${p.id}`)}
                                                                 className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
                                                                 title="Visualizar Histórico"
                                                             >
                                                                 <FaHistory className="text-xs" />
-                                                            </a>
+                                                            </button>
                                                         </td>
 
                                                         {/* Ver Documento */}
@@ -2908,25 +2905,12 @@ const WorkflowAnalyticsPage = () => {
                                                                 <FaExternalLinkAlt className="text-xs" />
                                                             </button>
                                                         </td>
-
-                                                        {/* Visualizar Diagrama */}
-                                                        <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
-                                                            <a
-                                                                href={`${import.meta.env.BASE_URL || '/'}importacao/workflow-diagram?fc=${selectedCabinet}&did=${p.id}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
-                                                                title="Visualizar Diagrama"
-                                                            >
-                                                                <FaProjectDiagram className="text-xs" />
-                                                            </a>
-                                                        </td>
                                                     </tr>
                                                 );
                                             })}
                                             {searchedAndSortedDetails.length === 0 && (
                                                 <tr>
-                                                    <td colSpan={19} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
+                                                    <td colSpan={18} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
                                                 </tr>
                                             )}
                                         </tbody>
