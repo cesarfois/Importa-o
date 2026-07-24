@@ -1281,7 +1281,7 @@ const WorkflowAnalyticsPage = () => {
 
     const exportLogisticaToCSV = () => {
         const headers = [
-            'Nº PI', 'Nº Factura', 'Tipo', 'Transportador', 'Transitário', 'Empresa', 'Data da Factura', 'Data de Despacho', 'Chegada AO', 'Entrega RCS', 'Factura → Despacho', 'Chegada (AO) → Entrega (RCS)', 'Factura → Entrega (RCS)'
+            'Nº PI', 'Nº Factura', 'Tipo', 'Transportador', 'Transitário', 'Empresa', 'Data da Factura', 'Data de Despacho', 'Chegada AO', 'Entrega(RCS)', 'Factura → Despacho', 'Chegada(AO) → Entrega(RCS)', 'Factura → Entrega(RCS)'
         ];
         
         const csvData = filteredDetailsForLogistica.map(p => [
@@ -3245,10 +3245,10 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Data da Factura', 'dtFactura', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Data de Despacho', 'dtSaidaAlfandega', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'w-[120px] min-w-[120px] max-w-[120px]')}
-                                                {renderFilterHeader('Entrega RCS', 'dtEntregaRCS', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Entrega(RCS)', 'dtEntregaRCS', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Factura → Despacho', 'diasFacturaDespacho', 'w-[130px] min-w-[130px] max-w-[130px]')}
-                                                {renderFilterHeader("Chegada(AO)\nEntrega RCS", 'diasChegadaEntrega', 'w-[110px] min-w-[110px] max-w-[110px]')}
-                                                {renderFilterHeader("Factura →\nEntrega RCS", 'diasFacturaEntrega', 'w-[110px] min-w-[110px] max-w-[110px]')}
+                                                {renderFilterHeader("Chegada(AO)\nEntrega(RCS)", 'diasChegadaEntrega', 'w-[110px] min-w-[110px] max-w-[110px]')}
+                                                {renderFilterHeader("Factura →\nEntrega(RCS)", 'diasFacturaEntrega', 'w-[110px] min-w-[110px] max-w-[110px]')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
                                                 </th>
