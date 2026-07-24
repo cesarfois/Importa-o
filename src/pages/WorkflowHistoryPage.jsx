@@ -20,7 +20,9 @@ import {
     FaCalendarAlt,
     FaExpand,
     FaCircle,
-    FaRegCircle
+    FaRegCircle,
+    FaTruck,
+    FaDollarSign
 } from 'react-icons/fa';
 import { workflowAnalyticsService } from '../services/workflowAnalyticsService';
 import { docuwareService } from '../services/docuwareService';
@@ -641,6 +643,8 @@ const WorkflowHistoryPage = () => {
     const kpis = useMemo(() => {
         let completed = 0;
         let active = 0;
+        let logisticaEmAndamento = 0;
+        let validacaoCustos = 0;
         let delayed = 0;
         let rejected = 0;
         let totalPercent = 0;
@@ -692,6 +696,13 @@ const WorkflowHistoryPage = () => {
                         stepTimeSum[prog.activeTaskName] = (stepTimeSum[prog.activeTaskName] || 0) + (prog.timeStoppedMs || 0);
                         stepTimeCount[prog.activeTaskName] = (stepTimeCount[prog.activeTaskName] || 0) + 1;
                     }
+
+                    const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS']);
+                    if (!dtRcsRaw) {
+                        logisticaEmAndamento++;
+                    } else {
+                        validacaoCustos++;
+                    }
                 }
 
                 if (prog.percent !== undefined && !isNaN(prog.percent)) {
@@ -706,8 +717,10 @@ const WorkflowHistoryPage = () => {
 
         // Calculate average completion time (only truly completed, not rejected)
         const avgCompletionTimeMs = completedDurationsCount > 0 ? (completedDurationsSum / completedDurationsCount) : 0;
+        
+        // Match the exact format of avgCiclo calculation in WorkflowAnalyticsPage (expressed as "X,Y dias" or "-")
         const avgCompletionTimeText = avgCompletionTimeMs > 0 
-            ? WorkflowHistoryAnalyzer.formatDuration(avgCompletionTimeMs) 
+            ? `${String((avgCompletionTimeMs / (24 * 60 * 60 * 1000)).toFixed(1)).replace('.', ',')} dias`
             : '-';
 
         // Calculate biggest bottleneck (highest cumulative time stopped)
@@ -724,6 +737,8 @@ const WorkflowHistoryPage = () => {
         return { 
             completed, 
             active, 
+            logisticaEmAndamento,
+            validacaoCustos,
             delayed,
             rejected,
             avgPercent, 
@@ -785,10 +800,15 @@ const WorkflowHistoryPage = () => {
 
             // Status Filter
             if (quickFilter === 'completed' && (!prog.isFinished || prog.isRejected)) return false;
-            if (quickFilter === 'active' && prog.isFinished) return false;
-            if (quickFilter === 'delayed') {
-                const isDelayed = !prog.isFinished && (prog.timeStoppedMs > 24 * 60 * 60 * 1000);
-                if (!isDelayed) return false;
+            if (quickFilter === 'active_logistica') {
+                if (prog.isFinished) return false;
+                const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS']);
+                if (dtRcsRaw) return false;
+            }
+            if (quickFilter === 'active_custos') {
+                if (prog.isFinished) return false;
+                const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS']);
+                if (!dtRcsRaw) return false;
             }
             if (quickFilter === 'rejected' && !prog.isRejected) return false;
 
@@ -2014,70 +2034,74 @@ const WorkflowHistoryPage = () => {
                             </div>
                         </div>
 
-                        {/* 3. Em Andamento */}
+                        {/* 3. Em Andamento (Operação Logística) */}
                         <div 
-                            onClick={() => setQuickFilter('active')}
+                            onClick={() => setQuickFilter('active_logistica')}
                             className={`bg-white border rounded-xl p-4 shadow-sm flex items-center gap-4 cursor-pointer transition-all duration-200 select-none hover:shadow-md hover:border-slate-300 ${
-                                quickFilter === 'active' 
+                                quickFilter === 'active_logistica' 
+                                    ? 'ring-2 ring-blue-500/20 border-blue-500 bg-blue-50/10' 
+                                    : 'border-slate-200'
+                            }`}
+                        >
+                            <div className={`p-3 rounded-lg shrink-0 ${quickFilter === 'active_logistica' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
+                                <FaTruck className="text-xl" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-1">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate" title="EM ANDAMENTO (Operação Logística)">
+                                        EM ANDAMENTO (Operação Logística)
+                                    </div>
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não passaram pela etapa de Entrega RCS (fase logística ativa).">
+                                        <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
+                                    </div>
+                                </div>
+                                <div className="text-2xl font-black text-red-500/80 mt-0.5 font-mono">{kpis.logisticaEmAndamento}</div>
+                                <div className="text-[10px] text-slate-400 mt-0.5 truncate">Mercadoria ainda não entregue na RCS</div>
+                            </div>
+                        </div>
+
+                        {/* 4. Em Andamento (Validação de Custos) */}
+                        <div 
+                            onClick={() => setQuickFilter('active_custos')}
+                            className={`bg-white border rounded-xl p-4 shadow-sm flex items-center gap-4 cursor-pointer transition-all duration-200 select-none hover:shadow-md hover:border-slate-300 ${
+                                quickFilter === 'active_custos' 
                                     ? 'ring-2 ring-amber-500/20 border-amber-500 bg-amber-50/10' 
                                     : 'border-slate-200'
                             }`}
                         >
-                            <div className="p-3 bg-amber-50 text-amber-600 rounded-lg shrink-0">
+                            <div className={`p-3 rounded-lg shrink-0 ${quickFilter === 'active_custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+                                <FaDollarSign className="text-xl" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-1">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate" title="EM ANDAMENTO (Validação de Custos)">
+                                        EM ANDAMENTO (Validação de Custos)
+                                    </div>
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já passaram pela etapa de Entrega RCS e se encontram nas etapas administrativas/financeiras.">
+                                        <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
+                                    </div>
+                                </div>
+                                <div className="text-2xl font-black text-red-500/80 mt-0.5 font-mono">{kpis.validacaoCustos}</div>
+                                <div className="text-[10px] text-slate-400 mt-0.5 truncate">Processo financeiro em execução</div>
+                            </div>
+                        </div>
+
+                        {/* 5. Tempo Médio do Ciclo */}
+                        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center gap-4 select-none">
+                            <div className="p-3 bg-blue-50 text-blue-500 rounded-lg shrink-0">
                                 <FaClock className="text-xl" />
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between gap-1">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</div>
-                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare Workflow. Processos ativos em fluxo de trabalho que ainda não foram finalizados.">
-                                        <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Tempo Médio do Ciclo</div>
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Lead Time Logístico Médio: tempo médio decorrido desde a emissão da factura pelo fornecedor até à entrega da mercadoria no armazém da RCS (Data de Entrega - Data da Factura).">
+                                        <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                     </div>
                                 </div>
-                                <div className="text-2xl font-black text-amber-600 mt-0.5 font-mono">{kpis.active}</div>
-                                <div className="text-[10px] text-slate-400 mt-0.5 truncate">Ativos na fila</div>
-                            </div>
-                        </div>
-
-                        {/* 4. Atrasados */}
-                        <div 
-                            onClick={() => setQuickFilter('delayed')}
-                            className={`bg-white border rounded-xl p-4 shadow-sm flex items-center gap-4 cursor-pointer transition-all duration-200 select-none hover:shadow-md hover:border-slate-300 ${
-                                quickFilter === 'delayed' 
-                                    ? 'ring-2 ring-rose-500/20 border-rose-500 bg-rose-50/10' 
-                                    : 'border-slate-200'
-                            }`}
-                        >
-                            <div className="p-3 bg-rose-50 text-rose-600 rounded-lg shrink-0">
-                                <FaBan className="text-xl" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-1">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Tarefas &gt; 24h</div>
-                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: Workflow DocuWare. Tarefas ativas cuja permanência no passo/responsável atual excede 24 horas.">
-                                        <FaInfoCircle className="text-slate-300 hover:text-rose-500 transition-colors cursor-help text-[10px]" />
-                                    </div>
-                                </div>
-                                <div className="text-2xl font-black text-rose-600 mt-0.5 font-mono">{kpis.delayed}</div>
-                                <div className="text-[10px] text-rose-500 mt-0.5 font-semibold truncate">Tempo na etapa atual</div>
-                            </div>
-                        </div>
-
-                        {/* 5. Tempo Médio de Conclusão */}
-                        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center gap-4 select-none">
-                            <div className="p-3 bg-purple-50 text-purple-600 rounded-lg shrink-0">
-                                <FaCalendarAlt className="text-xl" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-1">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">T. Médio Ciclo</div>
-                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Tempo médio decorrido entre a data de emissão da fatura (DATA_FACTURA) e a data de entrega na RCS (DATA_ENTREGUE_RCS_).">
-                                        <FaInfoCircle className="text-slate-300 hover:text-purple-500 transition-colors cursor-help text-[10px]" />
-                                    </div>
-                                </div>
-                                <div className="text-base font-extrabold text-purple-600 mt-1 truncate" title={kpis.avgCompletionTimeText}>
+                                <div className="text-2xl font-black text-blue-600 mt-0.5 font-mono truncate" title={kpis.avgCompletionTimeText}>
                                     {kpis.avgCompletionTimeText}
                                 </div>
-                                <div className="text-[10px] text-slate-400 mt-0.5 truncate">Média docs finalizados</div>
+                                <div className="text-[10px] text-slate-400 mt-0.5 truncate">Fatura → Entrega(RCS)</div>
                             </div>
                         </div>
                     </div>
