@@ -3236,19 +3236,19 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
-                                                {renderFilterHeader('Nº PI', 'docNum')}
-                                                {renderFilterHeader('Nº Factura', 'noFactura')}
-                                                {renderFilterHeader('Tipo', 'viaTransporte')}
-                                                {renderFilterHeader('Transportador', 'transportador')}
-                                                {renderFilterHeader('Transitário', 'despachante')}
-                                                {renderFilterHeader('Empresa', 'fornecedor')}
-                                                {renderFilterHeader('Data da Factura', 'dtFactura', 'max-w-[70px]')}
-                                                {renderFilterHeader('Data de Despacho', 'dtSaidaAlfandega', 'max-w-[70px]')}
-                                                {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
-                                                {renderFilterHeader('Entrega RCS', 'dtEntregaRCS', 'max-w-[70px]')}
-                                                {renderFilterHeader('Factura → Despacho', 'diasFacturaDespacho', 'max-w-[70px]')}
-                                                {renderFilterHeader('Chegada (AO) → Entrega (RCS)', 'diasChegadaEntrega', 'max-w-[70px]')}
-                                                {renderFilterHeader('Factura → Entrega (RCS)', 'diasFacturaEntrega', 'max-w-[70px]')}
+                                                {renderFilterHeader('Nº PI', 'docNum', 'w-[140px] min-w-[140px] max-w-[140px]')}
+                                                {renderFilterHeader('Nº Factura', 'noFactura', 'w-[140px] min-w-[140px] max-w-[140px]')}
+                                                {renderFilterHeader('Tipo', 'viaTransporte', 'w-[100px] min-w-[100px] max-w-[100px]')}
+                                                {renderFilterHeader('Transportador', 'transportador', 'w-[150px] min-w-[150px] max-w-[150px]')}
+                                                {renderFilterHeader('Transitário', 'despachante', 'w-[170px] min-w-[170px] max-w-[170px]')}
+                                                {renderFilterHeader('Empresa', 'fornecedor', 'min-w-[180px]')}
+                                                {renderFilterHeader('Data da Factura', 'dtFactura', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Data de Despacho', 'dtSaidaAlfandega', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Chegada AO', 'dtChegada', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Entrega RCS', 'dtEntregaRCS', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Factura → Despacho', 'diasFacturaDespacho', 'w-[90px] min-w-[90px] max-w-[90px]')}
+                                                {renderFilterHeader('Chegada (AO) → Entrega (RCS)', 'diasChegadaEntrega', 'w-[90px] min-w-[90px] max-w-[90px]')}
+                                                {renderFilterHeader('Factura → Entrega (RCS)', 'diasFacturaEntrega', 'w-[90px] min-w-[90px] max-w-[90px]')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
                                                 </th>
@@ -3261,19 +3261,19 @@ const WorkflowAnalyticsPage = () => {
                                             {filteredDetailsForLogistica.map((p) => {
                                                 return (
                                                     <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-100">
-                                                        <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
-                                                        <td className="font-mono text-slate-600 whitespace-nowrap">{p.noFactura}</td>
-                                                        <td className="font-semibold text-slate-700 whitespace-nowrap">{p.viaTransporte}</td>
-                                                        <td className="whitespace-nowrap truncate max-w-[120px]" title={p.transportador}>{p.transportador}</td>
-                                                        <td className="whitespace-nowrap truncate max-w-[120px]" title={p.despachante}>{p.despachante}</td>
-                                                        <td className="truncate max-w-[150px]" title={p.fornecedor}>{p.fornecedor}</td>
-                                                        <td className="whitespace-nowrap">{p.dtFactura || '-'}</td>
-                                                        <td className="whitespace-nowrap">{p.dtSaidaAlfandega || '-'}</td>
-                                                        <td className="whitespace-nowrap">{p.dtChegada || '-'}</td>
-                                                        <td className="whitespace-nowrap">{p.dtEntregaRCS || '-'}</td>
-                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasFacturaDespacho}</td>
-                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasChegadaEntrega}</td>
-                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasFacturaEntrega}</td>
+                                                        <td className="font-bold text-slate-700 whitespace-nowrap w-[140px] min-w-[140px] max-w-[140px] truncate" title={p.docNum}>{p.docNum}</td>
+                                                        <td className="font-mono text-slate-600 whitespace-nowrap w-[140px] min-w-[140px] max-w-[140px] truncate" title={p.noFactura}>{p.noFactura}</td>
+                                                        <td className="font-semibold text-slate-700 whitespace-nowrap w-[100px] min-w-[100px] max-w-[100px] truncate" title={p.viaTransporte}>{p.viaTransporte}</td>
+                                                        <td className="whitespace-nowrap truncate w-[150px] min-w-[150px] max-w-[150px]" title={p.transportador}>{p.transportador}</td>
+                                                        <td className="whitespace-nowrap truncate w-[170px] min-w-[170px] max-w-[170px]" title={p.despachante}>{p.despachante}</td>
+                                                        <td className="truncate min-w-[180px] max-w-[300px]" title={p.fornecedor}>{p.fornecedor}</td>
+                                                        <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtFactura || '-'}</td>
+                                                        <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtSaidaAlfandega || '-'}</td>
+                                                        <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtChegada || '-'}</td>
+                                                        <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtEntregaRCS || '-'}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[90px] min-w-[90px] max-w-[90px]">{p.diasFacturaDespacho}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[90px] min-w-[90px] max-w-[90px]">{p.diasChegadaEntrega}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[90px] min-w-[90px] max-w-[90px]">{p.diasFacturaEntrega}</td>
                                                         
                                                         {/* Histórico */}
                                                         <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
