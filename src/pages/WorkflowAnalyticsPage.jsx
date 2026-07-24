@@ -2926,7 +2926,7 @@ const WorkflowAnalyticsPage = () => {
                     {activeTab === 'diretor_compras' && (
                         <div className="space-y-4">
                             {/* KPI Cards */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                                 {/* Total Docs Card */}
                                 <div 
                                     onClick={() => setDiretorComprasStatusFilter('all')}
@@ -2975,35 +2975,21 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Em Andamento Card */}
+                                {/* Em Andamento (Op. Logística Concluída) Card */}
                                 <div 
                                     onClick={() => setDiretorComprasStatusFilter('Em Andamento')}
                                     className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
                                         diretorComprasStatusFilter === 'Em Andamento' 
-                                            ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
+                                            ? 'border-blue-600 ring-1 ring-blue-600 bg-blue-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare Workflow. Processos ativos em fluxo de trabalho que ainda não foram finalizados.">
-                                                <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
-                                        </div>
-                                        <span className="text-2xl font-black text-amber-600 mt-1">{directorComprasMetrics.emAndamento}</span>
-                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
-                                    </div>
-                                    <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
-                                        <FaClock className="text-lg" />
-                                    </div>
-                                </div>
-
-                                {/* Operação Logística Concluída Card */}
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">📦 Op. Logística Concluída</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
+                                                Em Andamento <br />
+                                                <span className="text-[9px] text-slate-400 font-normal lowercase tracking-normal">(Op. Logística Concluída)</span>
+                                            </span>
                                             <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já tiveram a mercadoria entregue no armazém da RCS (Data de Entrega preenchida).">
                                                 <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                             </div>
@@ -3016,17 +3002,27 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Validação de Custos Card */}
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
+                                {/* Em Andamento (Validação de Custos) Card */}
+                                <div 
+                                    onClick={() => setDiretorComprasStatusFilter('Em Andamento')}
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        diretorComprasStatusFilter === 'Em Andamento' 
+                                            ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">💰 Validação de Custos</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
+                                                Em Andamento <br />
+                                                <span className="text-[9px] text-slate-400 font-normal lowercase tracking-normal">(Validação de Custos)</span>
+                                            </span>
                                             <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não tiveram a mercadoria entregue na RCS (permanecem em trâmite aduaneiro ou validação de custos/DAF).">
                                                 <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
                                             </div>
                                         </div>
                                         <span className="text-2xl font-black text-slate-700 mt-1">{directorComprasMetrics.validacaoCustos}</span>
-                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Validação de custos em execução</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
                                     <div className="p-2.5 rounded-lg shrink-0 bg-amber-50 text-amber-600">
                                         <FaClock className="text-lg" />
@@ -3190,7 +3186,7 @@ const WorkflowAnalyticsPage = () => {
                     {activeTab === 'visao_logistica' && (
                         <div className="space-y-4">
                             {/* KPI Cards */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                                 {/* Total Docs Card */}
                                 <div 
                                     onClick={() => setVisaoLogisticaStatusFilter('all')}
@@ -3239,35 +3235,21 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Em Andamento Card */}
+                                {/* Em Andamento (Op. Logística Concluída) Card */}
                                 <div 
                                     onClick={() => setVisaoLogisticaStatusFilter('Em Andamento')}
                                     className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
                                         visaoLogisticaStatusFilter === 'Em Andamento' 
-                                            ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
+                                            ? 'border-blue-600 ring-1 ring-blue-600 bg-blue-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare Workflow. Processos ativos em fluxo de trabalho que ainda não foram finalizados.">
-                                                <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
-                                        </div>
-                                        <span className="text-2xl font-black text-amber-600 mt-1">{visaoLogisticaMetrics.emAndamento}</span>
-                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
-                                    </div>
-                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
-                                        <FaClock className="text-lg" />
-                                    </div>
-                                </div>
-
-                                {/* Operação Logística Concluída Card */}
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">📦 Op. Logística Concluída</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
+                                                Em Andamento <br />
+                                                <span className="text-[9px] text-slate-400 font-normal lowercase tracking-normal">(Op. Logística Concluída)</span>
+                                            </span>
                                             <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já tiveram a mercadoria entregue no armazém da RCS (Data de Entrega preenchida).">
                                                 <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                             </div>
@@ -3280,17 +3262,27 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Validação de Custos Card */}
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
+                                {/* Em Andamento (Validação de Custos) Card */}
+                                <div 
+                                    onClick={() => setVisaoLogisticaStatusFilter('Em Andamento')}
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoLogisticaStatusFilter === 'Em Andamento' 
+                                            ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">💰 Validação de Custos</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
+                                                Em Andamento <br />
+                                                <span className="text-[9px] text-slate-400 font-normal lowercase tracking-normal">(Validação de Custos)</span>
+                                            </span>
                                             <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não tiveram a mercadoria entregue na RCS (permanecem em trâmite aduaneiro ou validação de custos/DAF).">
                                                 <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
                                             </div>
                                         </div>
                                         <span className="text-2xl font-black text-slate-700 mt-1">{visaoLogisticaMetrics.validacaoCustos}</span>
-                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Validação de custos em execução</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
                                     <div className="p-2.5 rounded-lg shrink-0 bg-amber-50 text-amber-600">
                                         <FaClock className="text-lg" />
