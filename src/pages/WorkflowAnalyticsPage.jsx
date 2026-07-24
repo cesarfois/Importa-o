@@ -2071,17 +2071,17 @@ const WorkflowAnalyticsPage = () => {
             : '-';
         
         const emAndamentoItems = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento');
-        const logisticaConcluida = emAndamentoItems.filter(p => p.stageIdx < 5).length;
-        const validacaoCustos = emAndamentoItems.filter(p => p.stageIdx === 5).length;
+        const logisticaEmAndamento = emAndamentoItems.filter(p => p.dtEntregaRCSRaw === null).length;
+        const validacaoCustos = emAndamentoItems.filter(p => p.dtEntregaRCSRaw !== null).length;
         
-        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaConcluida, validacaoCustos };
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaEmAndamento, validacaoCustos };
     }, [searchedAndSortedDetails]);
 
     const filteredDetailsForPurchasing = useMemo(() => {
         if (diretorComprasStatusFilter === 'all') return searchedAndSortedDetails;
         if (diretorComprasStatusFilter === 'Concluído') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído');
-        if (diretorComprasStatusFilter === 'Em Andamento - Logística') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.stageIdx < 5);
-        if (diretorComprasStatusFilter === 'Em Andamento - Custos') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.stageIdx === 5);
+        if (diretorComprasStatusFilter === 'Em Andamento - Logística') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.dtEntregaRCSRaw === null);
+        if (diretorComprasStatusFilter === 'Em Andamento - Custos') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.dtEntregaRCSRaw !== null);
         return searchedAndSortedDetails;
     }, [searchedAndSortedDetails, diretorComprasStatusFilter]);
 
@@ -2101,17 +2101,17 @@ const WorkflowAnalyticsPage = () => {
             : '-';
             
         const emAndamentoItems = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento');
-        const logisticaConcluida = emAndamentoItems.filter(p => p.stageIdx < 5).length;
-        const validacaoCustos = emAndamentoItems.filter(p => p.stageIdx === 5).length;
+        const logisticaEmAndamento = emAndamentoItems.filter(p => p.dtEntregaRCSRaw === null).length;
+        const validacaoCustos = emAndamentoItems.filter(p => p.dtEntregaRCSRaw !== null).length;
         
-        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaConcluida, validacaoCustos };
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaEmAndamento, validacaoCustos };
     }, [searchedAndSortedDetails]);
 
     const filteredDetailsForLogistica = useMemo(() => {
         if (visaoLogisticaStatusFilter === 'all') return searchedAndSortedDetails;
         if (visaoLogisticaStatusFilter === 'Concluído') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído');
-        if (visaoLogisticaStatusFilter === 'Em Andamento - Logística') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.stageIdx < 5);
-        if (visaoLogisticaStatusFilter === 'Em Andamento - Custos') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.stageIdx === 5);
+        if (visaoLogisticaStatusFilter === 'Em Andamento - Logística') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.dtEntregaRCSRaw === null);
+        if (visaoLogisticaStatusFilter === 'Em Andamento - Custos') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.dtEntregaRCSRaw !== null);
         return searchedAndSortedDetails;
     }, [searchedAndSortedDetails, visaoLogisticaStatusFilter]);
 
@@ -2981,7 +2981,7 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Em Andamento (Op. Logística Concluída) Card */}
+                                {/* Em Andamento (Operação Logística) Card */}
                                 <div 
                                     onClick={() => setDiretorComprasStatusFilter('Em Andamento - Logística')}
                                     className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
@@ -2991,16 +2991,16 @@ const WorkflowAnalyticsPage = () => {
                                     }`}
                                 >
                                     <div className="absolute top-3 right-3">
-                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já tiveram a mercadoria entregue no armazém da RCS (Data de Entrega preenchida).">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não passaram pela etapa de Entrega RCS (fase logística ativa).">
                                             <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Op. Logística Concluída)">
-                                            EM ANDAMENTO (Op. Logística Concluída)
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Operação Logística)">
+                                            EM ANDAMENTO (Operação Logística)
                                         </span>
-                                        <span className="text-2xl font-black text-slate-700 mt-1">{directorComprasMetrics.logisticaConcluida}</span>
-                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria entregue na RCS</span>
+                                        <span className="text-2xl font-black text-slate-700 mt-1">{directorComprasMetrics.logisticaEmAndamento}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria ainda não entregue na RCS</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaFolderOpen className="text-lg" />
@@ -3239,7 +3239,7 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Em Andamento (Op. Logística Concluída) Card */}
+                                {/* Em Andamento (Operação Logística) Card */}
                                 <div 
                                     onClick={() => setVisaoLogisticaStatusFilter('Em Andamento - Logística')}
                                     className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
@@ -3249,16 +3249,16 @@ const WorkflowAnalyticsPage = () => {
                                     }`}
                                 >
                                     <div className="absolute top-3 right-3">
-                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já tiveram a mercadoria entregue no armazém da RCS (Data de Entrega preenchida).">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não passaram pela etapa de Entrega RCS (fase logística ativa).">
                                             <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Op. Logística Concluída)">
-                                            EM ANDAMENTO (Op. Logística Concluída)
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Operação Logística)">
+                                            EM ANDAMENTO (Operação Logística)
                                         </span>
-                                        <span className="text-2xl font-black text-slate-700 mt-1">{visaoLogisticaMetrics.logisticaConcluida}</span>
-                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria entregue na RCS</span>
+                                        <span className="text-2xl font-black text-slate-700 mt-1">{visaoLogisticaMetrics.logisticaEmAndamento}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria ainda não entregue na RCS</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaFolderOpen className="text-lg" />
