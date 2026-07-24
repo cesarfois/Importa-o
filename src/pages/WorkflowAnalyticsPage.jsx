@@ -3003,7 +3003,7 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria ainda não entregue na RCS</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
-                                        <FaFolderOpen className="text-lg" />
+                                        <FaTruck className="text-lg" />
                                     </div>
                                 </div>
 
@@ -3029,7 +3029,7 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento - Custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
-                                        <FaClock className="text-lg" />
+                                        <FaDollarSign className="text-lg" />
                                     </div>
                                 </div>
 
@@ -3261,7 +3261,7 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria ainda não entregue na RCS</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
-                                        <FaFolderOpen className="text-lg" />
+                                        <FaTruck className="text-lg" />
                                     </div>
                                 </div>
 
@@ -3287,7 +3287,7 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento - Custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
-                                        <FaClock className="text-lg" />
+                                        <FaDollarSign className="text-lg" />
                                     </div>
                                 </div>
 
