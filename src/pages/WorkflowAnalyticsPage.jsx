@@ -2678,20 +2678,6 @@ const WorkflowAnalyticsPage = () => {
                 >
                     <FaTruck /> Visão Logística
                 </button>
-                <button 
-                    onClick={() => setActiveTab('performance_despachantes')}
-                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'performance_despachantes' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
-                >
-                    <FaUserShield /> Performance dos Despachantes
-                    <span className="badge badge-warning badge-xs text-[9px] font-extrabold ml-1 uppercase py-1 px-1.5 rounded-md border-0 bg-amber-400 text-amber-950 shadow-sm">Em Dev</span>
-                </button>
-                <button 
-                    onClick={() => setActiveTab('visao_detalhada')}
-                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'visao_detalhada' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
-                >
-                    <FaList /> Visão Detalhada
-                    <span className="badge badge-warning badge-xs text-[9px] font-extrabold ml-1 uppercase py-1 px-1.5 rounded-md border-0 bg-amber-400 text-amber-950 shadow-sm">Em Dev</span>
-                </button>
             </div>
 
             {/* TAB CONTENT */}
