@@ -666,7 +666,7 @@ const WorkflowHistoryPage = () => {
                         completed++;
                     }
                     const dtFacturaRaw = findFieldVal(doc, ['DATA_FACTURA', 'DATA_DA_FACTURA', 'DATA_EMISSAO_FACTURA', 'DATA_EMISSAO_DA_FACTURA']);
-                    const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS']);
+                    const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE__RCS_', 'DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS', 'DATA_ENTREGUE', 'ENTREGUE']);
                     
                     const dateFactura = dtFacturaRaw ? parseDocuwareDate(dtFacturaRaw) : null;
                     const dateRcs = dtRcsRaw ? parseDocuwareDate(dtRcsRaw) : null;
@@ -697,7 +697,7 @@ const WorkflowHistoryPage = () => {
                         stepTimeCount[prog.activeTaskName] = (stepTimeCount[prog.activeTaskName] || 0) + 1;
                     }
 
-                    const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS']);
+                    const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE__RCS_', 'DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS', 'DATA_ENTREGUE', 'ENTREGUE']);
                     if (!dtRcsRaw) {
                         logisticaEmAndamento++;
                     } else {
@@ -802,12 +802,12 @@ const WorkflowHistoryPage = () => {
             if (quickFilter === 'completed' && (!prog.isFinished || prog.isRejected)) return false;
             if (quickFilter === 'active_logistica') {
                 if (prog.isFinished) return false;
-                const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS']);
+                const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE__RCS_', 'DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS', 'DATA_ENTREGUE', 'ENTREGUE']);
                 if (dtRcsRaw) return false;
             }
             if (quickFilter === 'active_custos') {
                 if (prog.isFinished) return false;
-                const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS']);
+                const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE__RCS_', 'DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS', 'DATA_ENTREGUE', 'ENTREGUE']);
                 if (!dtRcsRaw) return false;
             }
             if (quickFilter === 'rejected' && !prog.isRejected) return false;
