@@ -2999,7 +2999,7 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Operação Logística)">
                                             EM ANDAMENTO (Operação Logística)
                                         </span>
-                                        <span className="text-2xl font-black text-slate-700 mt-1">{directorComprasMetrics.logisticaEmAndamento}</span>
+                                        <span className="text-2xl font-black text-red-500/80 mt-1">{directorComprasMetrics.logisticaEmAndamento}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria ainda não entregue na RCS</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
@@ -3025,7 +3025,7 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Validação de Custos)">
                                             EM ANDAMENTO (Validação de Custos)
                                         </span>
-                                        <span className="text-2xl font-black text-slate-700 mt-1">{directorComprasMetrics.validacaoCustos}</span>
+                                        <span className="text-2xl font-black text-red-500/80 mt-1">{directorComprasMetrics.validacaoCustos}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento - Custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
@@ -3253,11 +3253,10 @@ const WorkflowAnalyticsPage = () => {
                                             <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
-                                    <div className="flex flex-col flex-1 min-w-0">
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Operação Logística)">
                                             EM ANDAMENTO (Operação Logística)
                                         </span>
-                                        <span className="text-2xl font-black text-slate-700 mt-1">{visaoLogisticaMetrics.logisticaEmAndamento}</span>
+                                        <span className="text-2xl font-black text-red-500/80 mt-1">{visaoLogisticaMetrics.logisticaEmAndamento}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria ainda não entregue na RCS</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
@@ -3283,7 +3282,7 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Validação de Custos)">
                                             EM ANDAMENTO (Validação de Custos)
                                         </span>
-                                        <span className="text-2xl font-black text-slate-700 mt-1">{visaoLogisticaMetrics.validacaoCustos}</span>
+                                        <span className="text-2xl font-black text-red-500/80 mt-1">{visaoLogisticaMetrics.validacaoCustos}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento - Custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
