@@ -1153,6 +1153,7 @@ const WorkflowAnalyticsPage = () => {
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
     const [activeTab, setActiveTab] = useState('diretor_compras');
     const [diretorComprasStatusFilter, setDiretorComprasStatusFilter] = useState('all');
+    const [visaoLogisticaStatusFilter, setVisaoLogisticaStatusFilter] = useState('all');
 
     // Drawer/History details states
     const [selectedDoc, setSelectedDoc] = useState(null);
@@ -1275,6 +1276,45 @@ const WorkflowAnalyticsPage = () => {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = `diretor_compras_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    };
+
+    const exportLogisticaToCSV = () => {
+        const headers = [
+            'Nº PI', 'Nº Factura', 'Data Factura', 'Tipo', 'Chegada AO', 'Entrada (RCS)', 
+            'Dias Úteis', 'Factura (EU)', 'Cambio FC', 'Factura (Kz)', 'Montante FC', 
+            'Transportador', 'Transitario', 'Empresa', 'ETA', 'Comentário'
+        ];
+        
+        const csvData = filteredDetailsForLogistica.map(p => [
+            p.docNum || '',
+            p.noFactura || '',
+            p.dtFactura || '',
+            p.viaTransporte || '',
+            p.dtChegada || '',
+            p.dtEntregaRCS || '',
+            p.diasUteis || '0',
+            p.valMercadoriaOrig || '0',
+            p.valorCambialFC || '0',
+            p.valMercadoriaFC || '0',
+            p.montanteFC || '0',
+            p.transportador || '',
+            p.despachante || '',
+            p.fornecedor || '',
+            p.dtETA || '',
+            p.comentario || ''
+        ]);
+
+        const csvContent = [
+            headers.join(';'),
+            ...csvData.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        ].join('\n');
+
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `visao_logistica_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
     };
     const [selectedDespachanteGroup, setSelectedDespachanteGroup] = useState(null);
@@ -2015,6 +2055,22 @@ const WorkflowAnalyticsPage = () => {
         return searchedAndSortedDetails.filter(p => p.statusFinal === diretorComprasStatusFilter);
     }, [searchedAndSortedDetails, diretorComprasStatusFilter]);
 
+    // --- Visão Logística specific metrics and filtered list ---
+    const visaoLogisticaMetrics = useMemo(() => {
+        const total = searchedAndSortedDetails.length;
+        const concluidos = searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído').length;
+        const emAndamento = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento').length;
+        const pctConcluidos = total > 0 ? Math.round((concluidos / total) * 100) : 0;
+        const pctEmAndamento = total > 0 ? Math.round((emAndamento / total) * 100) : 0;
+        
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento };
+    }, [searchedAndSortedDetails]);
+
+    const filteredDetailsForLogistica = useMemo(() => {
+        if (visaoLogisticaStatusFilter === 'all') return searchedAndSortedDetails;
+        return searchedAndSortedDetails.filter(p => p.statusFinal === visaoLogisticaStatusFilter);
+    }, [searchedAndSortedDetails, visaoLogisticaStatusFilter]);
+
     // Handle Open DocuWare Document
     const handleOpenDocument = (docId) => {
         const viewUrl = docuwareService.getDocumentViewUrl(selectedCabinet, docId);
@@ -2573,6 +2629,12 @@ const WorkflowAnalyticsPage = () => {
                     <FaShoppingCart /> Diretor de Compras
                 </button>
                 <button 
+                    onClick={() => setActiveTab('visao_logistica')}
+                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'visao_logistica' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
+                >
+                    <FaTruck /> Visão Logística
+                </button>
+                <button 
                     onClick={() => setActiveTab('performance_despachantes')}
                     className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'performance_despachantes' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
                 >
@@ -2974,6 +3036,217 @@ const WorkflowAnalyticsPage = () => {
                                         </thead>
                                         <tbody>
                                             {filteredDetailsForPurchasing.map((p) => {
+                                                const formattedValor = p.valMercadoriaOrig && p.valMercadoriaOrig > 0 
+                                                    ? p.valMercadoriaOrig.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+                                                    : '-';
+                                                
+                                                return (
+                                                    <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-100">
+                                                        <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
+                                                        <td className="font-mono text-slate-600 whitespace-nowrap">{p.noFactura}</td>
+                                                        <td className="whitespace-nowrap">{p.dtFactura || '-'}</td>
+                                                        <td className="font-semibold text-slate-700 whitespace-nowrap">{p.viaTransporte}</td>
+                                                        <td className="whitespace-nowrap">{p.dtChegada || '-'}</td>
+                                                        <td className="whitespace-nowrap">{p.dtEntregaRCS || '-'}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasUteis}</td>
+                                                        <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.valMercadoriaFC ? p.valMercadoriaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="whitespace-nowrap truncate max-w-[120px]" title={p.transportador}>{p.transportador}</td>
+                                                        <td className="whitespace-nowrap truncate max-w-[120px]" title={p.despachante}>{p.despachante}</td>
+                                                        <td className="truncate max-w-[150px]" title={p.fornecedor}>{p.fornecedor}</td>
+                                                        <td className="whitespace-nowrap">{p.dtETA || '-'}</td>
+                                                        <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
+                                                        
+                                                        {/* Histórico */}
+                                                        <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
+                                                            <button
+                                                                onClick={() => handleSelectDocument(p)}
+                                                                className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
+                                                                title="Visualizar Histórico"
+                                                            >
+                                                                <FaHistory className="text-xs" />
+                                                            </button>
+                                                        </td>
+
+                                                        {/* Ver Documento */}
+                                                        <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
+                                                            <button 
+                                                                onClick={() => handleOpenDocument(p.id)}
+                                                                className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
+                                                                title="Abrir no DocuWare"
+                                                            >
+                                                                <FaExternalLinkAlt className="text-xs" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {searchedAndSortedDetails.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={18} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 6.5. VISÃO LOGÍSTICA (COPY OF DIRETOR DE COMPRAS) */}
+                    {activeTab === 'visao_logistica' && (
+                        <div className="space-y-4">
+                            {/* KPI Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Total Docs Card */}
+                                <div 
+                                    onClick={() => setVisaoLogisticaStatusFilter('all')}
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoLogisticaStatusFilter === 'all' 
+                                            ? 'border-indigo-600 ring-1 ring-indigo-600 bg-indigo-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 w-full">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Total Docs</span>
+                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare (Registo Processo de Importação). Total de processos carregados no lote atual.">
+                                                <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                            </div>
+                                        </div>
+                                        <span className="text-2xl font-black text-slate-800 mt-1">{visaoLogisticaMetrics.total}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Encontrados no lote</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'all' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaFolderOpen className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Concluídos Card */}
+                                <div 
+                                    onClick={() => setVisaoLogisticaStatusFilter('Concluído')}
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoLogisticaStatusFilter === 'Concluído' 
+                                            ? 'border-emerald-600 ring-1 ring-emerald-600 bg-emerald-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 w-full">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Concluídos</span>
+                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Filtra processos finalizados com status 'Concluído' ou com data de entrega preenchida.">
+                                                <FaInfoCircle className="text-slate-300 hover:text-emerald-500 transition-colors cursor-help text-[10px]" />
+                                            </div>
+                                        </div>
+                                        <span className="text-2xl font-black text-emerald-600 mt-1">{visaoLogisticaMetrics.concluidos}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{visaoLogisticaMetrics.pctConcluidos}% do total</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Concluído' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaCheckCircle className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Em Andamento Card */}
+                                <div 
+                                    onClick={() => setVisaoLogisticaStatusFilter('Em Andamento')}
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoLogisticaStatusFilter === 'Em Andamento' 
+                                            ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 w-full">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</span>
+                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare Workflow. Processos ativos em fluxo de trabalho que ainda não foram finalizados.">
+                                                <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
+                                            </div>
+                                        </div>
+                                        <span className="text-2xl font-black text-amber-600 mt-1">{visaoLogisticaMetrics.emAndamento}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaClock className="text-lg" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Search & Actions */}
+                            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                                <div className="flex flex-row gap-2 items-center w-full md:w-auto">
+                                    <div className="relative w-full md:w-80">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                                            <FaSearch />
+                                        </span>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Buscar por PI, Transportador, Transitário..." 
+                                            className="input input-bordered input-sm pl-9 bg-white text-slate-700 w-full rounded-xl"
+                                            value={detailSearch}
+                                            onChange={(e) => setDetailSearch(e.target.value)}
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={exportLogisticaToCSV}
+                                        className="btn btn-sm btn-outline btn-success font-bold flex items-center gap-1.5 rounded-xl border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                                        title="Exportar para Excel"
+                                    >
+                                        <FaFileExcel className="text-sm" />
+                                        <span className="hidden sm:inline">Exportar Excel</span>
+                                    </button>
+                                </div>
+                                <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
+                                    <span>Exibindo {filteredDetailsForLogistica.length} de {searchedAndSortedDetails.length} processos</span>
+                                    <button 
+                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: !prev.purchasing_director_table}))}
+                                        className="btn btn-xs btn-ghost text-slate-400 hover:text-indigo-600 p-0 hover:bg-transparent"
+                                        title="Ver Detalhes do Mapeamento de Campos"
+                                    >
+                                        <FaInfoCircle className="text-sm" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <ChartInfoAlert 
+                                metricKey="purchasing_director_table" 
+                                showInfo={!!visibleChartExplanations['purchasing_director_table']} 
+                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: val}))} 
+                            />
+
+                            {/* Visão Logística Grid Table */}
+                            <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                                <div className="overflow-x-auto max-h-[500px] scrollbar-thin">
+                                    <table className="table table-compact w-full text-[11px] border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50 text-slate-600 font-bold">
+                                                {renderFilterHeader('Nº PI', 'docNum')}
+                                                {renderFilterHeader('Nº Factura', 'noFactura')}
+                                                {renderFilterHeader('Data Factura', 'dtFactura', 'max-w-[70px]')}
+                                                {renderFilterHeader('Tipo', 'viaTransporte')}
+                                                {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
+                                                {renderFilterHeader('Entrada (RCS)', 'dtEntregaRCS', 'max-w-[70px]')}
+                                                {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]')}
+                                                {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
+                                                {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Factura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[70px]')}
+                                                {renderFilterHeader('Transportador', 'transportador')}
+                                                {renderFilterHeader('Transitario', 'despachante')}
+                                                {renderFilterHeader('Empresa', 'fornecedor')}
+                                                {renderFilterHeader('ETA', 'dtETA')}
+                                                {renderFilterHeader('Comentário', 'comentario')}
+                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
+                                                    <FaHistory className="mx-auto text-slate-400" />
+                                                </th>
+                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Ver Documento">
+                                                    <FaFileAlt className="mx-auto text-slate-400" />
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredDetailsForLogistica.map((p) => {
                                                 const formattedValor = p.valMercadoriaOrig && p.valMercadoriaOrig > 0 
                                                     ? p.valMercadoriaOrig.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
                                                     : '-';
