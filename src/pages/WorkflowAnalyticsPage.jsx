@@ -3711,7 +3711,25 @@ const WorkflowAnalyticsPage = () => {
                                                                         {f.DisplayName || f.FieldName}
                                                                     </td>
                                                                     <td className="py-2.5 px-4 font-mono text-slate-700 break-all select-all">
-                                                                        {String(f.Item || f.Value || '-')}
+                                                                        {(() => {
+                                                                            const val = f.Item || f.Value || '-';
+                                                                            if (typeof val === 'string' && val.startsWith('/Date(')) {
+                                                                                const match = val.match(/\d+/);
+                                                                                if (match) {
+                                                                                    const timestamp = parseInt(match[0]);
+                                                                                    const dateObj = new Date(timestamp);
+                                                                                    if (!isNaN(dateObj.getTime())) {
+                                                                                        let displayObj = dateObj;
+                                                                                        if (dateObj.getUTCHours() === 0 && dateObj.getUTCMinutes() === 0 && dateObj.getUTCSeconds() === 0) {
+                                                                                            const userTimezoneOffset = dateObj.getTimezoneOffset() * 60000;
+                                                                                            displayObj = new Date(dateObj.getTime() + userTimezoneOffset);
+                                                                                        }
+                                                                                        return displayObj.toLocaleDateString('pt-BR');
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            return String(val);
+                                                                        })()}
                                                                     </td>
                                                                 </tr>
                                                             ))}
