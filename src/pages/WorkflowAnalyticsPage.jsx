@@ -2071,15 +2071,18 @@ const WorkflowAnalyticsPage = () => {
             : '-';
         
         const emAndamentoItems = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento');
-        const logisticaConcluida = emAndamentoItems.filter(p => p.dtEntregaRCSRaw !== null).length;
-        const validacaoCustos = emAndamentoItems.filter(p => p.dtEntregaRCSRaw === null).length;
+        const logisticaConcluida = emAndamentoItems.filter(p => p.stageIdx < 5).length;
+        const validacaoCustos = emAndamentoItems.filter(p => p.stageIdx === 5).length;
         
         return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaConcluida, validacaoCustos };
     }, [searchedAndSortedDetails]);
 
     const filteredDetailsForPurchasing = useMemo(() => {
         if (diretorComprasStatusFilter === 'all') return searchedAndSortedDetails;
-        return searchedAndSortedDetails.filter(p => p.statusFinal === diretorComprasStatusFilter);
+        if (diretorComprasStatusFilter === 'Concluído') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído');
+        if (diretorComprasStatusFilter === 'Em Andamento - Logística') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.stageIdx < 5);
+        if (diretorComprasStatusFilter === 'Em Andamento - Custos') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.stageIdx === 5);
+        return searchedAndSortedDetails;
     }, [searchedAndSortedDetails, diretorComprasStatusFilter]);
 
     // --- Visão Logística specific metrics and filtered list ---
@@ -2098,15 +2101,18 @@ const WorkflowAnalyticsPage = () => {
             : '-';
             
         const emAndamentoItems = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento');
-        const logisticaConcluida = emAndamentoItems.filter(p => p.dtEntregaRCSRaw !== null).length;
-        const validacaoCustos = emAndamentoItems.filter(p => p.dtEntregaRCSRaw === null).length;
+        const logisticaConcluida = emAndamentoItems.filter(p => p.stageIdx < 5).length;
+        const validacaoCustos = emAndamentoItems.filter(p => p.stageIdx === 5).length;
         
         return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaConcluida, validacaoCustos };
     }, [searchedAndSortedDetails]);
 
     const filteredDetailsForLogistica = useMemo(() => {
         if (visaoLogisticaStatusFilter === 'all') return searchedAndSortedDetails;
-        return searchedAndSortedDetails.filter(p => p.statusFinal === visaoLogisticaStatusFilter);
+        if (visaoLogisticaStatusFilter === 'Concluído') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído');
+        if (visaoLogisticaStatusFilter === 'Em Andamento - Logística') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.stageIdx < 5);
+        if (visaoLogisticaStatusFilter === 'Em Andamento - Custos') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.stageIdx === 5);
+        return searchedAndSortedDetails;
     }, [searchedAndSortedDetails, visaoLogisticaStatusFilter]);
 
     // Handle Open DocuWare Document
@@ -2930,19 +2936,19 @@ const WorkflowAnalyticsPage = () => {
                                 {/* Total Docs Card */}
                                 <div 
                                     onClick={() => setDiretorComprasStatusFilter('all')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
                                         diretorComprasStatusFilter === 'all' 
                                             ? 'border-indigo-600 ring-1 ring-indigo-600 bg-indigo-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Total Docs</span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare (Registo Processo de Importação). Total de processos carregados no lote atual.">
-                                                <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare (Registo Processo de Importação). Total de processos carregados no lote atual.">
+                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Total Docs</span>
                                         <span className="text-2xl font-black text-slate-800 mt-1">{directorComprasMetrics.total}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Encontrados no lote</span>
                                     </div>
@@ -2954,19 +2960,19 @@ const WorkflowAnalyticsPage = () => {
                                 {/* Concluídos Card */}
                                 <div 
                                     onClick={() => setDiretorComprasStatusFilter('Concluído')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
                                         diretorComprasStatusFilter === 'Concluído' 
                                             ? 'border-emerald-600 ring-1 ring-emerald-600 bg-emerald-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Concluídos</span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Filtra processos finalizados com status 'Concluído' ou com data de entrega preenchida.">
-                                                <FaInfoCircle className="text-slate-300 hover:text-emerald-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Filtra processos finalizados com status 'Concluído' ou com data de entrega preenchida.">
+                                            <FaInfoCircle className="text-slate-300 hover:text-emerald-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Concluídos</span>
                                         <span className="text-2xl font-black text-emerald-600 mt-1">{directorComprasMetrics.concluidos}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{directorComprasMetrics.pctConcluidos}% do total</span>
                                     </div>
@@ -2977,67 +2983,65 @@ const WorkflowAnalyticsPage = () => {
 
                                 {/* Em Andamento (Op. Logística Concluída) Card */}
                                 <div 
-                                    onClick={() => setDiretorComprasStatusFilter('Em Andamento')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
-                                        diretorComprasStatusFilter === 'Em Andamento' 
+                                    onClick={() => setDiretorComprasStatusFilter('Em Andamento - Logística')}
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        diretorComprasStatusFilter === 'Em Andamento - Logística' 
                                             ? 'border-blue-600 ring-1 ring-blue-600 bg-blue-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
-                                                Em Andamento <br />
-                                                <span className="text-[9px] text-slate-400 font-normal lowercase tracking-normal">(Op. Logística Concluída)</span>
-                                            </span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já tiveram a mercadoria entregue no armazém da RCS (Data de Entrega preenchida).">
-                                                <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já tiveram a mercadoria entregue no armazém da RCS (Data de Entrega preenchida).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Op. Logística Concluída)">
+                                            EM ANDAMENTO (Op. Logística Concluída)
+                                        </span>
                                         <span className="text-2xl font-black text-slate-700 mt-1">{directorComprasMetrics.logisticaConcluida}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria entregue na RCS</span>
                                     </div>
-                                    <div className="p-2.5 rounded-lg shrink-0 bg-blue-50 text-blue-500">
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaFolderOpen className="text-lg" />
                                     </div>
                                 </div>
 
                                 {/* Em Andamento (Validação de Custos) Card */}
                                 <div 
-                                    onClick={() => setDiretorComprasStatusFilter('Em Andamento')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
-                                        diretorComprasStatusFilter === 'Em Andamento' 
+                                    onClick={() => setDiretorComprasStatusFilter('Em Andamento - Custos')}
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        diretorComprasStatusFilter === 'Em Andamento - Custos' 
                                             ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
-                                                Em Andamento <br />
-                                                <span className="text-[9px] text-slate-400 font-normal lowercase tracking-normal">(Validação de Custos)</span>
-                                            </span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não tiveram a mercadoria entregue na RCS (permanecem em trâmite aduaneiro ou validação de custos/DAF).">
-                                                <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não tiveram a mercadoria entregue na RCS (permanecem em trâmite aduaneiro ou validação de custos/DAF).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Validação de Custos)">
+                                            EM ANDAMENTO (Validação de Custos)
+                                        </span>
                                         <span className="text-2xl font-black text-slate-700 mt-1">{directorComprasMetrics.validacaoCustos}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
-                                    <div className="p-2.5 rounded-lg shrink-0 bg-amber-50 text-amber-600">
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento - Custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaClock className="text-lg" />
                                     </div>
                                 </div>
 
                                 {/* Tempo Médio do Ciclo Card */}
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Tempo Médio do Ciclo</span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Lead Time Logístico Médio: tempo médio decorrido desde a emissão da factura pelo fornecedor até à entrega da mercadoria no armazém da RCS (Data de Entrega - Data da Factura).">
-                                                <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                <div className="card relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Lead Time Logístico Médio: tempo médio decorrido desde a emissão da factura pelo fornecedor até à entrega da mercadoria no armazém da RCS (Data de Entrega - Data da Factura).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Tempo Médio do Ciclo</span>
                                         <span className="text-2xl font-black text-blue-600 mt-1">
                                             {directorComprasMetrics.avgCiclo !== '-' ? `${String(directorComprasMetrics.avgCiclo).replace('.', ',')} dias` : '-'}
                                         </span>
@@ -3190,19 +3194,19 @@ const WorkflowAnalyticsPage = () => {
                                 {/* Total Docs Card */}
                                 <div 
                                     onClick={() => setVisaoLogisticaStatusFilter('all')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
                                         visaoLogisticaStatusFilter === 'all' 
                                             ? 'border-indigo-600 ring-1 ring-indigo-600 bg-indigo-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Total Docs</span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare (Registo Processo de Importação). Total de processos carregados no lote atual.">
-                                                <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare (Registo Processo de Importação). Total de processos carregados no lote atual.">
+                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Total Docs</span>
                                         <span className="text-2xl font-black text-slate-800 mt-1">{visaoLogisticaMetrics.total}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Encontrados no lote</span>
                                     </div>
@@ -3214,19 +3218,19 @@ const WorkflowAnalyticsPage = () => {
                                 {/* Concluídos Card */}
                                 <div 
                                     onClick={() => setVisaoLogisticaStatusFilter('Concluído')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
                                         visaoLogisticaStatusFilter === 'Concluído' 
                                             ? 'border-emerald-600 ring-1 ring-emerald-600 bg-emerald-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Concluídos</span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Filtra processos finalizados com status 'Concluído' ou com data de entrega preenchida.">
-                                                <FaInfoCircle className="text-slate-300 hover:text-emerald-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Filtra processos finalizados com status 'Concluído' ou com data de entrega preenchida.">
+                                            <FaInfoCircle className="text-slate-300 hover:text-emerald-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Concluídos</span>
                                         <span className="text-2xl font-black text-emerald-600 mt-1">{visaoLogisticaMetrics.concluidos}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{visaoLogisticaMetrics.pctConcluidos}% do total</span>
                                     </div>
@@ -3237,67 +3241,65 @@ const WorkflowAnalyticsPage = () => {
 
                                 {/* Em Andamento (Op. Logística Concluída) Card */}
                                 <div 
-                                    onClick={() => setVisaoLogisticaStatusFilter('Em Andamento')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
-                                        visaoLogisticaStatusFilter === 'Em Andamento' 
+                                    onClick={() => setVisaoLogisticaStatusFilter('Em Andamento - Logística')}
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoLogisticaStatusFilter === 'Em Andamento - Logística' 
                                             ? 'border-blue-600 ring-1 ring-blue-600 bg-blue-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
-                                                Em Andamento <br />
-                                                <span className="text-[9px] text-slate-400 font-normal lowercase tracking-normal">(Op. Logística Concluída)</span>
-                                            </span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já tiveram a mercadoria entregue no armazém da RCS (Data de Entrega preenchida).">
-                                                <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que já tiveram a mercadoria entregue no armazém da RCS (Data de Entrega preenchida).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Op. Logística Concluída)">
+                                            EM ANDAMENTO (Op. Logística Concluída)
+                                        </span>
                                         <span className="text-2xl font-black text-slate-700 mt-1">{visaoLogisticaMetrics.logisticaConcluida}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria entregue na RCS</span>
                                     </div>
-                                    <div className="p-2.5 rounded-lg shrink-0 bg-blue-50 text-blue-500">
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaFolderOpen className="text-lg" />
                                     </div>
                                 </div>
 
                                 {/* Em Andamento (Validação de Custos) Card */}
                                 <div 
-                                    onClick={() => setVisaoLogisticaStatusFilter('Em Andamento')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
-                                        visaoLogisticaStatusFilter === 'Em Andamento' 
+                                    onClick={() => setVisaoLogisticaStatusFilter('Em Andamento - Custos')}
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoLogisticaStatusFilter === 'Em Andamento - Custos' 
                                             ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
-                                                Em Andamento <br />
-                                                <span className="text-[9px] text-slate-400 font-normal lowercase tracking-normal">(Validação de Custos)</span>
-                                            </span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não tiveram a mercadoria entregue na RCS (permanecem em trâmite aduaneiro ou validação de custos/DAF).">
-                                                <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não tiveram a mercadoria entregue na RCS (permanecem em trâmite aduaneiro ou validação de custos/DAF).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Validação de Custos)">
+                                            EM ANDAMENTO (Validação de Custos)
+                                        </span>
                                         <span className="text-2xl font-black text-slate-700 mt-1">{visaoLogisticaMetrics.validacaoCustos}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
-                                    <div className="p-2.5 rounded-lg shrink-0 bg-amber-50 text-amber-600">
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento - Custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaClock className="text-lg" />
                                     </div>
                                 </div>
 
                                 {/* Tempo Médio do Ciclo Card */}
-                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-1 w-full">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Tempo Médio do Ciclo</span>
-                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Lead Time Logístico Médio: tempo médio decorrido desde a emissão da factura pelo fornecedor até à entrega da mercadoria no armazém da RCS (Data de Entrega - Data da Factura).">
-                                                <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
-                                            </div>
+                                <div className="card relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Lead Time Logístico Médio: tempo médio decorrido desde a emissão da factura pelo fornecedor até à entrega da mercadoria no armazém da RCS (Data de Entrega - Data da Factura).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Tempo Médio do Ciclo</span>
                                         <span className="text-2xl font-black text-blue-600 mt-1">
                                             {visaoLogisticaMetrics.avgCiclo !== '-' ? `${String(visaoLogisticaMetrics.avgCiclo).replace('.', ',')} dias` : '-'}
                                         </span>
