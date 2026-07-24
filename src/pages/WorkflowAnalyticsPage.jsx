@@ -1281,7 +1281,7 @@ const WorkflowAnalyticsPage = () => {
 
     const exportLogisticaToCSV = () => {
         const headers = [
-            'Nº PI', 'Nº Factura', 'Tipo', 'Transportador', 'Transitário', 'Empresa', 'Data da Factura', 'Data de Despacho', 'Chegada AO', 'Entrega RCS'
+            'Nº PI', 'Nº Factura', 'Tipo', 'Transportador', 'Transitário', 'Empresa', 'Data da Factura', 'Data de Despacho', 'Chegada AO', 'Entrega RCS', 'Factura → Despacho', 'Chegada (AO) → Entrega (RCS)', 'Factura → Entrega (RCS)'
         ];
         
         const csvData = filteredDetailsForLogistica.map(p => [
@@ -1294,7 +1294,10 @@ const WorkflowAnalyticsPage = () => {
             p.dtFactura || '',
             p.dtSaidaAlfandega || '',
             p.dtChegada || '',
-            p.dtEntregaRCS || ''
+            p.dtEntregaRCS || '',
+            p.diasFacturaDespacho || '',
+            p.diasChegadaEntrega || '',
+            p.diasFacturaEntrega || ''
         ]);
 
         const csvContent = [
@@ -1353,7 +1356,10 @@ const WorkflowAnalyticsPage = () => {
         qualidade: [],
         viaTransporte: [],
         transportador: [],
-        noFactura: []
+        noFactura: [],
+        diasFacturaDespacho: [],
+        diasChegadaEntrega: [],
+        diasFacturaEntrega: []
     });
 
     const [colSearchTerms, setColSearchTerms] = useState({
@@ -1367,7 +1373,10 @@ const WorkflowAnalyticsPage = () => {
         qualidade: '',
         viaTransporte: '',
         transportador: '',
-        noFactura: ''
+        noFactura: '',
+        diasFacturaDespacho: '',
+        diasChegadaEntrega: '',
+        diasFacturaEntrega: ''
     });
 
     const renderFilterHeader = (label, colKey, widthClass = '', align = 'center') => {
@@ -1859,11 +1868,25 @@ const WorkflowAnalyticsPage = () => {
                 qualidade = 'Falta custo final';
             }
 
+            const getDiffInDays = (d1, d2) => {
+                if (!d1 || !d2) return '-';
+                const utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
+                const utc2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
+                return Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
+            };
+
+            const diasFacturaDespacho = getDiffInDays(dtSaidaAlfandega, dtFactura);
+            const diasChegadaEntrega = getDiffInDays(dtEntregaRCS, dtChegada);
+            const diasFacturaEntrega = getDiffInDays(dtEntregaRCS, dtFactura);
+
             const viaTransporte = getDocFieldValue(doc, 'TIPO') || '-';
             const noFactura = getDocFieldValue(doc, 'NO_FACTURA') || '-';
 
             return {
                 id: doc.Id,
+                diasFacturaDespacho,
+                diasChegadaEntrega,
+                diasFacturaEntrega,
                 docNum,
                 noFactura,
                 etapa: stageName,
@@ -3223,6 +3246,9 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Data de Despacho', 'dtSaidaAlfandega', 'max-w-[70px]')}
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
                                                 {renderFilterHeader('Entrega RCS', 'dtEntregaRCS', 'max-w-[70px]')}
+                                                {renderFilterHeader('Factura → Despacho', 'diasFacturaDespacho', 'max-w-[70px]')}
+                                                {renderFilterHeader('Chegada (AO) → Entrega (RCS)', 'diasChegadaEntrega', 'max-w-[70px]')}
+                                                {renderFilterHeader('Factura → Entrega (RCS)', 'diasFacturaEntrega', 'max-w-[70px]')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
                                                 </th>
@@ -3245,6 +3271,9 @@ const WorkflowAnalyticsPage = () => {
                                                         <td className="whitespace-nowrap">{p.dtSaidaAlfandega || '-'}</td>
                                                         <td className="whitespace-nowrap">{p.dtChegada || '-'}</td>
                                                         <td className="whitespace-nowrap">{p.dtEntregaRCS || '-'}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasFacturaDespacho}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasChegadaEntrega}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasFacturaEntrega}</td>
                                                         
                                                         {/* Histórico */}
                                                         <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
@@ -3272,7 +3301,7 @@ const WorkflowAnalyticsPage = () => {
                                             })}
                                             {searchedAndSortedDetails.length === 0 && (
                                                 <tr>
-                                                    <td colSpan={12} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
+                                                    <td colSpan={15} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
                                                 </tr>
                                             )}
                                         </tbody>
