@@ -1408,9 +1408,9 @@ const WorkflowAnalyticsPage = () => {
 
         return (
             <th className={`bg-[#d0ebf8] sticky top-0 z-10 p-2 border-b border-slate-200 ${widthClass} ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : ''}`}>
-                <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-between'}`}>
+                <div className={`inline-flex items-center gap-1.5 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-between'}`}>
                     <span 
-                        className={`cursor-pointer hover:text-indigo-600 select-none whitespace-normal break-words leading-tight text-[9px] font-bold tracking-wider uppercase text-blue-950/80 transition-colors ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`} 
+                        className={`cursor-pointer hover:text-indigo-600 select-none whitespace-pre-line break-words leading-tight text-[9px] font-bold tracking-wider uppercase text-blue-950/80 transition-colors ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`} 
                         onClick={() => setDetailSort({ column: colKey, direction: detailSort.column === colKey && detailSort.direction === 'asc' ? 'desc' : 'asc' })}
                     >
                         {label} {detailSort.column === colKey ? (detailSort.direction === 'asc' ? '↑' : '↓') : ''}
@@ -3246,9 +3246,9 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Data de Despacho', 'dtSaidaAlfandega', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Entrega RCS', 'dtEntregaRCS', 'w-[120px] min-w-[120px] max-w-[120px]')}
-                                                {renderFilterHeader('Factura → Despacho', 'diasFacturaDespacho', 'w-[140px] min-w-[140px] max-w-[140px]')}
-                                                {renderFilterHeader('Chegada (AO) → Entrega (RCS)', 'diasChegadaEntrega', 'w-[200px] min-w-[200px] max-w-[200px]')}
-                                                {renderFilterHeader('Factura → Entrega (RCS)', 'diasFacturaEntrega', 'w-[170px] min-w-[170px] max-w-[170px]')}
+                                                {renderFilterHeader('Factura → Despacho', 'diasFacturaDespacho', 'w-[130px] min-w-[130px] max-w-[130px]')}
+                                                {renderFilterHeader("Chegada(AO)\nEntrega RCS", 'diasChegadaEntrega', 'w-[110px] min-w-[110px] max-w-[110px]')}
+                                                {renderFilterHeader("Factura →\nEntrega RCS", 'diasFacturaEntrega', 'w-[110px] min-w-[110px] max-w-[110px]')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
                                                 </th>
@@ -3271,9 +3271,9 @@ const WorkflowAnalyticsPage = () => {
                                                         <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtSaidaAlfandega || '-'}</td>
                                                         <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtChegada || '-'}</td>
                                                         <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtEntregaRCS || '-'}</td>
-                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[140px] min-w-[140px] max-w-[140px]">{p.diasFacturaDespacho}</td>
-                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[200px] min-w-[200px] max-w-[200px]">{p.diasChegadaEntrega}</td>
-                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[170px] min-w-[170px] max-w-[170px]">{p.diasFacturaEntrega}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[130px] min-w-[130px] max-w-[130px]">{p.diasFacturaDespacho}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[110px] min-w-[110px] max-w-[110px]">{p.diasChegadaEntrega}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[110px] min-w-[110px] max-w-[110px]">{p.diasFacturaEntrega}</td>
                                                         
                                                         {/* Histórico */}
                                                         <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
