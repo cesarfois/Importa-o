@@ -1282,8 +1282,7 @@ const WorkflowAnalyticsPage = () => {
     const exportLogisticaToCSV = () => {
         const headers = [
             'Nº PI', 'Nº Factura', 'Data Factura', 'Tipo', 'Chegada AO', 'Entrada (RCS)', 
-            'Dias Úteis', 'Factura (EU)', 'Cambio FC', 'Factura (Kz)', 'Montante FC', 
-            'Transportador', 'Transitario', 'Empresa', 'ETA', 'Comentário'
+            'Dias Úteis', 'Transportador', 'Transitario', 'Empresa', 'Comentário'
         ];
         
         const csvData = filteredDetailsForLogistica.map(p => [
@@ -1294,14 +1293,9 @@ const WorkflowAnalyticsPage = () => {
             p.dtChegada || '',
             p.dtEntregaRCS || '',
             p.diasUteis || '0',
-            p.valMercadoriaOrig || '0',
-            p.valorCambialFC || '0',
-            p.valMercadoriaFC || '0',
-            p.montanteFC || '0',
             p.transportador || '',
             p.despachante || '',
             p.fornecedor || '',
-            p.dtETA || '',
             p.comentario || ''
         ]);
 
@@ -3228,14 +3222,9 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
                                                 {renderFilterHeader('Entrada (RCS)', 'dtEntregaRCS', 'max-w-[70px]')}
                                                 {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]')}
-                                                {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
-                                                {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('Factura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[70px]')}
                                                 {renderFilterHeader('Transportador', 'transportador')}
                                                 {renderFilterHeader('Transitario', 'despachante')}
                                                 {renderFilterHeader('Empresa', 'fornecedor')}
-                                                {renderFilterHeader('ETA', 'dtETA')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
@@ -3247,10 +3236,6 @@ const WorkflowAnalyticsPage = () => {
                                         </thead>
                                         <tbody>
                                             {filteredDetailsForLogistica.map((p) => {
-                                                const formattedValor = p.valMercadoriaOrig && p.valMercadoriaOrig > 0 
-                                                    ? p.valMercadoriaOrig.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
-                                                    : '-';
-                                                
                                                 return (
                                                     <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-100">
                                                         <td className="font-bold text-slate-700 whitespace-nowrap">{p.docNum}</td>
@@ -3260,14 +3245,9 @@ const WorkflowAnalyticsPage = () => {
                                                         <td className="whitespace-nowrap">{p.dtChegada || '-'}</td>
                                                         <td className="whitespace-nowrap">{p.dtEntregaRCS || '-'}</td>
                                                         <td className="text-center font-mono font-semibold text-indigo-600">{p.diasUteis}</td>
-                                                        <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.valMercadoriaFC ? p.valMercadoriaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                         <td className="whitespace-nowrap truncate max-w-[120px]" title={p.transportador}>{p.transportador}</td>
                                                         <td className="whitespace-nowrap truncate max-w-[120px]" title={p.despachante}>{p.despachante}</td>
                                                         <td className="truncate max-w-[150px]" title={p.fornecedor}>{p.fornecedor}</td>
-                                                        <td className="whitespace-nowrap">{p.dtETA || '-'}</td>
                                                         <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
                                                         
                                                         {/* Histórico */}
@@ -3296,7 +3276,7 @@ const WorkflowAnalyticsPage = () => {
                                             })}
                                             {searchedAndSortedDetails.length === 0 && (
                                                 <tr>
-                                                    <td colSpan={18} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
+                                                    <td colSpan={13} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
                                                 </tr>
                                             )}
                                         </tbody>
