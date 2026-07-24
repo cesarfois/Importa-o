@@ -3708,7 +3708,7 @@ const WorkflowAnalyticsPage = () => {
                                                         <tbody>
                                                             {(documentFields || []).map((f, idx) => (
                                                                 <tr key={idx} className="hover:bg-slate-50 border-b border-slate-100">
-                                                                    <td className="py-2.5 px-4 font-bold text-slate-500 max-w-[150px] truncate" title={f.DisplayName || f.FieldName}>
+                                                                    <td className="py-2.5 px-4 font-bold text-slate-500 pr-4" title={f.DisplayName || f.FieldName}>
                                                                         {f.DisplayName || f.FieldName}
                                                                     </td>
                                                                     <td className="py-2.5 px-4 font-mono text-slate-700 break-all select-all">

@@ -2802,7 +2802,7 @@ const WorkflowHistoryPage = () => {
 
                                                                             return (
                                                                                 <tr key={idx} className="hover:bg-slate-50/50">
-                                                                                    <td className="py-2 px-4 font-bold text-slate-600 bg-slate-50/30 w-1/3 truncate" title={field.FieldName}>
+                                                                                    <td className="py-2 px-4 font-bold text-slate-600 bg-slate-50/30 pr-4" title={field.FieldName}>
                                                                                         {field.FieldName}
                                                                                     </td>
                                                                                     <td className="py-2 px-4 font-mono text-slate-800 break-all">
