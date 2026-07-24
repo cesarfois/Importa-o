@@ -2836,12 +2836,17 @@ const WorkflowAnalyticsPage = () => {
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Docs</span>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 w-full">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Total Docs</span>
+                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare (Registo Processo de Importação). Total de processos carregados no lote atual.">
+                                                <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                            </div>
+                                        </div>
                                         <span className="text-2xl font-black text-slate-800 mt-1">{directorComprasMetrics.total}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Encontrados no lote</span>
                                     </div>
-                                    <div className={`p-2.5 rounded-lg ${diretorComprasStatusFilter === 'all' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-50 text-slate-500'}`}>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'all' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaFolderOpen className="text-lg" />
                                     </div>
                                 </div>
@@ -2855,12 +2860,17 @@ const WorkflowAnalyticsPage = () => {
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Concluídos</span>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 w-full">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Concluídos</span>
+                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Filtra processos finalizados com status 'Concluído' ou com data de entrega preenchida.">
+                                                <FaInfoCircle className="text-slate-300 hover:text-emerald-500 transition-colors cursor-help text-[10px]" />
+                                            </div>
+                                        </div>
                                         <span className="text-2xl font-black text-emerald-600 mt-1">{directorComprasMetrics.concluidos}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{directorComprasMetrics.pctConcluidos}% do total</span>
                                     </div>
-                                    <div className={`p-2.5 rounded-lg ${diretorComprasStatusFilter === 'Concluído' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Concluído' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaCheckCircle className="text-lg" />
                                     </div>
                                 </div>
@@ -2874,12 +2884,17 @@ const WorkflowAnalyticsPage = () => {
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Em Andamento</span>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 w-full">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</span>
+                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare Workflow. Processos ativos em fluxo de trabalho que ainda não foram finalizados.">
+                                                <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
+                                            </div>
+                                        </div>
                                         <span className="text-2xl font-black text-amber-600 mt-1">{directorComprasMetrics.emAndamento}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
                                     </div>
-                                    <div className={`p-2.5 rounded-lg ${diretorComprasStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaClock className="text-lg" />
                                     </div>
                                 </div>

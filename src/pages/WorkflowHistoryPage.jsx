@@ -1939,7 +1939,12 @@ const WorkflowHistoryPage = () => {
                                 <FaList className="text-xl" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Total Docs</div>
+                                <div className="flex items-center justify-between gap-1">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Total Docs</div>
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare (Registo Processo de Importação). Total de processos carregados no lote atual.">
+                                        <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                    </div>
+                                </div>
                                 <div className="text-2xl font-black text-slate-800 mt-0.5 font-mono">{documents.length}</div>
                                 <div className="text-[10px] text-slate-400 mt-0.5 truncate">Encontrados no lote</div>
                             </div>
@@ -1958,7 +1963,12 @@ const WorkflowHistoryPage = () => {
                                 <FaCheckCircle className="text-xl" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Concluídos</div>
+                                <div className="flex items-center justify-between gap-1">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Concluídos</div>
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Filtra processos finalizados com status 'Concluído' ou com data de entrega preenchida.">
+                                        <FaInfoCircle className="text-slate-300 hover:text-emerald-500 transition-colors cursor-help text-[10px]" />
+                                    </div>
+                                </div>
                                 <div className="text-2xl font-black text-emerald-600 mt-0.5 font-mono">{kpis.completed}</div>
                                 <div className="text-[10px] text-slate-400 mt-0.5 truncate">
                                     {documents.length > 0 ? Math.round((kpis.completed / documents.length) * 100) : 0}% do total
@@ -1979,7 +1989,12 @@ const WorkflowHistoryPage = () => {
                                 <FaClock className="text-xl" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</div>
+                                <div className="flex items-center justify-between gap-1">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</div>
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare Workflow. Processos ativos em fluxo de trabalho que ainda não foram finalizados.">
+                                        <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
+                                    </div>
+                                </div>
                                 <div className="text-2xl font-black text-amber-600 mt-0.5 font-mono">{kpis.active}</div>
                                 <div className="text-[10px] text-slate-400 mt-0.5 truncate">Ativos na fila</div>
                             </div>
@@ -1998,7 +2013,12 @@ const WorkflowHistoryPage = () => {
                                 <FaBan className="text-xl" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Tarefas &gt; 24h</div>
+                                <div className="flex items-center justify-between gap-1">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Tarefas &gt; 24h</div>
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: Workflow DocuWare. Tarefas ativas cuja permanência no passo/responsável atual excede 24 horas.">
+                                        <FaInfoCircle className="text-slate-300 hover:text-rose-500 transition-colors cursor-help text-[10px]" />
+                                    </div>
+                                </div>
                                 <div className="text-2xl font-black text-rose-600 mt-0.5 font-mono">{kpis.delayed}</div>
                                 <div className="text-[10px] text-rose-500 mt-0.5 font-semibold truncate">Tempo na etapa atual</div>
                             </div>
@@ -2010,7 +2030,12 @@ const WorkflowHistoryPage = () => {
                                 <FaCalendarAlt className="text-xl" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">T. Médio Ciclo</div>
+                                <div className="flex items-center justify-between gap-1">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">T. Médio Ciclo</div>
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: Histórico do Workflow. Tempo médio decorrido entre a data de início e a data de conclusão dos processos.">
+                                        <FaInfoCircle className="text-slate-300 hover:text-purple-500 transition-colors cursor-help text-[10px]" />
+                                    </div>
+                                </div>
                                 <div className="text-base font-extrabold text-purple-600 mt-1 truncate" title={kpis.avgCompletionTimeText}>
                                     {kpis.avgCompletionTimeText}
                                 </div>
