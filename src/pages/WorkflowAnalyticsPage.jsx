@@ -3253,6 +3253,7 @@ const WorkflowAnalyticsPage = () => {
                                             <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Operação Logística)">
                                             EM ANDAMENTO (Operação Logística)
                                         </span>
