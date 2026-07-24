@@ -2062,7 +2062,14 @@ const WorkflowAnalyticsPage = () => {
         const pctConcluidos = total > 0 ? Math.round((concluidos / total) * 100) : 0;
         const pctEmAndamento = total > 0 ? Math.round((emAndamento / total) * 100) : 0;
         
-        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento };
+        const validDiffs = searchedAndSortedDetails
+            .map(p => p.diasFacturaEntrega)
+            .filter(val => typeof val === 'number');
+        const avgCiclo = validDiffs.length > 0
+            ? (validDiffs.reduce((sum, val) => sum + val, 0) / validDiffs.length).toFixed(1)
+            : '-';
+        
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo };
     }, [searchedAndSortedDetails]);
 
     const filteredDetailsForPurchasing = useMemo(() => {
@@ -2078,7 +2085,14 @@ const WorkflowAnalyticsPage = () => {
         const pctConcluidos = total > 0 ? Math.round((concluidos / total) * 100) : 0;
         const pctEmAndamento = total > 0 ? Math.round((emAndamento / total) * 100) : 0;
         
-        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento };
+        const validDiffs = searchedAndSortedDetails
+            .map(p => p.diasFacturaEntrega)
+            .filter(val => typeof val === 'number');
+        const avgCiclo = validDiffs.length > 0
+            ? (validDiffs.reduce((sum, val) => sum + val, 0) / validDiffs.length).toFixed(1)
+            : '-';
+        
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo };
     }, [searchedAndSortedDetails]);
 
     const filteredDetailsForLogistica = useMemo(() => {
@@ -2903,7 +2917,7 @@ const WorkflowAnalyticsPage = () => {
                     {activeTab === 'diretor_compras' && (
                         <div className="space-y-4">
                             {/* KPI Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 {/* Total Docs Card */}
                                 <div 
                                     onClick={() => setDiretorComprasStatusFilter('all')}
@@ -2972,6 +2986,25 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaClock className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Tempo Médio do Ciclo Card */}
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 w-full">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Tempo Médio do Ciclo</span>
+                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Lead Time Logístico Médio: tempo médio decorrido desde a emissão da factura pelo fornecedor até à entrega da mercadoria no armazém da RCS (Data de Entrega - Data da Factura).">
+                                                <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
+                                            </div>
+                                        </div>
+                                        <span className="text-2xl font-black text-blue-600 mt-1">
+                                            {directorComprasMetrics.avgCiclo !== '-' ? `${String(directorComprasMetrics.avgCiclo).replace('.', ',')} dias` : '-'}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Fatura → Entrega(RCS)</span>
+                                    </div>
+                                    <div className="p-2.5 rounded-lg shrink-0 bg-blue-50 text-blue-500">
                                         <FaClock className="text-lg" />
                                     </div>
                                 </div>
@@ -3114,7 +3147,7 @@ const WorkflowAnalyticsPage = () => {
                     {activeTab === 'visao_logistica' && (
                         <div className="space-y-4">
                             {/* KPI Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 {/* Total Docs Card */}
                                 <div 
                                     onClick={() => setVisaoLogisticaStatusFilter('all')}
@@ -3183,6 +3216,25 @@ const WorkflowAnalyticsPage = () => {
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaClock className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Tempo Médio do Ciclo Card */}
+                                <div className="card bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 w-full">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Tempo Médio do Ciclo</span>
+                                            <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Lead Time Logístico Médio: tempo médio decorrido desde a emissão da factura pelo fornecedor até à entrega da mercadoria no armazém da RCS (Data de Entrega - Data da Factura).">
+                                                <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
+                                            </div>
+                                        </div>
+                                        <span className="text-2xl font-black text-blue-600 mt-1">
+                                            {visaoLogisticaMetrics.avgCiclo !== '-' ? `${String(visaoLogisticaMetrics.avgCiclo).replace('.', ',')} dias` : '-'}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Fatura → Entrega(RCS)</span>
+                                    </div>
+                                    <div className="p-2.5 rounded-lg shrink-0 bg-blue-50 text-blue-500">
                                         <FaClock className="text-lg" />
                                     </div>
                                 </div>
