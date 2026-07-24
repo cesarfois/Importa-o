@@ -1754,7 +1754,7 @@ const WorkflowAnalyticsPage = () => {
             if (!dtChegada && prog.analyzedHistory) {
                 dtChegada = extractDateFromHistory(prog.analyzedHistory, ['data de chegada (ao)', 'chegada ao', 'chegada angola', 'chegada aeroporto', 'chegada porto', 'chegada'], ['chegada', 'chegada_ao', 'data_chegada', 'data_de_chegada__ao_']);
             }
-            const dtSaidaAlfandega = parseDWDate(getDocFieldValue(doc, 'DATA_SAIDA_ALFANDEGA') || getDocFieldValue(doc, 'DATA_DESEMBARACO') || getDocFieldValue(doc, 'LIBERACAO') || getDocFieldValue(doc, 'DATA_DESPACHO'));
+            const dtSaidaAlfandega = parseDWDate(findFieldVal(doc, ['DATA_DESPACHO', 'DATA_DESPACHO_', 'DATA_DE_DESPACHO', 'DATA_DE_DESPACHO_', 'DATA_SAIDA_ALFANDEGA', 'DATA_DESEMBARACO', 'LIBERACAO']));
             let dtEntregaRCS = parseDWDate(getDocFieldValue(doc, 'DATA_ENTREGUE__RCS_') || getDocFieldValue(doc, 'DATA_ENTREGUE') || getDocFieldValue(doc, 'DATA_ENTREGUE_RCS') || getDocFieldValue(doc, 'ENTREGUE'));
             if (!dtEntregaRCS && prog.analyzedHistory) {
                 dtEntregaRCS = extractDateFromHistory(prog.analyzedHistory, ['entrega rcs', 'entregue rcs', 'rcs'], ['entrega', 'entregue', 'rcs', 'data_entregue', 'data_entregue__rcs_']);
