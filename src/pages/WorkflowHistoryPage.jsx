@@ -260,25 +260,40 @@ const parseDocuwareDate = (dateStr) => {
     if (!dateStr) return null;
     if (dateStr instanceof Date) return dateStr;
     
-    // Check if it's formatted as DD/MM/YYYY
-    const match = String(dateStr).match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-    if (match) {
-        const day = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10) - 1; // 0-indexed
-        const year = parseInt(match[3], 10);
-        
-        const timeMatch = String(dateStr).match(/(\d{2}):(\d{2}):(\d{2})/);
-        if (timeMatch) {
-            const hour = parseInt(timeMatch[1], 10);
-            const minute = parseInt(timeMatch[2], 10);
-            const second = parseInt(timeMatch[3], 10);
-            return new Date(year, month, day, hour, minute, second);
+    let d;
+    if (typeof dateStr === 'string' && dateStr.startsWith('/Date(')) {
+        const match = dateStr.match(/-?\d+/);
+        if (match) d = new Date(parseInt(match[0]));
+    } else {
+        // Check if it's formatted as DD/MM/YYYY
+        const match = String(dateStr).match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+        if (match) {
+            const day = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10) - 1; // 0-indexed
+            const year = parseInt(match[3], 10);
+            
+            const timeMatch = String(dateStr).match(/(\d{2}):(\d{2}):(\d{2})/);
+            if (timeMatch) {
+                const hour = parseInt(timeMatch[1], 10);
+                const minute = parseInt(timeMatch[2], 10);
+                const second = parseInt(timeMatch[3], 10);
+                d = new Date(year, month, day, hour, minute, second);
+            } else {
+                d = new Date(year, month, day);
+            }
+        } else {
+            d = new Date(dateStr);
         }
-        return new Date(year, month, day);
     }
     
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? null : d;
+    if (!d || isNaN(d.getTime())) return null;
+
+    // Check if it is a pure date (midnight UTC)
+    if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0) {
+        const userTimezoneOffset = d.getTimezoneOffset() * 60000;
+        return new Date(d.getTime() + userTimezoneOffset);
+    }
+    return d;
 };
 
 // Rename workflow tasks per request
