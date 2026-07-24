@@ -253,6 +253,32 @@ const findFieldVal = (doc, searchNames) => {
     return field.Item || field.Value || '';
 };
 
+// Safe date parsing helper for DocuWare fields
+const parseDocuwareDate = (dateStr) => {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    
+    // Check if it's formatted as DD/MM/YYYY
+    const match = String(dateStr).match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (match) {
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1; // 0-indexed
+        const year = parseInt(match[3], 10);
+        
+        const timeMatch = String(dateStr).match(/(\d{2}):(\d{2}):(\d{2})/);
+        if (timeMatch) {
+            const hour = parseInt(timeMatch[1], 10);
+            const minute = parseInt(timeMatch[2], 10);
+            const second = parseInt(timeMatch[3], 10);
+            return new Date(year, month, day, hour, minute, second);
+        }
+        return new Date(year, month, day);
+    }
+    
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d;
+};
+
 // Rename workflow tasks per request
 const renameWorkflowTask = (name) => {
     if (!name) return '';
@@ -635,7 +661,19 @@ const WorkflowHistoryPage = () => {
                     } else {
                         completed++;
                     }
-                    if (prog.completedAt && prog.entryDate) {
+                    const dtFacturaRaw = findFieldVal(doc, ['DATA_FACTURA', 'DATA_DA_FACTURA', 'DATA_EMISSAO_FACTURA', 'DATA_EMISSAO_DA_FACTURA']);
+                    const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS']);
+                    
+                    const dateFactura = dtFacturaRaw ? parseDocuwareDate(dtFacturaRaw) : null;
+                    const dateRcs = dtRcsRaw ? parseDocuwareDate(dtRcsRaw) : null;
+                    
+                    if (dateFactura && dateRcs) {
+                        const duration = dateRcs.getTime() - dateFactura.getTime();
+                        if (duration > 0) {
+                            completedDurationsSum += duration;
+                            completedDurationsCount++;
+                        }
+                    } else if (prog.completedAt && prog.entryDate) {
                         const duration = new Date(prog.completedAt).getTime() - new Date(prog.entryDate).getTime();
                         if (duration > 0) {
                             completedDurationsSum += duration;
@@ -2032,7 +2070,7 @@ const WorkflowHistoryPage = () => {
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between gap-1">
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">T. Médio Ciclo</div>
-                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: Histórico do Workflow. Tempo médio decorrido entre a data de início e a data de conclusão dos processos.">
+                                    <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Tempo médio decorrido entre a data de emissão da fatura (DATA_FACTURA) e a data de entrega na RCS (DATA_ENTREGUE_RCS_).">
                                         <FaInfoCircle className="text-slate-300 hover:text-purple-500 transition-colors cursor-help text-[10px]" />
                                     </div>
                                 </div>
