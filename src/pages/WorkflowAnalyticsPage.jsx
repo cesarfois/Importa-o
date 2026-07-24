@@ -2055,6 +2055,7 @@ const WorkflowAnalyticsPage = () => {
     }, [detailedProcesses, detailSearch, detailSort, colFilters]);
 
     // --- Purchasing Director specific metrics and filtered list ---
+    // --- Purchasing Director specific metrics and filtered list ---
     const directorComprasMetrics = useMemo(() => {
         const total = searchedAndSortedDetails.length;
         const concluidos = searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído').length;
@@ -2069,7 +2070,11 @@ const WorkflowAnalyticsPage = () => {
             ? (validDiffs.reduce((sum, val) => sum + val, 0) / validDiffs.length).toFixed(1)
             : '-';
         
-        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo };
+        const emAndamentoItems = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento');
+        const logisticaConcluida = emAndamentoItems.filter(p => p.dtEntregaRCSRaw !== null).length;
+        const fechoFinanceiro = emAndamentoItems.filter(p => p.stageIdx === 5).length;
+        
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaConcluida, fechoFinanceiro };
     }, [searchedAndSortedDetails]);
 
     const filteredDetailsForPurchasing = useMemo(() => {
@@ -2091,8 +2096,12 @@ const WorkflowAnalyticsPage = () => {
         const avgCiclo = validDiffs.length > 0
             ? (validDiffs.reduce((sum, val) => sum + val, 0) / validDiffs.length).toFixed(1)
             : '-';
+            
+        const emAndamentoItems = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento');
+        const logisticaConcluida = emAndamentoItems.filter(p => p.dtEntregaRCSRaw !== null).length;
+        const fechoFinanceiro = emAndamentoItems.filter(p => p.stageIdx === 5).length;
         
-        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo };
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaConcluida, fechoFinanceiro };
     }, [searchedAndSortedDetails]);
 
     const filteredDetailsForLogistica = useMemo(() => {
@@ -2969,13 +2978,13 @@ const WorkflowAnalyticsPage = () => {
                                 {/* Em Andamento Card */}
                                 <div 
                                     onClick={() => setDiretorComprasStatusFilter('Em Andamento')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-start justify-between gap-4 ${
                                         diretorComprasStatusFilter === 'Em Andamento' 
                                             ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
+                                    <div className="flex flex-col flex-1 min-w-0 w-full">
                                         <div className="flex items-center justify-between gap-1 w-full">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</span>
                                             <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare Workflow. Processos ativos em fluxo de trabalho que ainda não foram finalizados.">
@@ -2984,6 +2993,21 @@ const WorkflowAnalyticsPage = () => {
                                         </div>
                                         <span className="text-2xl font-black text-amber-600 mt-1">{directorComprasMetrics.emAndamento}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
+                                        
+                                        <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-col gap-1 w-full text-[9px]">
+                                            <div className="flex items-center justify-between text-slate-500 leading-tight">
+                                                <span className="flex items-center gap-1 font-medium">
+                                                    <span>📦</span> Op. Logística Concluída
+                                                </span>
+                                                <span className="font-bold text-slate-700">{directorComprasMetrics.logisticaConcluida}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-slate-500 leading-tight">
+                                                <span className="flex items-center gap-1 font-medium">
+                                                    <span>💰</span> Fecho Financeiro
+                                                </span>
+                                                <span className="font-bold text-slate-700">{directorComprasMetrics.fechoFinanceiro}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${diretorComprasStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaClock className="text-lg" />
@@ -3199,13 +3223,13 @@ const WorkflowAnalyticsPage = () => {
                                 {/* Em Andamento Card */}
                                 <div 
                                     onClick={() => setVisaoLogisticaStatusFilter('Em Andamento')}
-                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                    className={`card bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-start justify-between gap-4 ${
                                         visaoLogisticaStatusFilter === 'Em Andamento' 
                                             ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
                                             : 'border-slate-200'
                                     }`}
                                 >
-                                    <div className="flex flex-col flex-1 min-w-0">
+                                    <div className="flex flex-col flex-1 min-w-0 w-full">
                                         <div className="flex items-center justify-between gap-1 w-full">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Em Andamento</span>
                                             <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare Workflow. Processos ativos em fluxo de trabalho que ainda não foram finalizados.">
@@ -3214,6 +3238,21 @@ const WorkflowAnalyticsPage = () => {
                                         </div>
                                         <span className="text-2xl font-black text-amber-600 mt-1">{visaoLogisticaMetrics.emAndamento}</span>
                                         <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Ativos na fila</span>
+                                        
+                                        <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-col gap-1 w-full text-[9px]">
+                                            <div className="flex items-center justify-between text-slate-500 leading-tight">
+                                                <span className="flex items-center gap-1 font-medium">
+                                                    <span>📦</span> Op. Logística Concluída
+                                                </span>
+                                                <span className="font-bold text-slate-700">{visaoLogisticaMetrics.logisticaConcluida}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-slate-500 leading-tight">
+                                                <span className="flex items-center gap-1 font-medium">
+                                                    <span>💰</span> Fecho Financeiro
+                                                </span>
+                                                <span className="font-bold text-slate-700">{visaoLogisticaMetrics.fechoFinanceiro}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoLogisticaStatusFilter === 'Em Andamento' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaClock className="text-lg" />
