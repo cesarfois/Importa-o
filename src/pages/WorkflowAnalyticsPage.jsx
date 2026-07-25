@@ -3018,24 +3018,36 @@ const WorkflowAnalyticsPage = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="tabs tabs-boxed bg-slate-100 p-1.5 rounded-xl flex flex-wrap gap-1">
+            <div className="flex bg-slate-100/80 p-1.5 rounded-2xl gap-1 max-w-fit border border-slate-200/60 shadow-sm backdrop-blur-sm">
                 <button 
                     onClick={() => setActiveTab('diretor_compras')}
-                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'diretor_compras' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                        activeTab === 'diretor_compras' 
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                    }`}
                 >
-                    <FaShoppingCart /> Diretor de Compras
+                    <FaShoppingCart className="text-sm" /> Diretor de Compras
                 </button>
                 <button 
                     onClick={() => setActiveTab('visao_logistica')}
-                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'visao_logistica' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                        activeTab === 'visao_logistica' 
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                    }`}
                 >
-                    <FaTruck /> Visão Logística
+                    <FaTruck className="text-sm" /> Visão Logística
                 </button>
                 <button 
                     onClick={() => setActiveTab('visao_consolidada')}
-                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'visao_consolidada' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                        activeTab === 'visao_consolidada' 
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                    }`}
                 >
-                    <FaList /> Visão Consolidada
+                    <FaList className="text-sm" /> Visão Consolidada
                 </button>
             </div>
 
