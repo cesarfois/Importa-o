@@ -2621,7 +2621,7 @@ const WorkflowAnalyticsPage = () => {
     const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full max-w-full overflow-hidden">
             {/* Global Filters Panel */}
             <div className="card bg-white border border-slate-200 border-l-[6px] border-l-[#4f46e5] shadow-sm rounded-2xl">
                 <div className="card-body p-5">

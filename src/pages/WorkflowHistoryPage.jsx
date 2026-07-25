@@ -1938,7 +1938,7 @@ const WorkflowHistoryPage = () => {
         : null;
 
     return (
-        <div className="p-4 w-full mx-auto space-y-6">
+        <div className="p-4 w-full max-w-full overflow-hidden mx-auto space-y-6">
             {openFilterDropdown && (
                 <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setOpenFilterDropdown(null)} />
             )}
