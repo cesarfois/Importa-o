@@ -3101,7 +3101,6 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Dir. Alfandegários FC', 'direitosFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('IVA Importação FC', 'ivaFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('ETA', 'dtETA')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
@@ -3133,7 +3132,6 @@ const WorkflowAnalyticsPage = () => {
                                                         <td className="text-right font-mono whitespace-nowrap">{p.direitosFC ? p.direitosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaFC ? p.ivaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="whitespace-nowrap">{p.dtETA || '-'}</td>
                                                         <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
                                                         
                                                         {/* Histórico */}
