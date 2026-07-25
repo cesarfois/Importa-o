@@ -3091,9 +3091,6 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Nº Factura', 'noFactura')}
                                                 {renderFilterHeader('Data Factura', 'dtFactura', 'max-w-[70px]')}
                                                 {renderFilterHeader('Tipo', 'viaTransporte')}
-                                                {renderFilterHeader('Chegada AO', 'dtChegada', 'max-w-[70px]')}
-                                                {renderFilterHeader('Entrada (RCS)', 'dtEntregaRCS', 'max-w-[70px]')}
-                                                {renderFilterHeader('Dias Úteis', 'diasUteis', 'max-w-[60px]')}
                                                 {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
                                                 {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Factura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
@@ -3123,9 +3120,6 @@ const WorkflowAnalyticsPage = () => {
                                                         <td className="font-mono text-slate-600 whitespace-nowrap">{p.noFactura}</td>
                                                         <td className="whitespace-nowrap">{p.dtFactura || '-'}</td>
                                                         <td className="font-semibold text-slate-700 whitespace-nowrap">{p.viaTransporte}</td>
-                                                        <td className="whitespace-nowrap">{p.dtChegada || '-'}</td>
-                                                        <td className="whitespace-nowrap">{p.dtEntregaRCS || '-'}</td>
-                                                        <td className="text-center font-mono font-semibold text-indigo-600">{p.diasUteis}</td>
                                                         <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
                                                         <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                         <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.valMercadoriaFC ? p.valMercadoriaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
