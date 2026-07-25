@@ -1379,7 +1379,7 @@ const WorkflowAnalyticsPage = () => {
         return d.toISOString().split('T')[0];
     };
 
-    const [dateRange, setDateRange] = useState([getSixMonthsAgoString(), getTodayString()]);
+    const [dateRange, setDateRange] = useState(['2026-01-01', getTodayString()]);
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
     const [activeTab, setActiveTab] = useState('diretor_compras');
     const [diretorComprasStatusFilter, setDiretorComprasStatusFilter] = useState('all');
