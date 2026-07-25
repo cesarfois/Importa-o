@@ -1029,19 +1029,18 @@ const METRIC_EXPLANATIONS = {
             <ul className="list-disc pl-4 space-y-1 mt-1 text-[11px]">
                 <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
                 <li><strong>Nº Factura:</strong> Nº da Fatura Comercial.</li>
-                <li><strong>Data Factura:</strong> Data de emissão da Fatura.</li>
                 <li><strong>Tipo:</strong> Via/Modal de transporte.</li>
-                <li><strong>Chegada AO:</strong> Data de chegada a Angola.</li>
-                <li><strong>Entrada (RCS):</strong> Data de entrega física ou RCS.</li>
-                <li><strong>Dias Úteis:</strong> Tempo decorrido em dias úteis entre Chegada AO e Entrada (RCS).</li>
+                <li><strong>Transportador:</strong> Transportadora encarregada.</li>
+                <li><strong>Transitário:</strong> Despachante ou transitário responsável.</li>
+                <li><strong>Empresa:</strong> Empresa associada ao processo.</li>
+                <li><strong>Data Factura:</strong> Data de emissão da Fatura.</li>
                 <li><strong>Factura (EU):</strong> Valor original FOB em moeda estrangeira.</li>
                 <li><strong>Cambio FC:</strong> Taxa de câmbio de fechamento de processo (FC).</li>
                 <li><strong>Factura (Kz):</strong> Valor total FOB convertido para Cuanzas pelo câmbio de fechamento.</li>
                 <li><strong>Montante FC:</strong> Custo aduaneiro total realizado no fechamento.</li>
-                <li><strong>Transportador:</strong> Transportadora encarregada.</li>
-                <li><strong>Transitario:</strong> Despachante ou transitário responsável.</li>
-                <li><strong>Empresa:</strong> Empresa associada ao processo.</li>
-                <li><strong>ETA:</strong> Previsão de chegada estimada (Sem Atribuição).</li>
+                <li><strong>Dir. Alfandegários FC:</strong> Custo aduaneiro e taxas realizadas.</li>
+                <li><strong>IVA Importação FC:</strong> IVA de importação pago no fechamento.</li>
+                <li><strong>IVA Serv. Despachante FC:</strong> IVA cobrado sobre os serviços do despachante.</li>
                 <li><strong>Comentário:</strong> Observações gerais do processo.</li>
             </ul>
         ),
@@ -1125,10 +1124,18 @@ const METRIC_EXPLANATIONS = {
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMPANY</td>
                             </tr>
-                            <tr className="text-slate-400">
-                                <td className="p-1.5 border border-slate-200 font-semibold italic text-slate-400">ETA (Sem Atribuição)</td>
-                                <td className="p-1.5 border border-slate-200 font-mono italic">-</td>
-                            </tr>
+                             <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dir. Alfandegários FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DIR_ALFANDEGARIOS_E_TAXAS_FC</td>
+                             </tr>
+                             <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">IVA Importação FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_IMPORTACAO_FC</td>
+                             </tr>
+                             <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">IVA Serv. Despachante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_SERV_DESPACHANTE_FC</td>
+                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Comentário</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO</td>
