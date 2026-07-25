@@ -3097,10 +3097,10 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
                                                 {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Factura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[70px]')}
-                                                {renderFilterHeader('Dir. Alfandegários FC', 'direitosFC', 'max-w-[95px]')}
-                                                {renderFilterHeader('IVA Importação FC', 'ivaFC', 'max-w-[95px]')}
-                                                {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[100px]')}
+                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Dir. Alfandegários FC', 'direitosFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('IVA Importação FC', 'ivaFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('ETA', 'dtETA')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
