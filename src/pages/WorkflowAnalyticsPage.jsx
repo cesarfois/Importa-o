@@ -3563,16 +3563,17 @@ const WorkflowAnalyticsPage = () => {
                                     }`}
                                 >
                                     <div className="absolute top-3 right-3">
-                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Total de processos carregados no lote atual.">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare (Registo Processo de Importação). Total de processos carregados no lote atual.">
                                             <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Total Docs</span>
                                         <span className="text-2xl font-black text-slate-800 mt-1">{visaoConsolidadaMetrics.total}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Encontrados no lote</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoConsolidadaStatusFilter === 'all' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-50 text-slate-500'}`}>
-                                        <FaShoppingCart className="text-lg" />
+                                        <FaFolderOpen className="text-lg" />
                                     </div>
                                 </div>
 
@@ -3586,16 +3587,14 @@ const WorkflowAnalyticsPage = () => {
                                     }`}
                                 >
                                     <div className="absolute top-3 right-3">
-                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos concluídos (com entrega da carga no RCS).">
-                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Filtra processos finalizados com status 'Concluído' ou com data de entrega preenchida.">
+                                            <FaInfoCircle className="text-slate-300 hover:text-emerald-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Concluídos</span>
-                                        <span className="text-2xl font-black text-emerald-600 mt-1">
-                                            {visaoConsolidadaMetrics.concluidos} 
-                                            <span className="text-[10px] font-normal text-slate-400 ml-1">({visaoConsolidadaMetrics.pctConcluidos}%)</span>
-                                        </span>
+                                        <span className="text-2xl font-black text-emerald-600 mt-1">{visaoConsolidadaMetrics.concluidos}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{visaoConsolidadaMetrics.pctConcluidos}% do total</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoConsolidadaStatusFilter === 'Concluído' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaCheckCircle className="text-lg" />
@@ -3612,13 +3611,16 @@ const WorkflowAnalyticsPage = () => {
                                     }`}
                                 >
                                     <div className="absolute top-3 right-3">
-                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos ativos na fase logística (antes da entrega no RCS).">
-                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não passaram pela etapa de Entrega RCS (fase logística activa).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Em Logística</span>
-                                        <span className="text-2xl font-black text-blue-600 mt-1">{visaoConsolidadaMetrics.logisticaEmAndamento}</span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Operação Logística)">
+                                            EM ANDAMENTO (Operação Logística)
+                                        </span>
+                                        <span className="text-2xl font-black text-red-500/80 mt-1">{visaoConsolidadaMetrics.logisticaEmAndamento}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Mercadoria ainda não entregue na RCS</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoConsolidadaStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaTruck className="text-lg" />
@@ -3635,13 +3637,16 @@ const WorkflowAnalyticsPage = () => {
                                     }`}
                                 >
                                     <div className="absolute top-3 right-3">
-                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos entregues no RCS, mas pendentes de validação/fecho de custos.">
-                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos em andamento que ainda não tiveram a mercadoria entregue na RCS (permanecem em trâmite aduaneiro ou validação de custos/DAF).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-amber-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Fecho Custos</span>
-                                        <span className="text-2xl font-black text-amber-600 mt-1">{visaoConsolidadaMetrics.validacaoCustos}</span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4" title="EM ANDAMENTO (Validação de Custos)">
+                                            EM ANDAMENTO (Validação de Custos)
+                                        </span>
+                                        <span className="text-2xl font-black text-red-500/80 mt-1">{visaoConsolidadaMetrics.validacaoCustos}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Processo financeiro em execução</span>
                                     </div>
                                     <div className={`p-2.5 rounded-lg shrink-0 ${visaoConsolidadaStatusFilter === 'Em Andamento - Custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
                                         <FaDollarSign className="text-lg" />
@@ -3651,18 +3656,18 @@ const WorkflowAnalyticsPage = () => {
                                 {/* Tempo Médio do Ciclo Card */}
                                 <div className="card relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
                                     <div className="absolute top-3 right-3">
-                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Tempo médio (em dias corridos) entre a Data da Factura e a Entrega no RCS.">
-                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Lead Time Logístico Médio: tempo médio decorrido desde a emissão da factura pelo fornecedor até à entrega da mercadoria no armazém da RCS (Data de Entrega - Data da Factura).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-blue-500 transition-colors cursor-help text-[10px]" />
                                         </div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Tempo Médio Ciclo</span>
-                                        <span className="text-2xl font-black text-slate-800 mt-1">
-                                            {visaoConsolidadaMetrics.avgCiclo}
-                                            {visaoConsolidadaMetrics.avgCiclo !== '-' && <span className="text-xs font-normal text-slate-500 ml-1">dias</span>}
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Tempo Médio do Ciclo</span>
+                                        <span className="text-2xl font-black text-blue-600 mt-1">
+                                            {visaoConsolidadaMetrics.avgCiclo !== '-' ? `${String(visaoConsolidadaMetrics.avgCiclo).replace('.', ',')} dias` : '-'}
                                         </span>
+                                        <span className="text-[10px] text-slate-400 font-semibold mt-0.5">Fatura → Entrega(RCS)</span>
                                     </div>
-                                    <div className="p-2.5 rounded-lg shrink-0 bg-slate-50 text-slate-500">
+                                    <div className="p-2.5 rounded-lg shrink-0 bg-blue-50 text-blue-500">
                                         <FaClock className="text-lg" />
                                     </div>
                                 </div>
