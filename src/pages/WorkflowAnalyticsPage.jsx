@@ -3087,12 +3087,12 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
-                                                {renderFilterHeader('Nº PI', 'docNum', 'w-[140px] min-w-[140px] max-w-[140px]')}
-                                                {renderFilterHeader('Nº Factura', 'noFactura', 'w-[140px] min-w-[140px] max-w-[140px]')}
-                                                {renderFilterHeader('Tipo', 'viaTransporte', 'w-[100px] min-w-[100px] max-w-[100px]')}
-                                                {renderFilterHeader('Transportador', 'transportador', 'w-[150px] min-w-[150px] max-w-[150px]')}
-                                                {renderFilterHeader('Transitário', 'despachante', 'w-[170px] min-w-[170px] max-w-[170px]')}
-                                                {renderFilterHeader('Empresa', 'fornecedor', 'min-w-[180px]')}
+                                                {renderFilterHeader('Nº PI', 'docNum', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Nº Factura', 'noFactura', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Tipo', 'viaTransporte', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Transportador', 'transportador', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Transitário', 'despachante', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Empresa', 'fornecedor', 'w-[80px] min-w-[80px] max-w-[80px]')}
                                                 {renderFilterHeader('Data Factura', 'dtFactura', 'max-w-[70px]')}
                                                 {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
                                                 {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
@@ -3119,12 +3119,12 @@ const WorkflowAnalyticsPage = () => {
                                                 
                                                 return (
                                                     <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-100">
-                                                        <td className="font-bold text-slate-700 whitespace-nowrap w-[140px] min-w-[140px] max-w-[140px] truncate" title={p.docNum}>{p.docNum}</td>
-                                                        <td className="font-mono text-slate-600 whitespace-nowrap w-[140px] min-w-[140px] max-w-[140px] truncate" title={p.noFactura}>{p.noFactura}</td>
-                                                        <td className="font-semibold text-slate-700 whitespace-nowrap w-[100px] min-w-[100px] max-w-[100px] truncate" title={p.viaTransporte}>{p.viaTransporte}</td>
-                                                        <td className="whitespace-nowrap truncate w-[150px] min-w-[150px] max-w-[150px]" title={p.transportador}>{p.transportador}</td>
-                                                        <td className="whitespace-nowrap truncate w-[170px] min-w-[170px] max-w-[170px]" title={p.despachante}>{p.despachante}</td>
-                                                        <td className="truncate min-w-[180px] max-w-[300px]" title={p.fornecedor}>{p.fornecedor}</td>
+                                                        <td className="font-bold text-slate-700 whitespace-nowrap w-[80px] min-w-[80px] max-w-[80px] truncate" title={p.docNum}>{p.docNum}</td>
+                                                        <td className="font-mono text-slate-600 whitespace-nowrap w-[80px] min-w-[80px] max-w-[80px] truncate" title={p.noFactura}>{p.noFactura}</td>
+                                                        <td className="font-semibold text-slate-700 whitespace-nowrap w-[80px] min-w-[80px] max-w-[80px] truncate" title={p.viaTransporte}>{p.viaTransporte}</td>
+                                                        <td className="whitespace-nowrap truncate w-[80px] min-w-[80px] max-w-[80px]" title={p.transportador}>{p.transportador}</td>
+                                                        <td className="whitespace-nowrap truncate w-[80px] min-w-[80px] max-w-[80px]" title={p.despachante}>{p.despachante}</td>
+                                                        <td className="truncate w-[80px] min-w-[80px] max-w-[80px]" title={p.fornecedor}>{p.fornecedor}</td>
                                                         <td className="whitespace-nowrap">{p.dtFactura || '-'}</td>
                                                         <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
                                                         <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
@@ -3345,12 +3345,12 @@ const WorkflowAnalyticsPage = () => {
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
-                                                {renderFilterHeader('Nº PI', 'docNum', 'w-[140px] min-w-[140px] max-w-[140px]')}
-                                                {renderFilterHeader('Nº Factura', 'noFactura', 'w-[140px] min-w-[140px] max-w-[140px]')}
-                                                {renderFilterHeader('Tipo', 'viaTransporte', 'w-[100px] min-w-[100px] max-w-[100px]')}
-                                                {renderFilterHeader('Transportador', 'transportador', 'w-[150px] min-w-[150px] max-w-[150px]')}
-                                                {renderFilterHeader('Transitário', 'despachante', 'w-[170px] min-w-[170px] max-w-[170px]')}
-                                                {renderFilterHeader('Empresa', 'fornecedor', 'min-w-[180px]')}
+                                                {renderFilterHeader('Nº PI', 'docNum', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Nº Factura', 'noFactura', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Tipo', 'viaTransporte', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Transportador', 'transportador', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Transitário', 'despachante', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Empresa', 'fornecedor', 'w-[80px] min-w-[80px] max-w-[80px]')}
                                                 {renderFilterHeader('Data da Factura', 'dtFactura', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Data de Despacho', 'dtSaidaAlfandega', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'w-[120px] min-w-[120px] max-w-[120px]')}
@@ -3370,12 +3370,12 @@ const WorkflowAnalyticsPage = () => {
                                             {filteredDetailsForLogistica.map((p) => {
                                                 return (
                                                     <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-100">
-                                                        <td className="font-bold text-slate-700 whitespace-nowrap w-[140px] min-w-[140px] max-w-[140px] truncate" title={p.docNum}>{p.docNum}</td>
-                                                        <td className="font-mono text-slate-600 whitespace-nowrap w-[140px] min-w-[140px] max-w-[140px] truncate" title={p.noFactura}>{p.noFactura}</td>
-                                                        <td className="font-semibold text-slate-700 whitespace-nowrap w-[100px] min-w-[100px] max-w-[100px] truncate" title={p.viaTransporte}>{p.viaTransporte}</td>
-                                                        <td className="whitespace-nowrap truncate w-[150px] min-w-[150px] max-w-[150px]" title={p.transportador}>{p.transportador}</td>
-                                                        <td className="whitespace-nowrap truncate w-[170px] min-w-[170px] max-w-[170px]" title={p.despachante}>{p.despachante}</td>
-                                                        <td className="truncate min-w-[180px] max-w-[300px]" title={p.fornecedor}>{p.fornecedor}</td>
+                                                        <td className="font-bold text-slate-700 whitespace-nowrap w-[80px] min-w-[80px] max-w-[80px] truncate" title={p.docNum}>{p.docNum}</td>
+                                                        <td className="font-mono text-slate-600 whitespace-nowrap w-[80px] min-w-[80px] max-w-[80px] truncate" title={p.noFactura}>{p.noFactura}</td>
+                                                        <td className="font-semibold text-slate-700 whitespace-nowrap w-[80px] min-w-[80px] max-w-[80px] truncate" title={p.viaTransporte}>{p.viaTransporte}</td>
+                                                        <td className="whitespace-nowrap truncate w-[80px] min-w-[80px] max-w-[80px]" title={p.transportador}>{p.transportador}</td>
+                                                        <td className="whitespace-nowrap truncate w-[80px] min-w-[80px] max-w-[80px]" title={p.despachante}>{p.despachante}</td>
+                                                        <td className="truncate w-[80px] min-w-[80px] max-w-[80px]" title={p.fornecedor}>{p.fornecedor}</td>
                                                         <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtFactura || '-'}</td>
                                                         <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtSaidaAlfandega || '-'}</td>
                                                         <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtChegada || '-'}</td>
