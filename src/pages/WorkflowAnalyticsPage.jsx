@@ -1024,7 +1024,7 @@ const METRIC_EXPLANATIONS = {
         )
     },
     purchasing_director_table: {
-        title: "Tabela de Auditoria e Mapeamento de Campos",
+        title: "Mapeamento da Visão do Diretor de Compras",
         formula: (
             <ul className="list-disc pl-4 space-y-1 mt-1 text-[11px]">
                 <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
@@ -1067,32 +1067,24 @@ const METRIC_EXPLANATIONS = {
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_FACTURA</td>
                             </tr>
                             <tr>
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data Factura</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA</td>
-                            </tr>
-                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tipo</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO</td>
                             </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transportador</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TRANSPORTADOR</td>
+                            </tr>
                             <tr>
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada AO</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
-                                    DATA_DE_CHEGADA__AO_<br />
-                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> Data de Chegada (AO)
-                                </td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitário</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE</td>
                             </tr>
                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Entrada (RCS)</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
-                                    DATA_ENTREGUE__RCS_<br />
-                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "entrega rcs"
-                                </td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMPANY</td>
                             </tr>
                             <tr>
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dias Úteis</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
-                                    <span className="text-slate-500 font-sans">Diferença calculada de dias úteis entre Chegada AO e Entrada (RCS)</span>
-                                </td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data Factura</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (EU)</td>
@@ -1113,34 +1105,263 @@ const METRIC_EXPLANATIONS = {
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE</td>
                             </tr>
                             <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dir. Alfandegários FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DIR_ALFANDEGARIOS_E_TAXAS_FC</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">IVA Importação FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_IMPORTACAO_FC</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">IVA Serv. Despachante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_SERV_DESPACHANTE_FC</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Comentário</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    },
+    logistica_table: {
+        title: "Mapeamento da Visão Logística",
+        formula: (
+            <ul className="list-disc pl-4 space-y-1 mt-1 text-[11px]">
+                <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
+                <li><strong>Nº Factura:</strong> Nº da Fatura Comercial.</li>
+                <li><strong>Tipo:</strong> Via/Modal de transporte.</li>
+                <li><strong>Transportador:</strong> Transportadora encarregada.</li>
+                <li><strong>Transitário:</strong> Despachante ou transitário responsável.</li>
+                <li><strong>Empresa:</strong> Empresa associada ao processo.</li>
+                <li><strong>Data da Factura:</strong> Data de emissão da Fatura.</li>
+                <li><strong>Data de Despacho:</strong> Data de saída da alfândega.</li>
+                <li><strong>Chegada AO:</strong> Data de chegada a Angola.</li>
+                <li><strong>Entrega(RCS):</strong> Data de entrega física ou RCS.</li>
+                <li><strong>Factura → Despacho:</strong> Dias corridos calculados entre a Data da Factura e o Despacho.</li>
+                <li><strong>Chegada(AO) → Entrega(RCS):</strong> Dias corridos calculados entre a Chegada AO e a entrega física.</li>
+                <li><strong>Factura → Entrega(RCS):</strong> Lead Time total de ponta a ponta.</li>
+                <li><strong>Comentário:</strong> Observações gerais do processo.</li>
+            </ul>
+        ),
+        source: "Mapeamento direto dos metadados e histórico dos workflows do DocuWare.",
+        description: "Regras de negócio, cálculos operacionais e origem técnica dos dados carregados na tabela.",
+        details: (
+            <div className="space-y-3">
+                <p className="font-bold text-slate-700">Mapeamento de Campos Técnicos do DocuWare:</p>
+                <div className="overflow-x-auto">
+                    <table className="table table-compact table-xs w-full text-[10px] border border-slate-200">
+                        <thead>
+                            <tr className="bg-slate-100 text-slate-700">
+                                <th className="p-1.5 border border-slate-200 text-left font-bold">Coluna da Tabela</th>
+                                <th className="p-1.5 border border-slate-200 text-left font-bold">Campos Técnicos do DocuWare (Ordem de Busca)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Nº PI</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_PROCESSO_IMPORTACAO</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Nº Factura</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_FACTURA</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tipo</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transportador</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TRANSPORTADOR</td>
                             </tr>
                             <tr>
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitario</td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitário</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMPANY</td>
                             </tr>
-                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dir. Alfandegários FC</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DIR_ALFANDEGARIOS_E_TAXAS_FC</td>
-                             </tr>
-                             <tr>
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">IVA Importação FC</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_IMPORTACAO_FC</td>
-                             </tr>
-                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">IVA Serv. Despachante FC</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_SERV_DESPACHANTE_FC</td>
-                             </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data da Factura</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data de Despacho</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_DE_SAIDA_DA_ALFANDEGA</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada AO</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    DATA_DE_CHEGADA__AO_<br />
+                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> Data de Chegada (AO)
+                                </td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Entrega(RCS)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    DATA_ENTREGUE__RCS_<br />
+                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "entrega rcs"
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura → Despacho</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Data da Factura e Data de Despacho</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada(AO) → Entrega(RCS)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Chegada AO e Entrega(RCS)</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura → Entrega(RCS)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Data da Factura e Entrega(RCS)</td>
+                            </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Comentário</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO</td>
                             </tr>
                         </tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    },
+    consolidada_table: {
+        title: "Mapeamento da Visão Consolidada",
+        formula: (
+            <ul className="list-disc pl-4 space-y-1 mt-1 text-[11px]">
+                <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
+                <li><strong>Nº Factura:</strong> Nº da Fatura Comercial.</li>
+                <li><strong>Tipo:</strong> Via/Modal de transporte.</li>
+                <li><strong>Transportador:</strong> Transportadora encarregada.</li>
+                <li><strong>Transitário:</strong> Despachante ou transitário responsável.</li>
+                <li><strong>Empresa:</strong> Empresa associada ao processo.</li>
+                <li><strong>Data da Factura:</strong> Data de emissão da Fatura.</li>
+                <li><strong>Data de Despacho:</strong> Data de saída da alfândega.</li>
+                <li><strong>Chegada AO:</strong> Data de chegada a Angola.</li>
+                <li><strong>Entrega(RCS):</strong> Data de entrega física ou RCS.</li>
+                <li><strong>Factura → Despacho:</strong> Dias corridos calculados entre a Data da Factura e o Despacho.</li>
+                <li><strong>Chegada(AO) → Entrega(RCS):</strong> Dias corridos calculados entre a Chegada AO e a entrega física.</li>
+                <li><strong>Factura → Entrega(RCS):</strong> Lead Time total de ponta a ponta.</li>
+                <li><strong>Factura (EU):</strong> Valor original FOB em moeda estrangeira.</li>
+                <li><strong>Cambio FC:</strong> Taxa de câmbio de fechamento de processo (FC).</li>
+                <li><strong>Factura (Kz):</strong> Valor total FOB convertido para Cuanzas pelo câmbio de fechamento.</li>
+                <li><strong>Montante FC:</strong> Custo aduaneiro total realizado no fechamento.</li>
+                <li><strong>Dir. Alfandegários FC:</strong> Custo aduaneiro e taxas realizadas.</li>
+                <li><strong>IVA Importação FC:</strong> IVA de importação pago no fechamento.</li>
+                <li><strong>IVA Serv. Despachante FC:</strong> IVA cobrado sobre os serviços do despachante.</li>
+                <li><strong>Comentário:</strong> Observações gerais do processo.</li>
+            </ul>
+        ),
+        source: "Mapeamento direto dos metadados e histórico dos workflows do DocuWare.",
+        description: "Regras de negócio, cálculos operacionais e origem técnica dos dados carregados na tabela.",
+        details: (
+            <div className="space-y-3">
+                <p className="font-bold text-slate-700">Mapeamento de Campos Técnicos do DocuWare:</p>
+                <div className="overflow-x-auto">
+                    <table className="table table-compact table-xs w-full text-[10px] border border-slate-200">
+                        <thead>
+                            <tr className="bg-slate-100 text-slate-700">
+                                <th className="p-1.5 border border-slate-200 text-left font-bold">Coluna da Tabela</th>
+                                <th className="p-1.5 border border-slate-200 text-left font-bold">Campos Técnicos do DocuWare (Ordem de Busca)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Nº PI</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_PROCESSO_IMPORTACAO</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Nº Factura</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">NO_FACTURA</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tipo</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transportador</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TRANSPORTADOR</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitário</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMPANY</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data da Factura</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data de Despacho</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_DE_SAIDA_DA_ALFANDEGA</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada AO</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    DATA_DE_CHEGADA__AO_<br />
+                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> Data de Chegada (AO)
+                                </td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Entrega(RCS)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    DATA_ENTREGUE__RCS_<br />
+                                    <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "entrega rcs"
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura → Despacho</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Data da Factura e Data de Despacho</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada(AO) → Entrega(RCS)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Chegada AO e Entrega(RCS)</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura → Entrega(RCS)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Data da Factura e Entrega(RCS)</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (EU)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Cambio FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">VAOR_CAMBIAL_FC</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (Kz)</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Calculado:</span> MONTANTE_FACTURA * VAOR_CAMBIAL_FC
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dir. Alfandegários FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DIR_ALFANDEGARIOS_E_TAXAS_FC</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">IVA Importação FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_IMPORTACAO_FC</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">IVA Serv. Despachante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_SERV_DESPACHANTE_FC</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Comentário</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO</td>
+                            </tr>
+                         </tbody>
                     </table>
                 </div>
             </div>
@@ -3474,7 +3695,7 @@ const WorkflowAnalyticsPage = () => {
                                 <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
                                     <span>Exibindo {filteredDetailsForLogistica.length} de {searchedAndSortedDetails.length} processos</span>
                                     <button 
-                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: !prev.purchasing_director_table}))}
+                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, logistica_table: !prev.logistica_table}))}
                                         className="btn btn-xs btn-ghost text-slate-400 hover:text-indigo-600 p-0 hover:bg-transparent"
                                         title="Ver Detalhes do Mapeamento de Campos"
                                     >
@@ -3500,9 +3721,9 @@ const WorkflowAnalyticsPage = () => {
                             </div>
 
                             <ChartInfoAlert 
-                                metricKey="purchasing_director_table" 
-                                showInfo={!!visibleChartExplanations['purchasing_director_table']} 
-                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: val}))} 
+                                metricKey="logistica_table" 
+                                showInfo={!!visibleChartExplanations['logistica_table']} 
+                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, logistica_table: val}))} 
                             />
 
                             {/* Visão Logística Grid Table */}
@@ -3745,7 +3966,7 @@ const WorkflowAnalyticsPage = () => {
                                 <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
                                     <span>Exibindo {filteredDetailsForConsolidada.length} de {searchedAndSortedDetails.length} processos</span>
                                     <button 
-                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: !prev.purchasing_director_table}))}
+                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, consolidada_table: !prev.consolidada_table}))}
                                         className="btn btn-xs btn-ghost text-slate-400 hover:text-indigo-600 p-0 hover:bg-transparent"
                                         title="Ver Detalhes do Mapeamento de Campos"
                                     >
@@ -3769,6 +3990,12 @@ const WorkflowAnalyticsPage = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            <ChartInfoAlert 
+                                metricKey="consolidada_table" 
+                                showInfo={!!visibleChartExplanations['consolidada_table']} 
+                                setShowInfo={(val) => setVisibleChartExplanations(prev => ({...prev, consolidada_table: val}))} 
+                            />
 
                             {/* Consolidated Grid Table */}
                             <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
