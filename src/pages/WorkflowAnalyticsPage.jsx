@@ -1154,6 +1154,7 @@ const WorkflowAnalyticsPage = () => {
     const [activeTab, setActiveTab] = useState('diretor_compras');
     const [diretorComprasStatusFilter, setDiretorComprasStatusFilter] = useState('all');
     const [visaoLogisticaStatusFilter, setVisaoLogisticaStatusFilter] = useState('all');
+    const [visaoConsolidadaStatusFilter, setVisaoConsolidadaStatusFilter] = useState('all');
 
     // Drawer/History details states
     const [selectedDoc, setSelectedDoc] = useState(null);
@@ -2115,6 +2116,35 @@ const WorkflowAnalyticsPage = () => {
         return searchedAndSortedDetails;
     }, [searchedAndSortedDetails, visaoLogisticaStatusFilter]);
 
+    const visaoConsolidadaMetrics = useMemo(() => {
+        const total = searchedAndSortedDetails.length;
+        const concluidos = searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído').length;
+        const emAndamento = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento').length;
+        const pctConcluidos = total > 0 ? Math.round((concluidos / total) * 100) : 0;
+        const pctEmAndamento = total > 0 ? Math.round((emAndamento / total) * 100) : 0;
+        
+        const validDiffs = searchedAndSortedDetails
+            .map(p => p.diasFacturaEntrega)
+            .filter(val => typeof val === 'number');
+        const avgCiclo = validDiffs.length > 0
+            ? (validDiffs.reduce((sum, val) => sum + val, 0) / validDiffs.length).toFixed(1)
+            : '-';
+            
+        const emAndamentoItems = searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento');
+        const logisticaEmAndamento = emAndamentoItems.filter(p => p.dtEntregaRCSRaw === null).length;
+        const validacaoCustos = emAndamentoItems.filter(p => p.dtEntregaRCSRaw !== null).length;
+        
+        return { total, concluidos, emAndamento, pctConcluidos, pctEmAndamento, avgCiclo, logisticaEmAndamento, validacaoCustos };
+    }, [searchedAndSortedDetails]);
+
+    const filteredDetailsForConsolidada = useMemo(() => {
+        if (visaoConsolidadaStatusFilter === 'all') return searchedAndSortedDetails;
+        if (visaoConsolidadaStatusFilter === 'Concluído') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Concluído');
+        if (visaoConsolidadaStatusFilter === 'Em Andamento - Logística') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.dtEntregaRCSRaw === null);
+        if (visaoConsolidadaStatusFilter === 'Em Andamento - Custos') return searchedAndSortedDetails.filter(p => p.statusFinal === 'Em Andamento' && p.dtEntregaRCSRaw !== null);
+        return searchedAndSortedDetails;
+    }, [searchedAndSortedDetails, visaoConsolidadaStatusFilter]);
+
     // Handle Open DocuWare Document
     const handleOpenDocument = (docId) => {
         const viewUrl = docuwareService.getDocumentViewUrl(selectedCabinet, docId);
@@ -2677,6 +2707,12 @@ const WorkflowAnalyticsPage = () => {
                     className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'visao_logistica' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
                 >
                     <FaTruck /> Visão Logística
+                </button>
+                <button 
+                    onClick={() => setActiveTab('visao_consolidada')}
+                    className={`tab tab-md flex items-center gap-1.5 font-bold ${activeTab === 'visao_consolidada' ? 'tab-active bg-[#4f46e5] text-white shadow-sm' : 'text-slate-600'}`}
+                >
+                    <FaList /> Visão Consolidada
                 </button>
             </div>
 
@@ -3409,6 +3445,250 @@ const WorkflowAnalyticsPage = () => {
                                             {searchedAndSortedDetails.length === 0 && (
                                                 <tr>
                                                     <td colSpan={15} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* VISÃO CONSOLIDADA */}
+                    {activeTab === 'visao_consolidada' && (
+                        <div className="space-y-4">
+                            {/* KPI Cards */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+                                {/* Total Docs Card */}
+                                <div 
+                                    onClick={() => setVisaoConsolidadaStatusFilter('all')}
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoConsolidadaStatusFilter === 'all' 
+                                            ? 'border-indigo-600 ring-1 ring-indigo-600 bg-indigo-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Origem: DocuWare. Total de processos carregados no lote atual.">
+                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Total Docs</span>
+                                        <span className="text-2xl font-black text-slate-800 mt-1">{visaoConsolidadaMetrics.total}</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoConsolidadaStatusFilter === 'all' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaShoppingCart className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Concluídos Card */}
+                                <div 
+                                    onClick={() => setVisaoConsolidadaStatusFilter('Concluído')}
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoConsolidadaStatusFilter === 'Concluído' 
+                                            ? 'border-emerald-600 ring-1 ring-emerald-600 bg-emerald-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos concluídos (com entrega da carga no RCS).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Concluídos</span>
+                                        <span className="text-2xl font-black text-emerald-600 mt-1">
+                                            {visaoConsolidadaMetrics.concluidos} 
+                                            <span className="text-[10px] font-normal text-slate-400 ml-1">({visaoConsolidadaMetrics.pctConcluidos}%)</span>
+                                        </span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoConsolidadaStatusFilter === 'Concluído' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaCheckCircle className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Em Andamento - Logística Card */}
+                                <div 
+                                    onClick={() => setVisaoConsolidadaStatusFilter('Em Andamento - Logística')}
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoConsolidadaStatusFilter === 'Em Andamento - Logística' 
+                                            ? 'border-blue-600 ring-1 ring-blue-600 bg-blue-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos ativos na fase logística (antes da entrega no RCS).">
+                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Em Logística</span>
+                                        <span className="text-2xl font-black text-blue-600 mt-1">{visaoConsolidadaMetrics.logisticaEmAndamento}</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoConsolidadaStatusFilter === 'Em Andamento - Logística' ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaTruck className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Em Andamento - Custos Card */}
+                                <div 
+                                    onClick={() => setVisaoConsolidadaStatusFilter('Em Andamento - Custos')}
+                                    className={`card relative bg-white border cursor-pointer p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4 ${
+                                        visaoConsolidadaStatusFilter === 'Em Andamento - Custos' 
+                                            ? 'border-amber-600 ring-1 ring-amber-600 bg-amber-50/20' 
+                                            : 'border-slate-200'
+                                    }`}
+                                >
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Processos entregues no RCS, mas pendentes de validação/fecho de custos.">
+                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Fecho Custos</span>
+                                        <span className="text-2xl font-black text-amber-600 mt-1">{visaoConsolidadaMetrics.validacaoCustos}</span>
+                                    </div>
+                                    <div className={`p-2.5 rounded-lg shrink-0 ${visaoConsolidadaStatusFilter === 'Em Andamento - Custos' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+                                        <FaDollarSign className="text-lg" />
+                                    </div>
+                                </div>
+
+                                {/* Tempo Médio do Ciclo Card */}
+                                <div className="card relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow transition-all flex flex-row items-center justify-between gap-4">
+                                    <div className="absolute top-3 right-3">
+                                        <div className="tooltip tooltip-left before:text-[10px] before:max-w-xs" data-tip="Tempo médio (em dias corridos) entre a Data da Factura e a Entrega no RCS.">
+                                            <FaInfoCircle className="text-slate-300 hover:text-indigo-500 transition-colors cursor-help text-[10px]" />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate pr-4">Tempo Médio Ciclo</span>
+                                        <span className="text-2xl font-black text-slate-800 mt-1">
+                                            {visaoConsolidadaMetrics.avgCiclo}
+                                            {visaoConsolidadaMetrics.avgCiclo !== '-' && <span className="text-xs font-normal text-slate-500 ml-1">dias</span>}
+                                        </span>
+                                    </div>
+                                    <div className="p-2.5 rounded-lg shrink-0 bg-slate-50 text-slate-500">
+                                        <FaClock className="text-lg" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section Header */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 mt-6">
+                                <div>
+                                    <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
+                                        <FaList className="text-indigo-600" /> Processos Importação Consolidados
+                                    </h3>
+                                    <p className="text-[11px] text-slate-400 mt-0.5">Visão unificada das fases logística e financeira dos processos de importação.</p>
+                                </div>
+                                <div className="flex items-center gap-3 text-[11px] text-slate-500 self-stretch sm:self-auto justify-between bg-slate-50 p-2 rounded-lg border border-slate-200/60">
+                                    <span>Exibindo {filteredDetailsForConsolidada.length} de {searchedAndSortedDetails.length} processos</span>
+                                </div>
+                            </div>
+
+                            {/* Consolidated Grid Table */}
+                            <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                                <div className="overflow-x-auto max-h-[500px] scrollbar-thin">
+                                    <table className="table table-compact w-full text-[11px] border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50 text-slate-600 font-bold">
+                                                {renderFilterHeader('Nº PI', 'docNum', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Nº Factura', 'noFactura', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Tipo', 'viaTransporte', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Transportador', 'transportador', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Transitário', 'despachante', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Empresa', 'fornecedor', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                
+                                                {/* Colunas Logística */}
+                                                {renderFilterHeader('Data da Factura', 'dtFactura', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Data de Despacho', 'dtSaidaAlfandega', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Chegada AO', 'dtChegada', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Entrega(RCS)', 'dtEntregaRCS', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Factura → Despacho', 'diasFacturaDespacho', 'w-[130px] min-w-[130px] max-w-[130px]')}
+                                                {renderFilterHeader("Chegada(AO)\nEntrega(RCS)", 'diasChegadaEntrega', 'w-[110px] min-w-[110px] max-w-[110px]')}
+                                                {renderFilterHeader("Factura →\nEntrega(RCS)", 'diasFacturaEntrega', 'w-[110px] min-w-[110px] max-w-[110px]')}
+                                                
+                                                {/* Colunas Financeiras / Diretor de Compras */}
+                                                {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
+                                                {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Factura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Dir. Alfandegários FC', 'direitosFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('IVA Importação FC', 'ivaFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
+                                                
+                                                {renderFilterHeader('Comentário', 'comentario')}
+                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
+                                                    <FaHistory className="mx-auto text-slate-400" />
+                                                </th>
+                                                <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Ver Documento">
+                                                    <FaFileAlt className="mx-auto text-slate-400" />
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredDetailsForConsolidada.map((p) => {
+                                                const formattedValor = p.valMercadoriaOrig && p.valMercadoriaOrig > 0 
+                                                    ? p.valMercadoriaOrig.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+                                                    : '-';
+                                                
+                                                return (
+                                                    <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-100">
+                                                        <td className="font-bold text-slate-700 whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] truncate" title={p.docNum}>{p.docNum}</td>
+                                                        <td className="font-mono text-slate-600 whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] truncate" title={p.noFactura}>{p.noFactura}</td>
+                                                        <td className="font-semibold text-slate-700 whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] truncate" title={p.viaTransporte}>{p.viaTransporte}</td>
+                                                        <td className="whitespace-nowrap truncate w-[120px] min-w-[120px] max-w-[120px]" title={p.transportador}>{p.transportador}</td>
+                                                        <td className="whitespace-nowrap truncate w-[120px] min-w-[120px] max-w-[120px]" title={p.despachante}>{p.despachante}</td>
+                                                        <td className="truncate w-[120px] min-w-[120px] max-w-[120px]" title={p.fornecedor}>{p.fornecedor}</td>
+                                                        
+                                                        {/* Valores Logística */}
+                                                        <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtFactura || '-'}</td>
+                                                        <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtSaidaAlfandega || '-'}</td>
+                                                        <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtChegada || '-'}</td>
+                                                        <td className="whitespace-nowrap w-[120px] min-w-[120px] max-w-[120px] text-center">{p.dtEntregaRCS || '-'}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[130px] min-w-[130px] max-w-[130px]">{p.diasFacturaDespacho}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[110px] min-w-[110px] max-w-[110px]">{p.diasChegadaEntrega}</td>
+                                                        <td className="text-center font-mono font-semibold text-indigo-600 w-[110px] min-w-[110px] max-w-[110px]">{p.diasFacturaEntrega}</td>
+                                                        
+                                                        {/* Valores Financeiros */}
+                                                        <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.valMercadoriaFC ? p.valMercadoriaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.direitosFC ? p.direitosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.ivaFC ? p.ivaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                        
+                                                        <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
+                                                        
+                                                        {/* Histórico */}
+                                                        <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
+                                                            <button
+                                                                onClick={() => handleSelectDocument(p)}
+                                                                className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
+                                                                title="Visualizar Histórico"
+                                                            >
+                                                                <FaHistory className="text-xs" />
+                                                            </button>
+                                                        </td>
+
+                                                        {/* Ver Documento */}
+                                                        <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
+                                                            <button 
+                                                                onClick={() => handleOpenDocument(p.id)}
+                                                                className="btn btn-xs btn-ghost text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 btn-circle"
+                                                                title="Abrir no DocuWare"
+                                                            >
+                                                                <FaExternalLinkAlt className="text-xs" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {searchedAndSortedDetails.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={23} className="text-center py-8 text-slate-400 italic">Nenhum processo correspondente aos critérios de busca.</td>
                                                 </tr>
                                             )}
                                         </tbody>
