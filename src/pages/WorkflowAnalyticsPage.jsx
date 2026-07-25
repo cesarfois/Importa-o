@@ -1322,6 +1322,51 @@ const WorkflowAnalyticsPage = () => {
         link.download = `visao_logistica_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
     };
+
+    const exportConsolidadaToCSV = () => {
+        const headers = [
+            'Nº PI', 'Nº Factura', 'Tipo', 'Transportador', 'Transitário', 'Empresa',
+            'Data da Factura', 'Data de Despacho', 'Chegada AO', 'Entrega(RCS)', 'Factura → Despacho', 'Chegada(AO) → Entrega(RCS)', 'Factura → Entrega(RCS)',
+            'Factura (EU)', 'Cambio FC', 'Factura (Kz)', 'Montante FC', 'Dir. Alfandegários FC', 'IVA Importação FC', 'IVA Serv. Despachante FC',
+            'Comentário'
+        ];
+        
+        const csvData = filteredDetailsForConsolidada.map(p => [
+            p.docNum || '',
+            p.noFactura || '',
+            p.viaTransporte || '',
+            p.transportador || '',
+            p.despachante || '',
+            p.fornecedor || '',
+            p.dtFactura || '',
+            p.dtSaidaAlfandega || '',
+            p.dtChegada || '',
+            p.dtEntregaRCS || '',
+            p.diasFacturaDespacho || '',
+            p.diasChegadaEntrega || '',
+            p.diasFacturaEntrega || '',
+            p.valMercadoriaOrig || '',
+            p.valorCambialFC || '',
+            p.valMercadoriaFC || '',
+            p.montanteFC || '',
+            p.direitosFC || '',
+            p.ivaFC || '',
+            p.ivaServicosFC || '',
+            p.comentario || ''
+        ]);
+
+        const csvContent = [
+            headers.join(';'),
+            ...csvData.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        ].join('\n');
+
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `visao_consolidada_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    };
     const [selectedDespachanteGroup, setSelectedDespachanteGroup] = useState(null);
     const [detectedTypeField, setDetectedTypeField] = useState(null);
     const [detectedDateField, setDetectedDateField] = useState(null);
@@ -3673,16 +3718,39 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
                             </div>
 
-                            {/* Section Header */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 mt-6">
-                                <div>
-                                    <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                                        <FaList className="text-indigo-600" /> Processos Importação Consolidados
-                                    </h3>
-                                    <p className="text-[11px] text-slate-400 mt-0.5">Visão unificada das fases logística e financeira dos processos de importação.</p>
+                            {/* Search & Actions */}
+                            <div className="flex flex-col md:flex-row gap-4 items-center justify-between mt-6">
+                                <div className="flex flex-row gap-2 items-center w-full md:w-auto">
+                                    <div className="relative w-full md:w-80">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                                            <FaSearch />
+                                        </span>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Buscar por PI, Transportador, Transitário..." 
+                                            className="input input-bordered input-sm pl-9 bg-white text-slate-700 w-full rounded-xl"
+                                            value={detailSearch}
+                                            onChange={(e) => setDetailSearch(e.target.value)}
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={exportConsolidadaToCSV}
+                                        className="btn btn-sm btn-outline btn-success font-bold flex items-center gap-1.5 rounded-xl border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                                        title="Exportar para Excel"
+                                    >
+                                        <FaFileExcel className="text-sm" />
+                                        <span className="hidden sm:inline">Exportar Excel</span>
+                                    </button>
                                 </div>
-                                <div className="flex items-center gap-3 text-[11px] text-slate-500 self-stretch sm:self-auto justify-between bg-slate-50 p-2 rounded-lg border border-slate-200/60">
+                                <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
                                     <span>Exibindo {filteredDetailsForConsolidada.length} de {searchedAndSortedDetails.length} processos</span>
+                                    <button 
+                                        onClick={() => setVisibleChartExplanations(prev => ({...prev, purchasing_director_table: !prev.purchasing_director_table}))}
+                                        className="btn btn-xs btn-ghost text-slate-400 hover:text-indigo-600 p-0 hover:bg-transparent"
+                                        title="Ver Detalhes do Mapeamento de Campos"
+                                    >
+                                        <FaInfoCircle className="text-sm" />
+                                    </button>
                                     <div className="flex items-center gap-1 border-l border-slate-200 pl-2">
                                         <button 
                                             onClick={() => scrollTable('left', 'table-consolidated')} 
