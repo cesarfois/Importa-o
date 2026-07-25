@@ -1549,32 +1549,41 @@ const WorkflowAnalyticsPage = () => {
             'Nº PI', 'Nº Factura', 'Tipo', 'Transportador', 'Transitário', 'Empresa',
             'Data da Factura', 'Data de Despacho', 'Chegada AO', 'Entrega(RCS)', 'Factura → Despacho', 'Chegada(AO) → Entrega(RCS)', 'Factura → Entrega(RCS)',
             'Factura (EU)', 'Cambio FC', 'Factura (Kz)', 'Montante FC', 'Dir. Alfandegários FC', 'IVA Importação FC', 'IVA Serv. Despachante FC',
-            'Comentário'
+            'Comentário', 'Estado'
         ];
         
-        const csvData = filteredDetailsForConsolidada.map(p => [
-            p.docNum || '',
-            p.noFactura || '',
-            p.viaTransporte || '',
-            p.transportador || '',
-            p.despachante || '',
-            p.fornecedor || '',
-            p.dtFactura || '',
-            p.dtSaidaAlfandega || '',
-            p.dtChegada || '',
-            p.dtEntregaRCS || '',
-            p.diasFacturaDespacho || '',
-            p.diasChegadaEntrega || '',
-            p.diasFacturaEntrega || '',
-            p.valMercadoriaOrig || '',
-            p.valorCambialFC || '',
-            p.valMercadoriaFC || '',
-            p.montanteFC || '',
-            p.direitosFC || '',
-            p.ivaFC || '',
-            p.ivaServicosFC || '',
-            p.comentario || ''
-        ]);
+        const csvData = filteredDetailsForConsolidada.map(p => {
+            const estadoText = p.statusFinal === 'Concluído' 
+                ? 'Concluído' 
+                : p.dtEntregaRCSRaw === null 
+                    ? 'Em Andamento (Operação Logística)' 
+                    : 'Em Andamento (Validação de Custos)';
+                    
+            return [
+                p.docNum || '',
+                p.noFactura || '',
+                p.viaTransporte || '',
+                p.transportador || '',
+                p.despachante || '',
+                p.fornecedor || '',
+                p.dtFactura || '',
+                p.dtSaidaAlfandega || '',
+                p.dtChegada || '',
+                p.dtEntregaRCS || '',
+                p.diasFacturaDespacho || '',
+                p.diasChegadaEntrega || '',
+                p.diasFacturaEntrega || '',
+                p.valMercadoriaOrig || '',
+                p.valorCambialFC || '',
+                p.valMercadoriaFC || '',
+                p.montanteFC || '',
+                p.direitosFC || '',
+                p.ivaFC || '',
+                p.ivaServicosFC || '',
+                p.comentario || '',
+                estadoText
+            ];
+        });
 
         const csvContent = [
             headers.join(';'),
@@ -4036,6 +4045,7 @@ const WorkflowAnalyticsPage = () => {
                                                 {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
                                                 
                                                 {renderFilterHeader('Comentário', 'comentario')}
+                                                {renderFilterHeader('Estado', 'statusFinal', 'w-[200px] min-w-[200px] max-w-[200px]')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
                                                 </th>
@@ -4078,6 +4088,21 @@ const WorkflowAnalyticsPage = () => {
                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                         
                                                         <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
+                                                        <td className="w-[200px] min-w-[200px] max-w-[200px] text-center whitespace-nowrap">
+                                                            {p.statusFinal === 'Concluído' ? (
+                                                                <span className="badge badge-sm font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200/60 rounded-md py-1 px-2">
+                                                                    Concluído
+                                                                </span>
+                                                            ) : p.dtEntregaRCSRaw === null ? (
+                                                                <span className="badge badge-sm font-semibold border bg-blue-50 text-blue-700 border-blue-200/60 rounded-md py-1 px-2">
+                                                                    Em Andamento (Operação Logística)
+                                                                </span>
+                                                            ) : (
+                                                                <span className="badge badge-sm font-semibold border bg-amber-50 text-amber-700 border-amber-200/60 rounded-md py-1 px-2">
+                                                                    Em Andamento (Validação de Custos)
+                                                                </span>
+                                                            )}
+                                                        </td>
                                                         
                                                         {/* Histórico */}
                                                         <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
