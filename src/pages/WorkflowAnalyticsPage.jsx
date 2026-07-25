@@ -13,6 +13,8 @@ import {
     FaSyncAlt,
     FaClock,
     FaArrowLeft,
+    FaChevronLeft,
+    FaChevronRight,
     FaList,
     FaSearch,
     FaExternalLinkAlt,
@@ -2648,6 +2650,45 @@ const WorkflowAnalyticsPage = () => {
         });
     }, [detailedProcesses]);
 
+    // Helper to scroll table horizontally
+    const scrollTable = (direction, containerId) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const scrollAmount = 300;
+        if (direction === 'left') {
+            container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        } else {
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
+
+    // Drag-to-scroll event handlers
+    const [dragState, setDragState] = useState({ isDown: false, startX: 0, scrollLeft: 0 });
+    const handleMouseDown = (e, containerId) => {
+        const slider = document.getElementById(containerId);
+        if (!slider) return;
+        setDragState({
+            isDown: true,
+            startX: e.pageX - slider.offsetLeft,
+            scrollLeft: slider.scrollLeft
+        });
+    };
+    const handleMouseLeave = () => {
+        setDragState(prev => ({ ...prev, isDown: false }));
+    };
+    const handleMouseUp = () => {
+        setDragState(prev => ({ ...prev, isDown: false }));
+    };
+    const handleMouseMove = (e, containerId) => {
+        if (!dragState.isDown) return;
+        const slider = document.getElementById(containerId);
+        if (!slider) return;
+        e.preventDefault();
+        const x = e.pageX - dragState.startX;
+        const walk = x * 1.5; // Scroll speed multiplier
+        slider.scrollLeft = dragState.scrollLeft - walk;
+    };
+
     const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
     return (
@@ -3108,6 +3149,22 @@ const WorkflowAnalyticsPage = () => {
                                     >
                                         <FaInfoCircle className="text-sm" />
                                     </button>
+                                    <div className="flex items-center gap-1 ml-2 border-l border-slate-200 pl-2">
+                                        <button 
+                                            onClick={() => scrollTable('left', 'table-purchasing')} 
+                                            className="btn btn-xs btn-outline btn-circle border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                                            title="Rolar para Esquerda"
+                                        >
+                                            <FaChevronLeft className="text-[10px]" />
+                                        </button>
+                                        <button 
+                                            onClick={() => scrollTable('right', 'table-purchasing')} 
+                                            className="btn btn-xs btn-outline btn-circle border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                                            title="Rolar para Direita"
+                                        >
+                                            <FaChevronRight className="text-[10px]" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -3119,7 +3176,14 @@ const WorkflowAnalyticsPage = () => {
 
                             {/* Purchasing Director Grid Table */}
                             <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                                <div className="overflow-x-auto max-h-[500px] scrollbar-thin">
+                                <div 
+                                    id="table-purchasing"
+                                    className="overflow-auto max-h-[600px] scrollbar-thin scroll-smooth cursor-grab active:cursor-grabbing select-none"
+                                    onMouseDown={(e) => handleMouseDown(e, 'table-purchasing')}
+                                    onMouseLeave={handleMouseLeave}
+                                    onMouseUp={handleMouseUp}
+                                    onMouseMove={(e) => handleMouseMove(e, 'table-purchasing')}
+                                >
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
@@ -3364,6 +3428,22 @@ const WorkflowAnalyticsPage = () => {
                                     >
                                         <FaInfoCircle className="text-sm" />
                                     </button>
+                                    <div className="flex items-center gap-1 ml-2 border-l border-slate-200 pl-2">
+                                        <button 
+                                            onClick={() => scrollTable('left', 'table-logistics')} 
+                                            className="btn btn-xs btn-outline btn-circle border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                                            title="Rolar para Esquerda"
+                                        >
+                                            <FaChevronLeft className="text-[10px]" />
+                                        </button>
+                                        <button 
+                                            onClick={() => scrollTable('right', 'table-logistics')} 
+                                            className="btn btn-xs btn-outline btn-circle border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                                            title="Rolar para Direita"
+                                        >
+                                            <FaChevronRight className="text-[10px]" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -3375,16 +3455,23 @@ const WorkflowAnalyticsPage = () => {
 
                             {/* Visão Logística Grid Table */}
                             <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                                <div className="overflow-x-auto max-h-[500px] scrollbar-thin">
+                                <div 
+                                    id="table-logistics"
+                                    className="overflow-auto max-h-[600px] scrollbar-thin scroll-smooth cursor-grab active:cursor-grabbing select-none"
+                                    onMouseDown={(e) => handleMouseDown(e, 'table-logistics')}
+                                    onMouseLeave={handleMouseLeave}
+                                    onMouseUp={handleMouseUp}
+                                    onMouseMove={(e) => handleMouseMove(e, 'table-logistics')}
+                                >
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
-                                                {renderFilterHeader('Nº PI', 'docNum', 'w-[80px] min-w-[80px] max-w-[80px]')}
-                                                {renderFilterHeader('Nº Factura', 'noFactura', 'w-[80px] min-w-[80px] max-w-[80px]')}
-                                                {renderFilterHeader('Tipo', 'viaTransporte', 'w-[80px] min-w-[80px] max-w-[80px]')}
-                                                {renderFilterHeader('Transportador', 'transportador', 'w-[80px] min-w-[80px] max-w-[80px]')}
-                                                {renderFilterHeader('Transitário', 'despachante', 'w-[80px] min-w-[80px] max-w-[80px]')}
-                                                {renderFilterHeader('Empresa', 'fornecedor', 'w-[80px] min-w-[80px] max-w-[80px]')}
+                                                {renderFilterHeader('Nº PI', 'docNum', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Nº Factura', 'noFactura', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Tipo', 'viaTransporte', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Transportador', 'transportador', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Transitário', 'despachante', 'w-[120px] min-w-[120px] max-w-[120px]')}
+                                                {renderFilterHeader('Empresa', 'fornecedor', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Data da Factura', 'dtFactura', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Data de Despacho', 'dtSaidaAlfandega', 'w-[120px] min-w-[120px] max-w-[120px]')}
                                                 {renderFilterHeader('Chegada AO', 'dtChegada', 'w-[120px] min-w-[120px] max-w-[120px]')}
@@ -3584,12 +3671,35 @@ const WorkflowAnalyticsPage = () => {
                                 </div>
                                 <div className="flex items-center gap-3 text-[11px] text-slate-500 self-stretch sm:self-auto justify-between bg-slate-50 p-2 rounded-lg border border-slate-200/60">
                                     <span>Exibindo {filteredDetailsForConsolidada.length} de {searchedAndSortedDetails.length} processos</span>
+                                    <div className="flex items-center gap-1 border-l border-slate-200 pl-2">
+                                        <button 
+                                            onClick={() => scrollTable('left', 'table-consolidated')} 
+                                            className="btn btn-xs btn-outline btn-circle border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                                            title="Rolar para Esquerda"
+                                        >
+                                            <FaChevronLeft className="text-[10px]" />
+                                        </button>
+                                        <button 
+                                            onClick={() => scrollTable('right', 'table-consolidated')} 
+                                            className="btn btn-xs btn-outline btn-circle border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                                            title="Rolar para Direita"
+                                        >
+                                            <FaChevronRight className="text-[10px]" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Consolidated Grid Table */}
                             <div className="card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                                <div className="overflow-x-auto max-h-[500px] scrollbar-thin">
+                                <div 
+                                    id="table-consolidated"
+                                    className="overflow-auto max-h-[600px] scrollbar-thin scroll-smooth cursor-grab active:cursor-grabbing select-none"
+                                    onMouseDown={(e) => handleMouseDown(e, 'table-consolidated')}
+                                    onMouseLeave={handleMouseLeave}
+                                    onMouseUp={handleMouseUp}
+                                    onMouseMove={(e) => handleMouseMove(e, 'table-consolidated')}
+                                >
                                     <table className="table table-compact w-full text-[11px] border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 text-slate-600 font-bold">
