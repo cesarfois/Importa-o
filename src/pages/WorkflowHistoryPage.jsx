@@ -452,14 +452,14 @@ const WorkflowHistoryPage = () => {
     const [selectedDocType, setSelectedDocType] = useState('Registo Processo de Importação');
     const searchIndexRef = React.useRef(0);
     
-    // Date filter range state (default to 30 days ago to today)
+    // Date filter range state (default to 2026-01-01 to today)
     const getTodayString = () => new Date().toISOString().split('T')[0];
     const getSixMonthsAgoString = () => {
         const d = new Date();
         d.setMonth(d.getMonth() - 6);
         return d.toISOString().split('T')[0];
     };
-    const [dateRange, setDateRange] = useState([getSixMonthsAgoString(), getTodayString()]);
+    const [dateRange, setDateRange] = useState(['2026-01-01', getTodayString()]);
 
     const [detectedTypeField, setDetectedTypeField] = useState(null);
     const [detectedDateField, setDetectedDateField] = useState(null);
