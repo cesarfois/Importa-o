@@ -875,9 +875,6 @@ const WorkflowHistoryPage = () => {
             } else if (sortField === 'entryDate') {
                 valA = progA.entryDate ? new Date(progA.entryDate).getTime() : 0;
                 valB = progB.entryDate ? new Date(progB.entryDate).getTime() : 0;
-            } else if (sortField === 'responsible') {
-                valA = progA.responsible || '';
-                valB = progB.responsible || '';
             } else if (sortField === 'activeTaskName') {
                 valA = progA.activeTaskName || '';
                 valB = progB.activeTaskName || '';
@@ -889,27 +886,18 @@ const WorkflowHistoryPage = () => {
                 const getReq = (d) => getDocFieldValue(d, 'DESPACHANTE') || '';
                 valA = getReq(a);
                 valB = getReq(b);
+            } else if (sortField === 'valorFactura') {
+                const getVal = (d) => {
+                    const raw = findFieldVal(d, ['MONTANTE_FACTURA', 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'VALOR']);
+                    const parsed = parseFloat(raw);
+                    return isNaN(parsed) ? 0 : parsed;
+                };
+                valA = getVal(a);
+                valB = getVal(b);
             } else if (sortField === 'matricula') {
                 const getMat = (d) => getDocFieldValue(d, 'MATRICULA') || '';
                 valA = getMat(a);
                 valB = getMat(b);
-            } else if (sortField === 'dataRealizacao') {
-                const getReal = (d) => {
-                    const val = getDocumentRealizationDate(d);
-                    if (val) {
-                        let dateObj;
-                        if (typeof val === 'string' && val.startsWith('/Date(')) {
-                            const timestamp = parseInt(val.match(/\d+/)[0]);
-                            dateObj = new Date(timestamp);
-                        } else {
-                            dateObj = new Date(val);
-                        }
-                        return isNaN(dateObj.getTime()) ? 0 : dateObj.getTime();
-                    }
-                    return 0;
-                };
-                valA = getReal(a);
-                valB = getReal(b);
             } else {
                 return 0;
             }
@@ -2249,6 +2237,9 @@ const WorkflowHistoryPage = () => {
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap">
                                                     Nº Factura
                                                 </th>
+                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('valorFactura')}>
+                                                    Valor Factura {sortField === 'valorFactura' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('entryDate')}>
                                                     Início {sortField === 'entryDate' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
@@ -2264,12 +2255,6 @@ const WorkflowHistoryPage = () => {
                                                     </span>
                                                     {renderFilterDropdown('step', 'Etapa', filterStep, setFilterStep, searchStep, setSearchStep, uniqueSteps)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
-                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('responsible')}>
-                                                        Responsável {sortField === 'responsible' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-                                                    </span>
-                                                    {renderFilterDropdown('responsible', 'Responsável', filterResponsible, setFilterResponsible, searchResponsible, setSearchResponsible, uniqueResponsibles)}
-                                                </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('timeStoppedMs')}>
                                                     Tempo na Tarefa {sortField === 'timeStoppedMs' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
@@ -2278,9 +2263,6 @@ const WorkflowHistoryPage = () => {
                                                         Comentários
                                                     </span>
                                                     {renderFilterDropdown('comments', 'Comentários', filterComments, setFilterComments, searchComments, setSearchComments, uniqueCommentsList)}
-                                                </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('dataRealizacao')}>
-                                                    Previsão {sortField === 'dataRealizacao' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
                                                 <th className="py-3 px-1 text-center w-[38px] min-w-[38px] shrink-0" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
@@ -2319,6 +2301,17 @@ const WorkflowHistoryPage = () => {
                                                         {/* Nº Factura */}
                                                         <td className="py-3 px-2 font-mono text-xs text-slate-600">
                                                             {getDocFieldValue(doc, 'NO_FACTURA') || '-'}
+                                                        </td>
+
+                                                        {/* Valor Factura */}
+                                                        <td className="py-3 px-2 font-mono text-xs text-slate-600">
+                                                            {(() => {
+                                                                const rawVal = findFieldVal(doc, ['MONTANTE_FACTURA', 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'VALOR']);
+                                                                const parsedVal = parseFloat(rawVal);
+                                                                return (!isNaN(parsedVal) && parsedVal > 0)
+                                                                    ? parsedVal.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                    : '-';
+                                                            })()}
                                                         </td>
 
                                                         {/* Entry Date */}
@@ -2370,22 +2363,6 @@ const WorkflowHistoryPage = () => {
                                                             )}
                                                         </td>
 
-                                                        {/* Responsible */}
-                                                        <td className="py-3 px-2">
-                                                            {isProgLoading ? (
-                                                                <span className="inline-block w-16 h-3 bg-slate-100 animate-pulse rounded"></span>
-                                                            ) : (
-                                                                <div className="text-slate-600 text-xs truncate max-w-[100px]" title={prog.responsible || '-'}>
-                                                                    {prog.responsible && prog.responsible !== '-' ? (
-                                                                        <span className="flex items-center gap-1">
-                                                                            <FaUser className="text-[9px] text-slate-400 shrink-0" />
-                                                                            <span className="truncate">{prog.responsible}</span>
-                                                                        </span>
-                                                                    ) : '-'}
-                                                                </div>
-                                                            )}
-                                                        </td>
-
                                                         {/* Time Stopped */}
                                                         <td className="py-3 px-2">
                                                             {isProgLoading ? (
@@ -2411,15 +2388,6 @@ const WorkflowHistoryPage = () => {
                                                                     {getDocumentComments(doc) || '-'}
                                                                 </div>
                                                             )}
-                                                        </td>
-
-                                                        {/* Data Realizacao */}
-                                                        <td className="py-3 px-2 font-mono text-[11px] text-slate-500">
-                                                            {isProgLoading ? (
-                                                                <span className="inline-block w-16 h-3 bg-slate-100 animate-pulse rounded"></span>
-                                                            ) : getDocumentRealizationDate(doc) ? (
-                                                                formatDate(getDocumentRealizationDate(doc), true)
-                                                            ) : '-'}
                                                         </td>
 
                                                         {/* History */}
