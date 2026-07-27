@@ -401,6 +401,8 @@ const getDocumentNumber = (doc) => {
 const getDocumentComments = (doc) => {
     if (!doc) return '';
     const fieldsToTry = [
+        'COMENTARIO_JUSTIFICATIVA',
+        'COMENTARIOS_JUSTIFICATIVA',
         'COMENTARIOS',
         'COMENTARIO',
         'OBSERVACOES',
