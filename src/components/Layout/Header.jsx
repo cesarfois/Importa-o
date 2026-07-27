@@ -19,23 +19,6 @@ const Header = () => {
                         <h1 className="text-3xl font-bold text-gray-900 leading-tight">
                             Painel Processo de Importação
                         </h1>
-                        {isAnalyticsRoute ? (
-                            <Link
-                                to="/importacao"
-                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#4f46e5] rounded-lg hover:bg-[#4338ca] transition-all shadow-sm"
-                            >
-                                <FaBoxes className="text-[10px]" />
-                                <span>Visão Geral</span>
-                            </Link>
-                        ) : (
-                            <Link
-                                to="/importacao/analytics"
-                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#4f46e5] rounded-lg hover:bg-[#4338ca] transition-all shadow-sm"
-                            >
-                                <FaChartBar className="text-[10px]" />
-                                <span>Análise Gráfico</span>
-                            </Link>
-                        )}
                     </div>
                     <p className="text-sm text-gray-500 mt-0.5">
                         Monitorização completa dos processos de importação, desde abertura do processo, documentação, transporte, desembaraço, custos e entrega final.

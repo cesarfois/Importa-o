@@ -1369,7 +1369,7 @@ const METRIC_EXPLANATIONS = {
     }
 };
 
-const WorkflowAnalyticsPage = () => {
+const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) => {
     const navigate = useNavigate();
     // --- Date Filter Setup (Default: 6 months ago to today) ---
     const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -1381,7 +1381,9 @@ const WorkflowAnalyticsPage = () => {
 
     const [dateRange, setDateRange] = useState(['2026-01-01', getTodayString()]);
     const [selectedCabinet, setSelectedCabinet] = useState('c31ae087-921c-4985-bfcc-7b32de369db8');
-    const [activeTab, setActiveTab] = useState('diretor_compras');
+    const [localActiveTab, setLocalActiveTab] = useState('diretor_compras');
+    const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : localActiveTab;
+    const setActiveTab = onTabChange !== undefined ? onTabChange : setLocalActiveTab;
     const [diretorComprasStatusFilter, setDiretorComprasStatusFilter] = useState('all');
     const [visaoLogisticaStatusFilter, setVisaoLogisticaStatusFilter] = useState('all');
     const [visaoConsolidadaStatusFilter, setVisaoConsolidadaStatusFilter] = useState('all');
@@ -3018,38 +3020,40 @@ const WorkflowAnalyticsPage = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex bg-slate-100/80 p-1.5 rounded-2xl gap-1 max-w-fit border border-slate-200/60 shadow-sm backdrop-blur-sm">
-                <button 
-                    onClick={() => setActiveTab('diretor_compras')}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
-                        activeTab === 'diretor_compras' 
-                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
-                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
-                    }`}
-                >
-                    <FaDollarSign className="text-sm" /> Visão Valores
-                </button>
-                <button 
-                    onClick={() => setActiveTab('visao_logistica')}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
-                        activeTab === 'visao_logistica' 
-                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
-                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
-                    }`}
-                >
-                    <FaTruck className="text-sm" /> Visão Logística
-                </button>
-                <button 
-                    onClick={() => setActiveTab('visao_consolidada')}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
-                        activeTab === 'visao_consolidada' 
-                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
-                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
-                    }`}
-                >
-                    <FaList className="text-sm" /> Visão Valores + Logística
-                </button>
-            </div>
+            {!controlledActiveTab && (
+                <div className="flex bg-slate-100/80 p-1.5 rounded-2xl gap-1 max-w-fit border border-slate-200/60 shadow-sm backdrop-blur-sm">
+                    <button 
+                        onClick={() => setActiveTab('diretor_compras')}
+                        className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                            activeTab === 'diretor_compras' 
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                                : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                        }`}
+                    >
+                        <FaDollarSign className="text-sm" /> Visão Valores
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('visao_logistica')}
+                        className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                            activeTab === 'visao_logistica' 
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                                : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                        }`}
+                    >
+                        <FaTruck className="text-sm" /> Visão Logística
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('visao_consolidada')}
+                        className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                            activeTab === 'visao_consolidada' 
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                                : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                        }`}
+                    >
+                        <FaList className="text-sm" /> Visão Valores + Logística
+                    </button>
+                </div>
+            )}
 
             {/* TAB CONTENT */}
             {isLoading ? (

@@ -34,6 +34,7 @@ import { WorkflowGraphBuilder } from '../services/workflow/WorkflowGraphBuilder'
 import { WorkflowHistoryAnalyzer } from '../services/workflow/WorkflowHistoryAnalyzer';
 import { WorkflowTimelineEngine } from '../services/workflow/WorkflowTimelineEngine';
 import { TimelineViewer } from '../components/Workflow/TimelineViewer';
+import WorkflowAnalyticsPage from './WorkflowAnalyticsPage';
 
 const isTaskType = (typeStr) => {
     if (!typeStr) return false;
@@ -460,6 +461,7 @@ const WorkflowHistoryPage = () => {
         return d.toISOString().split('T')[0];
     };
     const [dateRange, setDateRange] = useState(['2026-01-01', getTodayString()]);
+    const [activeMainTab, setActiveMainTab] = useState('geral'); // 'geral' | 'diretor_compras' | 'visao_logistica' | 'visao_consolidada'
 
     const [detectedTypeField, setDetectedTypeField] = useState(null);
     const [detectedDateField, setDetectedDateField] = useState(null);
@@ -1951,8 +1953,54 @@ const WorkflowHistoryPage = () => {
                 </div>
             )}
 
-            {/* Premium Filter Panel - Simplificado em linha unica */}
-            <div className="card bg-white border border-slate-200 border-l-[6px] border-l-[#4f46e5] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl">
+            {/* Unified Navigation Tabs */}
+            <div className="flex bg-slate-100/80 p-1.5 rounded-2xl gap-1 max-w-fit border border-slate-200/60 shadow-sm backdrop-blur-sm">
+                <button 
+                    onClick={() => setActiveMainTab('geral')}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                        activeMainTab === 'geral' 
+                            ? 'bg-[#4f46e5] text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                    }`}
+                >
+                    <FaList className="text-sm" /> Visão Geral
+                </button>
+                <button 
+                    onClick={() => setActiveMainTab('diretor_compras')}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                        activeMainTab === 'diretor_compras' 
+                            ? 'bg-[#4f46e5] text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                    }`}
+                >
+                    <FaDollarSign className="text-sm" /> Visão Valores
+                </button>
+                <button 
+                    onClick={() => setActiveMainTab('visao_logistica')}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                        activeMainTab === 'visao_logistica' 
+                            ? 'bg-[#4f46e5] text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                    }`}
+                >
+                    <FaTruck className="text-sm" /> Visão Logística
+                </button>
+                <button 
+                    onClick={() => setActiveMainTab('visao_consolidada')}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 ${
+                        activeMainTab === 'visao_consolidada' 
+                            ? 'bg-[#4f46e5] text-white shadow-md shadow-indigo-600/15 scale-[1.02]' 
+                            : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                    }`}
+                >
+                    <FaList className="text-sm" /> Visão Valores + Logística
+                </button>
+            </div>
+
+            {activeMainTab === 'geral' ? (
+                <>
+                    {/* Premium Filter Panel - Simplificado em linha unica */}
+                    <div className="card bg-white border border-slate-200 border-l-[6px] border-l-[#4f46e5] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl">
                 <div className="card-body p-6">
                     <form onSubmit={handleSearchDocuments} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         {/* Date Range Inputs Row */}
@@ -3084,6 +3132,13 @@ const WorkflowHistoryPage = () => {
                     </div>
                 </div>
             </div>
+                </>
+            ) : (
+                <WorkflowAnalyticsPage 
+                    activeTab={activeMainTab} 
+                    onTabChange={(tab) => setActiveMainTab(tab)} 
+                />
+            )}
         </div>
     );
 };
