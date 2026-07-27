@@ -1024,7 +1024,7 @@ const METRIC_EXPLANATIONS = {
         )
     },
     purchasing_director_table: {
-        title: "Mapeamento da Visão do Diretor de Compras",
+        title: "Mapeamento da Visão Valores",
         formula: (
             <ul className="list-disc pl-4 space-y-1 mt-1 text-[11px]">
                 <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
@@ -3027,7 +3027,7 @@ const WorkflowAnalyticsPage = () => {
                             : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
                     }`}
                 >
-                    <FaShoppingCart className="text-sm" /> Diretor de Compras
+                    <FaDollarSign className="text-sm" /> Visão Valores
                 </button>
                 <button 
                     onClick={() => setActiveTab('visao_logistica')}
@@ -3047,7 +3047,7 @@ const WorkflowAnalyticsPage = () => {
                             : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
                     }`}
                 >
-                    <FaList className="text-sm" /> Visão Consolidada
+                    <FaList className="text-sm" /> Visão Valores + Logística
                 </button>
             </div>
 
