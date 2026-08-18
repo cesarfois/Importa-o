@@ -3503,6 +3503,7 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                 {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Serviços Despachante FC', 'servicosDespachanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Coef. Importação', 'coefImportacao', 'max-w-[80px]')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
@@ -3536,6 +3537,18 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                          <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? p.servicosDespachanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{(() => {
+                                                             const facturaKz = parseFloat(p.valMercadoriaFC);
+                                                             if (!facturaKz || facturaKz === 0) return '-';
+                                                             const transporte = parseFloat(p.montanteTransporte) || 0;
+                                                             const despesasExtras = parseFloat(p.despesasExtras) || 0;
+                                                             const cambioFC = parseFloat(p.valorCambialFC) || 1;
+                                                             const direitosFC = parseFloat(p.direitosFC) || 0;
+                                                             const servicosDespachanteFC = parseFloat(p.servicosDespachanteFC) || 0;
+                                                             const numerator = (transporte * cambioFC) + (despesasExtras * cambioFC) + direitosFC + servicosDespachanteFC;
+                                                             const val = (numerator / facturaKz) * 100;
+                                                             return val.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+                                                         })()}</td>
                                                          <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
                                                         
                                                         {/* Histórico */}
@@ -4065,6 +4078,7 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                 {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Serviços Despachante FC', 'servicosDespachanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Coef. Importação', 'coefImportacao', 'max-w-[80px]')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
                                                 {renderFilterHeader('Estado', 'statusFinal', 'w-[200px] min-w-[200px] max-w-[200px]')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
@@ -4109,7 +4123,18 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                          <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? p.servicosDespachanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                         
+                                                         <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{(() => {
+                                                             const facturaKz = parseFloat(p.valMercadoriaFC);
+                                                             if (!facturaKz || facturaKz === 0) return '-';
+                                                             const transporte = parseFloat(p.montanteTransporte) || 0;
+                                                             const despesasExtras = parseFloat(p.despesasExtras) || 0;
+                                                             const cambioFC = parseFloat(p.valorCambialFC) || 1;
+                                                             const direitosFC = parseFloat(p.direitosFC) || 0;
+                                                             const servicosDespachanteFC = parseFloat(p.servicosDespachanteFC) || 0;
+                                                             const numerator = (transporte * cambioFC) + (despesasExtras * cambioFC) + direitosFC + servicosDespachanteFC;
+                                                             const val = (numerator / facturaKz) * 100;
+                                                             return val.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+                                                         })()}</td>
                                                          <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
                                                         <td className="w-[200px] min-w-[200px] max-w-[200px] text-center whitespace-nowrap">
                                                             {p.statusFinal === 'Concluído' ? (
