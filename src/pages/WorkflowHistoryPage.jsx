@@ -2236,6 +2236,9 @@ const WorkflowHistoryPage = () => {
                                                     </span>
                                                     {renderFilterDropdown('docNum', 'Documento', filterDocNum, setFilterDocNum, searchDocNum, setSearchDocNum, uniqueDocNums, true)}
                                                 </th>
+                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('requerente')}>
+                                                    Transitário {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                </th>
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap">
                                                     Nº Factura
                                                 </th>
@@ -2247,9 +2250,6 @@ const WorkflowHistoryPage = () => {
                                                 </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('percent')}>
                                                     Progresso {sortField === 'percent' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-                                                </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('requerente')}>
-                                                    Despachante {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap">
                                                     <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('activeTaskName')}>
@@ -2300,6 +2300,13 @@ const WorkflowHistoryPage = () => {
                                                             <div className="text-[10px] font-mono text-slate-400">ID: {doc.Id}</div>
                                                         </td>
 
+                                                        {/* Transitário */}
+                                                        <td className="py-3 px-2">
+                                                            <div className="font-medium text-slate-700 text-xs truncate max-w-[130px]" title={getDocFieldValue(doc, 'DESPACHANTE') || '-'}>
+                                                                {getDocFieldValue(doc, 'DESPACHANTE') ? getDocFieldValue(doc, 'DESPACHANTE').split('@')[0] : '-'}
+                                                            </div>
+                                                        </td>
+
                                                         {/* Nº Factura */}
                                                         <td className="py-3 px-2 font-mono text-xs text-slate-600">
                                                             {getDocFieldValue(doc, 'NO_FACTURA') || '-'}
@@ -2345,13 +2352,6 @@ const WorkflowHistoryPage = () => {
                                                                     </div>
                                                                 </div>
                                                             )}
-                                                        </td>
-
-                                                        {/* Despachante */}
-                                                        <td className="py-3 px-2">
-                                                            <div className="font-medium text-slate-700 text-xs truncate max-w-[130px]" title={getDocFieldValue(doc, 'DESPACHANTE') || '-'}>
-                                                                {getDocFieldValue(doc, 'DESPACHANTE') ? getDocFieldValue(doc, 'DESPACHANTE').split('@')[0] : '-'}
-                                                            </div>
                                                         </td>
 
                                                         {/* Active Task */}
