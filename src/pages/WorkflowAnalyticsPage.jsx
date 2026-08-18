@@ -1030,17 +1030,20 @@ const METRIC_EXPLANATIONS = {
                 <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
                 <li><strong>Nº Factura:</strong> Nº da Fatura Comercial.</li>
                 <li><strong>Tipo:</strong> Via/Modal de transporte.</li>
-                <li><strong>Transportador:</strong> Transportadora encarregada.</li>
+                <li><strong>Tipo Carga:</strong> Tipo de carga da importação.</li>
                 <li><strong>Transitário:</strong> Despachante ou transitário responsável.</li>
-                <li><strong>Empresa:</strong> Empresa associada ao processo.</li>
                 <li><strong>Data Factura:</strong> Data de emissão da Fatura.</li>
                 <li><strong>Factura (EU):</strong> Valor original FOB em moeda estrangeira.</li>
                 <li><strong>Cambio FC:</strong> Taxa de câmbio de fechamento de processo (FC).</li>
                 <li><strong>Factura (Kz):</strong> Valor total FOB convertido para Cuanzas pelo câmbio de fechamento.</li>
-                <li><strong>Montante FC:</strong> Custo aduaneiro total realizado no fechamento.</li>
+                <li><strong>Montante Transporte:</strong> Valor do frete/transporte internacional.</li>
+                <li><strong>Despesas Extras:</strong> Despesas adicionais ou custos extras.</li>
                 <li><strong>Dir. Alfandegários FC:</strong> Custo aduaneiro e taxas realizadas.</li>
                 <li><strong>IVA Importação FC:</strong> IVA de importação pago no fechamento.</li>
                 <li><strong>IVA Serv. Despachante FC:</strong> IVA cobrado sobre os serviços do despachante.</li>
+                <li><strong>Serviços Despachante FC:</strong> Honorários e serviços do despachante.</li>
+                <li><strong>Montante FC:</strong> Custo aduaneiro total realizado no fechamento.</li>
+                <li><strong>Coef. Importação:</strong> Landing Factor percentual calculado de taxas/fretes sobre Factura KZ.</li>
                 <li><strong>Comentário:</strong> Observações gerais do processo.</li>
             </ul>
         ),
@@ -1071,38 +1074,38 @@ const METRIC_EXPLANATIONS = {
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO</td>
                             </tr>
                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transportador</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TRANSPORTADOR</td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tipo Carga</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO_DE_CARGA / TIPO_CARGA</td>
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitário</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE</td>
                             </tr>
                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMPANY</td>
-                            </tr>
-                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data Factura</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA</td>
                             </tr>
-                            <tr className="bg-slate-50/50">
+                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (EU)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA</td>
                             </tr>
-                            <tr>
+                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Cambio FC</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">VAOR_CAMBIAL_FC</td>
                             </tr>
-                            <tr className="bg-slate-50/50">
+                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (Kz)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
                                     <span className="text-slate-500 font-sans">Calculado:</span> MONTANTE_FACTURA * VAOR_CAMBIAL_FC
                                 </td>
                             </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante Transporte</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_TRANSPORTE / VALOR_FRETE / FRETE / TRANSPORTE</td>
+                            </tr>
                             <tr>
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante FC</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE</td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Despesas Extras</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPESAS_EXTRAS / CUSTOS_ADICIONAIS / OUTROS_CUSTOS</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dir. Alfandegários FC</td>
@@ -1117,6 +1120,20 @@ const METRIC_EXPLANATIONS = {
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_SERV_DESPACHANTE_FC</td>
                             </tr>
                             <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Serviços Despachante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">SERVICOS_DESPACHANTE_FC</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Coef. Importação</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Calculado:</span> ((Transporte * CambioFC) + (Extras * CambioFC) + DireitosFC + DespachanteFC) / FacturaKZ
+                                </td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Comentário</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO</td>
                             </tr>
@@ -1133,9 +1150,8 @@ const METRIC_EXPLANATIONS = {
                 <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
                 <li><strong>Nº Factura:</strong> Nº da Fatura Comercial.</li>
                 <li><strong>Tipo:</strong> Via/Modal de transporte.</li>
-                <li><strong>Transportador:</strong> Transportadora encarregada.</li>
+                <li><strong>Tipo Carga:</strong> Tipo de carga da importação.</li>
                 <li><strong>Transitário:</strong> Despachante ou transitário responsável.</li>
-                <li><strong>Empresa:</strong> Empresa associada ao processo.</li>
                 <li><strong>Data da Factura:</strong> Data de emissão da Fatura.</li>
                 <li><strong>Data de Despacho:</strong> Data de saída da alfândega.</li>
                 <li><strong>Chegada AO:</strong> Data de chegada a Angola.</li>
@@ -1173,18 +1189,14 @@ const METRIC_EXPLANATIONS = {
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO</td>
                             </tr>
                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transportador</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TRANSPORTADOR</td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tipo Carga</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO_DE_CARGA / TIPO_CARGA</td>
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitário</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE</td>
                             </tr>
                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMPANY</td>
-                            </tr>
-                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data da Factura</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA</td>
                             </tr>
@@ -1235,9 +1247,8 @@ const METRIC_EXPLANATIONS = {
                 <li><strong>Nº PI:</strong> Nº do Processo de Importação (Identificação).</li>
                 <li><strong>Nº Factura:</strong> Nº da Fatura Comercial.</li>
                 <li><strong>Tipo:</strong> Via/Modal de transporte.</li>
-                <li><strong>Transportador:</strong> Transportadora encarregada.</li>
+                <li><strong>Tipo Carga:</strong> Tipo de carga da importação.</li>
                 <li><strong>Transitário:</strong> Despachante ou transitário responsável.</li>
-                <li><strong>Empresa:</strong> Empresa associada ao processo.</li>
                 <li><strong>Data da Factura:</strong> Data de emissão da Fatura.</li>
                 <li><strong>Data de Despacho:</strong> Data de saída da alfândega.</li>
                 <li><strong>Chegada AO:</strong> Data de chegada a Angola.</li>
@@ -1248,11 +1259,16 @@ const METRIC_EXPLANATIONS = {
                 <li><strong>Factura (EU):</strong> Valor original FOB em moeda estrangeira.</li>
                 <li><strong>Cambio FC:</strong> Taxa de câmbio de fechamento de processo (FC).</li>
                 <li><strong>Factura (Kz):</strong> Valor total FOB convertido para Cuanzas pelo câmbio de fechamento.</li>
-                <li><strong>Montante FC:</strong> Custo aduaneiro total realizado no fechamento.</li>
+                <li><strong>Montante Transporte:</strong> Valor do frete/transporte internacional.</li>
+                <li><strong>Despesas Extras:</strong> Despesas adicionais ou custos extras.</li>
                 <li><strong>Dir. Alfandegários FC:</strong> Custo aduaneiro e taxas realizadas.</li>
                 <li><strong>IVA Importação FC:</strong> IVA de importação pago no fechamento.</li>
                 <li><strong>IVA Serv. Despachante FC:</strong> IVA cobrado sobre os serviços do despachante.</li>
+                <li><strong>Serviços Despachante FC:</strong> Honorários e serviços do despachante.</li>
+                <li><strong>Montante FC:</strong> Custo aduaneiro total realizado no fechamento.</li>
+                <li><strong>Coef. Importação:</strong> Landing Factor percentual calculado de taxas/fretes sobre Factura KZ.</li>
                 <li><strong>Comentário:</strong> Observações gerais do processo.</li>
+                <li><strong>Estado:</strong> Status do processo no workflow.</li>
             </ul>
         ),
         source: "Mapeamento direto dos metadados e histórico dos workflows do DocuWare.",
@@ -1282,68 +1298,68 @@ const METRIC_EXPLANATIONS = {
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO</td>
                             </tr>
                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transportador</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TRANSPORTADOR</td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Tipo Carga</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">TIPO_DE_CARGA / TIPO_CARGA</td>
                             </tr>
                             <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Transitário</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPACHANTE</td>
                             </tr>
                             <tr className="bg-slate-50/50">
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Empresa</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMPANY</td>
-                            </tr>
-                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data da Factura</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_FACTURA</td>
                             </tr>
-                            <tr className="bg-slate-50/50">
+                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Data de Despacho</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DATA_DE_SAIDA_DA_ALFANDEGA</td>
                             </tr>
-                            <tr>
+                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada AO</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
                                     DATA_DE_CHEGADA__AO_<br />
                                     <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> Data de Chegada (AO)
                                 </td>
                             </tr>
-                            <tr className="bg-slate-50/50">
+                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Entrega(RCS)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
                                     DATA_ENTREGUE__RCS_<br />
                                     <span className="text-slate-500 font-sans">Fallback no Histórico do Workflow:</span> "entrega rcs"
                                 </td>
                             </tr>
-                            <tr>
+                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura → Despacho</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Data da Factura e Data de Despacho</td>
                             </tr>
-                            <tr className="bg-slate-50/50">
+                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Chegada(AO) → Entrega(RCS)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Chegada AO e Entrega(RCS)</td>
                             </tr>
-                            <tr>
+                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura → Entrega(RCS)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">Diferença de dias corridos entre Data da Factura e Entrega(RCS)</td>
                             </tr>
-                            <tr className="bg-slate-50/50">
+                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (EU)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA</td>
                             </tr>
-                            <tr>
+                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Cambio FC</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">VAOR_CAMBIAL_FC</td>
                             </tr>
-                            <tr className="bg-slate-50/50">
+                            <tr>
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Factura (Kz)</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
                                     <span className="text-slate-500 font-sans">Calculado:</span> MONTANTE_FACTURA * VAOR_CAMBIAL_FC
                                 </td>
                             </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante Transporte</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_TRANSPORTE / VALOR_FRETE / FRETE / TRANSPORTE</td>
+                            </tr>
                             <tr>
-                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante FC</td>
-                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE</td>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Despesas Extras</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">DESPESAS_EXTRAS / CUSTOS_ADICIONAIS / OUTROS_CUSTOS</td>
                             </tr>
                             <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Dir. Alfandegários FC</td>
@@ -1358,6 +1374,20 @@ const METRIC_EXPLANATIONS = {
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">IVA_SERV_DESPACHANTE_FC</td>
                             </tr>
                             <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Serviços Despachante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">SERVICOS_DESPACHANTE_FC</td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Montante FC</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">MONTANTE_FACTURA_DESPACHANTE</td>
+                            </tr>
+                            <tr>
+                                <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Coef. Importação</td>
+                                <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">
+                                    <span className="text-slate-500 font-sans">Calculado:</span> ((Transporte * CambioFC) + (Extras * CambioFC) + DireitosFC + DespachanteFC) / FacturaKZ
+                                </td>
+                            </tr>
+                            <tr className="bg-slate-50/50">
                                 <td className="p-1.5 border border-slate-200 font-semibold text-slate-700">Comentário</td>
                                 <td className="p-1.5 border border-slate-200 font-mono text-indigo-600">COMENTARIO</td>
                             </tr>
