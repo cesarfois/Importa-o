@@ -3496,12 +3496,13 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                 {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
                                                 {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Factura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Montante Transporte', 'montanteTransporte', 'max-w-[80px]')}
                                                 {renderFilterHeader('Despesas Extras', 'despesasExtras', 'max-w-[80px]')}
                                                 {renderFilterHeader('Dir. Alfandegários FC', 'direitosFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('IVA Importação FC', 'ivaFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Serviços Despachante FC', 'servicosDespachanteFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
                                                     <FaHistory className="mx-auto text-slate-400" />
@@ -3528,13 +3529,14 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                         <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
                                                         <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                         <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.valMercadoriaFC ? p.valMercadoriaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.despesasExtras ? p.despesasExtras.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.direitosFC ? p.direitosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.ivaFC ? p.ivaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.despesasExtras ? p.despesasExtras.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.direitosFC ? p.direitosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaFC ? p.ivaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? p.servicosDespachanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
                                                         
                                                         {/* Histórico */}
                                                         <td className="text-center py-2 border-b border-slate-100 w-[38px] min-w-[38px] shrink-0">
@@ -4056,13 +4058,13 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                 {renderFilterHeader('Factura (EU)', 'valMercadoriaOrig', 'max-w-[80px]')}
                                                 {renderFilterHeader('Cambio FC', 'valorCambialFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Factura (Kz)', 'valMercadoriaFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Montante Transporte', 'montanteTransporte', 'max-w-[80px]')}
                                                 {renderFilterHeader('Despesas Extras', 'despesasExtras', 'max-w-[80px]')}
                                                 {renderFilterHeader('Dir. Alfandegários FC', 'direitosFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('IVA Importação FC', 'ivaFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
-                                                
+                                                {renderFilterHeader('Serviços Despachante FC', 'servicosDespachanteFC', 'max-w-[80px]')}
+                                                {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Comentário', 'comentario')}
                                                 {renderFilterHeader('Estado', 'statusFinal', 'w-[200px] min-w-[200px] max-w-[200px]')}
                                                 <th className="bg-[#d0ebf8] text-blue-950/80 font-bold text-[9px] tracking-wider uppercase text-center sticky top-0 z-10 p-2 border-b border-slate-200 w-[38px] min-w-[38px]" title="Histórico">
@@ -4100,14 +4102,15 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                         <td className="text-right font-mono font-semibold whitespace-nowrap">{formattedValor}</td>
                                                         <td className="text-right font-mono whitespace-nowrap">{p.valorCambialFC ? p.valorCambialFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                         <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.valMercadoriaFC ? p.valMercadoriaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.despesasExtras ? p.despesasExtras.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.direitosFC ? p.direitosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.ivaFC ? p.ivaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                        
-                                                        <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.despesasExtras ? p.despesasExtras.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.direitosFC ? p.direitosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaFC ? p.ivaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? p.servicosDespachanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                         
+                                                         <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
                                                         <td className="w-[200px] min-w-[200px] max-w-[200px] text-center whitespace-nowrap">
                                                             {p.statusFinal === 'Concluído' ? (
                                                                 <span className="badge badge-sm font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200/60 rounded-md py-1 px-2">
