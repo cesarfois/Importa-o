@@ -904,6 +904,14 @@ const WorkflowHistoryPage = () => {
                 const getMat = (d) => getDocFieldValue(d, 'MATRICULA') || '';
                 valA = getMat(a);
                 valB = getMat(b);
+            } else if (sortField === 'viaTransporte') {
+                const getVia = (d) => getDocFieldValue(d, 'TIPO') || '';
+                valA = getVia(a);
+                valB = getVia(b);
+            } else if (sortField === 'tipoCarga') {
+                const getCarga = (d) => getDocFieldValue(d, 'TIPO_DE_CARGA') || getDocFieldValue(d, 'TIPO_CARGA') || '';
+                valA = getCarga(a);
+                valB = getCarga(b);
             } else {
                 return 0;
             }
@@ -2243,6 +2251,12 @@ const WorkflowHistoryPage = () => {
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('requerente')}>
                                                     Transitário {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                 </th>
+                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('viaTransporte')}>
+                                                    Tipo {sortField === 'viaTransporte' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                </th>
+                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('tipoCarga')}>
+                                                    Tipo de Carga {sortField === 'tipoCarga' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                </th>
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap">
                                                     Nº Factura
                                                 </th>
@@ -2305,11 +2319,19 @@ const WorkflowHistoryPage = () => {
                                                         </td>
 
                                                         {/* Transitário */}
-                                                        <td className="py-3 px-2">
-                                                            <div className="font-medium text-slate-700 text-xs truncate max-w-[130px]" title={getDocFieldValue(doc, 'DESPACHANTE') || '-'}>
-                                                                {getDocFieldValue(doc, 'DESPACHANTE') ? getDocFieldValue(doc, 'DESPACHANTE').split('@')[0] : '-'}
-                                                            </div>
-                                                        </td>
+                                                         <td className="py-3 px-2">
+                                                             <div className="font-medium text-slate-700 text-xs truncate max-w-[130px]" title={getDocFieldValue(doc, 'DESPACHANTE') || '-'}>
+                                                                 {getDocFieldValue(doc, 'DESPACHANTE') ? getDocFieldValue(doc, 'DESPACHANTE').split('@')[0] : '-'}
+                                                             </div>
+                                                         </td>
+                                                         {/* Tipo */}
+                                                         <td className="py-3 px-2 font-mono text-xs text-slate-600">
+                                                             {getDocFieldValue(doc, 'TIPO') || '-'}
+                                                         </td>
+                                                         {/* Tipo de Carga */}
+                                                         <td className="py-3 px-2 font-mono text-xs text-slate-600">
+                                                             {getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-'}
+                                                         </td>
 
                                                         {/* Nº Factura */}
                                                         <td className="py-3 px-2 font-mono text-xs text-slate-600">
