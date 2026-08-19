@@ -477,6 +477,26 @@ const WorkflowHistoryPage = () => {
     const [filterResponsible, setFilterResponsible] = useState('all');
     const [filterDocNum, setFilterDocNum] = useState('all');
     const [filterComments, setFilterComments] = useState('all');
+    
+    // New column filter states
+    const [filterTransitário, setFilterTransitário] = useState('all');
+    const [filterTipo, setFilterTipo] = useState('all');
+    const [filterTipoCarga, setFilterTipoCarga] = useState('all');
+    const [filterNoFactura, setFilterNoFactura] = useState('all');
+    const [filterValorFactura, setFilterValorFactura] = useState('all');
+    const [filterInicio, setFilterInicio] = useState('all');
+    const [filterProgresso, setFilterProgresso] = useState('all');
+    const [filterTempoTarefa, setFilterTempoTarefa] = useState('all');
+
+    // New search states for column filters
+    const [searchTransitário, setSearchTransitário] = useState('');
+    const [searchTipo, setSearchTipo] = useState('');
+    const [searchTipoCarga, setSearchTipoCarga] = useState('');
+    const [searchNoFactura, setSearchNoFactura] = useState('');
+    const [searchValorFactura, setSearchValorFactura] = useState('');
+    const [searchInicio, setSearchInicio] = useState('');
+    const [searchProgresso, setSearchProgresso] = useState('');
+    const [searchTempoTarefa, setSearchTempoTarefa] = useState('');
     const [searchDocNum, setSearchDocNum] = useState('');
     const [searchStep, setSearchStep] = useState('');
     const [searchResponsible, setSearchResponsible] = useState('');
@@ -812,6 +832,88 @@ const WorkflowHistoryPage = () => {
         return Array.from(set).sort();
     }, [documents]);
 
+    const uniqueTransitarios = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            const val = getDocFieldValue(doc, 'DESPACHANTE');
+            set.add(val ? val.split('@')[0] : 'Sem Transitário');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueTipos = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            set.add(getDocFieldValue(doc, 'TIPO') || '-');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueTiposCarga = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            set.add(getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueNoFacturas = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            set.add(getDocFieldValue(doc, 'NO_FACTURA') || '-');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueValoresFactura = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            const raw = findFieldVal(doc, ['MONTANTE_FACTURA', 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'VALOR']);
+            const parsed = parseFloat(raw);
+            set.add((!isNaN(parsed) && parsed > 0) ? parsed.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueInicios = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            const prog = documentProgress[doc.Id];
+            if (prog && prog.entryDate) {
+                set.add(formatDate(prog.entryDate, true));
+            } else {
+                set.add('-');
+            }
+        });
+        return Array.from(set).sort();
+    }, [documents, documentProgress]);
+
+    const uniqueProgressos = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            const prog = documentProgress[doc.Id];
+            if (prog) {
+                set.add(`${prog.percent}%`);
+            } else {
+                set.add('-');
+            }
+        });
+        return Array.from(set).sort();
+    }, [documents, documentProgress]);
+
+    const uniqueTemposTarefa = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            const prog = documentProgress[doc.Id];
+            if (prog && !prog.isFinished && prog.timeStoppedMs > 0) {
+                set.add(WorkflowHistoryAnalyzer.formatDuration(prog.timeStoppedMs));
+            } else {
+                set.add('-');
+            }
+        });
+        return Array.from(set).sort();
+    }, [documents, documentProgress]);
+
     // Filter and sort documents for the operational table
     const filteredAndSortedDocuments = useMemo(() => {
         let result = [...documents];
@@ -856,6 +958,60 @@ const WorkflowHistoryPage = () => {
             if (filterComments !== 'all') {
                 const docComments = getDocumentComments(doc) || 'Sem Comentários';
                 if (docComments !== filterComments) return false;
+            }
+
+            // Transitário Filter
+            if (filterTransitário !== 'all') {
+                const val = getDocFieldValue(doc, 'DESPACHANTE');
+                const trans = val ? val.split('@')[0] : 'Sem Transitário';
+                if (trans !== filterTransitário) return false;
+            }
+
+            // Tipo Filter
+            if (filterTipo !== 'all') {
+                const trans = getDocFieldValue(doc, 'TIPO') || '-';
+                if (trans !== filterTipo) return false;
+            }
+
+            // Tipo Carga Filter
+            if (filterTipoCarga !== 'all') {
+                const trans = getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-';
+                if (trans !== filterTipoCarga) return false;
+            }
+
+            // No Factura Filter
+            if (filterNoFactura !== 'all') {
+                const trans = getDocFieldValue(doc, 'NO_FACTURA') || '-';
+                if (trans !== filterNoFactura) return false;
+            }
+
+            // Valor Factura Filter
+            if (filterValorFactura !== 'all') {
+                const raw = findFieldVal(doc, ['MONTANTE_FACTURA', 'VALOR_FOB', 'FOB', 'VALOR_MERCADORIA', 'VALOR']);
+                const parsed = parseFloat(raw);
+                const val = (!isNaN(parsed) && parsed > 0) ? parsed.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
+                if (val !== filterValorFactura) return false;
+            }
+
+            // Inicio Filter
+            if (filterInicio !== 'all') {
+                const prog = documentProgress[doc.Id];
+                const val = (prog && prog.entryDate) ? formatDate(prog.entryDate, true) : '-';
+                if (val !== filterInicio) return false;
+            }
+
+            // Progresso Filter
+            if (filterProgresso !== 'all') {
+                const prog = documentProgress[doc.Id];
+                const val = prog ? `${prog.percent}%` : '-';
+                if (val !== filterProgresso) return false;
+            }
+
+            // Tempo Tarefa Filter
+            if (filterTempoTarefa !== 'all') {
+                const prog = documentProgress[doc.Id];
+                const val = (prog && !prog.isFinished && prog.timeStoppedMs > 0) ? WorkflowHistoryAnalyzer.formatDuration(prog.timeStoppedMs) : '-';
+                if (val !== filterTempoTarefa) return false;
             }
 
             return true;
@@ -1767,6 +1923,33 @@ const WorkflowHistoryPage = () => {
         }
     };
 
+    const handleResetAllFilters = () => {
+        setFilterDocNum('all');
+        setFilterTransitário('all');
+        setFilterTipo('all');
+        setFilterTipoCarga('all');
+        setFilterNoFactura('all');
+        setFilterValorFactura('all');
+        setFilterInicio('all');
+        setFilterProgresso('all');
+        setFilterStep('all');
+        setFilterTempoTarefa('all');
+        setFilterComments('all');
+        
+        // Clear search states
+        setSearchDocNum('');
+        setSearchStep('');
+        setSearchComments('');
+        setSearchTransitário('');
+        setSearchTipo('');
+        setSearchTipoCarga('');
+        setSearchNoFactura('');
+        setSearchValorFactura('');
+        setSearchInicio('');
+        setSearchProgresso('');
+        setSearchTempoTarefa('');
+    };
+
     const handleExportDocumentsList = () => {
         try {
             const csvHeaders = [
@@ -2178,18 +2361,30 @@ const WorkflowHistoryPage = () => {
                             {/* Toolbar: Filters */}
                             <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-wrap gap-4 items-center justify-between">
                                 
-                                {/* Left Side: Export Button */}
+                                {/* Left Side: Export Button & Reset Filters */}
                                 <div>
-                                    <button
-                                        type="button"
-                                        onClick={handleExportDocumentsList}
-                                        className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white border-0 gap-2 font-semibold shadow-sm rounded-lg h-9 disabled:bg-slate-100 disabled:text-slate-400"
-                                        disabled={filteredAndSortedDocuments.length === 0}
-                                        title="Exportar lista de documentos para CSV"
-                                    >
-                                        <FaFileCsv className="text-sm" />
-                                        <span>Exportar Lista</span>
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleExportDocumentsList}
+                                            className="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white border-0 gap-2 font-semibold shadow-sm rounded-lg h-9 disabled:bg-slate-100 disabled:text-slate-400"
+                                            disabled={filteredAndSortedDocuments.length === 0}
+                                            title="Exportar lista de documentos para CSV"
+                                        >
+                                            <FaFileCsv className="text-sm" />
+                                            <span>Exportar Lista</span>
+                                        </button>
+                                        
+                                        <button
+                                            type="button"
+                                            onClick={handleResetAllFilters}
+                                            className="btn btn-sm btn-outline border-slate-200 hover:border-rose-500 hover:bg-rose-50 hover:text-rose-600 text-slate-600 gap-1.5 font-semibold shadow-sm rounded-lg h-9"
+                                            title="Limpar todos os filtros de colunas"
+                                        >
+                                            <FaUndo className="text-xs" />
+                                            <span>Limpar Filtros</span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Right Side: Dropdown Filters */}
@@ -2248,26 +2443,47 @@ const WorkflowHistoryPage = () => {
                                                     </span>
                                                     {renderFilterDropdown('docNum', 'Documento', filterDocNum, setFilterDocNum, searchDocNum, setSearchDocNum, uniqueDocNums, true)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('requerente')}>
-                                                    Transitário {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-                                                </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('viaTransporte')}>
-                                                    Tipo {sortField === 'viaTransporte' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-                                                </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('tipoCarga')}>
-                                                    Tipo de Carga {sortField === 'tipoCarga' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('requerente')}>
+                                                        Transitário {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('transitário', 'Transitário', filterTransitário, setFilterTransitário, searchTransitário, setSearchTransitário, uniqueTransitarios)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap">
-                                                    Nº Factura
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('viaTransporte')}>
+                                                        Tipo {sortField === 'viaTransporte' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('tipo', 'Tipo', filterTipo, setFilterTipo, searchTipo, setSearchTipo, uniqueTipos)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('valorFactura')}>
-                                                    Valor Factura {sortField === 'valorFactura' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('tipoCarga')}>
+                                                        Tipo de Carga {sortField === 'tipoCarga' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('tipoCarga', 'Tipo de Carga', filterTipoCarga, setFilterTipoCarga, searchTipoCarga, setSearchTipoCarga, uniqueTiposCarga)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('entryDate')}>
-                                                    Início {sortField === 'entryDate' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('noFactura')}>
+                                                        Nº Factura {sortField === 'noFactura' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('noFactura', 'Nº Factura', filterNoFactura, setFilterNoFactura, searchNoFactura, setSearchNoFactura, uniqueNoFacturas)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('percent')}>
-                                                    Progresso {sortField === 'percent' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('valorFactura')}>
+                                                        Valor Factura {sortField === 'valorFactura' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('valorFactura', 'Valor Factura', filterValorFactura, setFilterValorFactura, searchValorFactura, setSearchValorFactura, uniqueValoresFactura)}
+                                                </th>
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('entryDate')}>
+                                                        Início {sortField === 'entryDate' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('inicio', 'Início', filterInicio, setFilterInicio, searchInicio, setSearchInicio, uniqueInicios)}
+                                                </th>
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('percent')}>
+                                                        Progresso {sortField === 'percent' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('progresso', 'Progresso', filterProgresso, setFilterProgresso, searchProgresso, setSearchProgresso, uniqueProgressos)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap">
                                                     <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('activeTaskName')}>
@@ -2275,8 +2491,11 @@ const WorkflowHistoryPage = () => {
                                                     </span>
                                                     {renderFilterDropdown('step', 'Etapa', filterStep, setFilterStep, searchStep, setSearchStep, uniqueSteps)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('timeStoppedMs')}>
-                                                    Tempo na Tarefa {sortField === 'timeStoppedMs' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('timeStoppedMs')}>
+                                                        Tempo na Tarefa {sortField === 'timeStoppedMs' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('tempoTarefa', 'Tempo na Tarefa', filterTempoTarefa, setFilterTempoTarefa, searchTempoTarefa, setSearchTempoTarefa, uniqueTemposTarefa)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap">
                                                     <span>
