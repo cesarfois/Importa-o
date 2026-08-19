@@ -3553,8 +3553,6 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                 {renderFilterHeader('Montante Transporte', 'montanteTransporte', 'max-w-[80px]')}
                                                 {renderFilterHeader('Despesas Extras', 'despesasExtras', 'max-w-[80px]')}
                                                 {renderFilterHeader('Dir. Alfandegários FC', 'direitosFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('IVA Importação FC', 'ivaFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Serviços Despachante FC', 'servicosDespachanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Coef. Importação', 'coefImportacao', 'max-w-[80px]')}
@@ -3587,9 +3585,7 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                          <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.despesasExtras ? p.despesasExtras.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.direitosFC ? p.direitosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaFC ? p.ivaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                         <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? p.servicosDespachanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                                                                   <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? p.servicosDespachanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.coefImportacao}</td>
                                                          <td className="max-w-[200px] truncate text-slate-600" title={p.comentario}>{p.comentario}</td>
@@ -4117,8 +4113,6 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                 {renderFilterHeader('Montante Transporte', 'montanteTransporte', 'max-w-[80px]')}
                                                 {renderFilterHeader('Despesas Extras', 'despesasExtras', 'max-w-[80px]')}
                                                 {renderFilterHeader('Dir. Alfandegários FC', 'direitosFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('IVA Importação FC', 'ivaFC', 'max-w-[80px]')}
-                                                {renderFilterHeader('IVA Serv. Despachante FC', 'ivaServicosFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Serviços Despachante FC', 'servicosDespachanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Montante FC', 'montanteFC', 'max-w-[80px]')}
                                                 {renderFilterHeader('Coef. Importação', 'coefImportacao', 'max-w-[80px]')}
@@ -4162,8 +4156,6 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
                                                          <td className="text-right font-mono whitespace-nowrap">{p.montanteTransporte ? p.montanteTransporte.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.despesasExtras ? p.despesasExtras.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.direitosFC ? p.direitosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaFC ? p.ivaFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                                                         <td className="text-right font-mono whitespace-nowrap">{p.ivaServicosFC ? p.ivaServicosFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.servicosDespachanteFC ? p.servicosDespachanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap">{p.montanteFC ? p.montanteFC.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                                                          <td className="text-right font-mono whitespace-nowrap font-bold text-indigo-600">{p.coefImportacao}</td>
