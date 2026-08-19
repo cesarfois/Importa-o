@@ -901,6 +901,31 @@ const WorkflowHistoryPage = () => {
                 if (docNum !== filterDocNum) return false;
             }
 
+            // Transitário Filter
+            if (filterTransitario !== 'all') {
+                let transitario = getDocFieldValue(doc, 'DESPACHANTE') || '-';
+                if (transitario !== '-') transitario = transitario.split('@')[0];
+                if (transitario !== filterTransitario) return false;
+            }
+
+            // Tipo Filter
+            if (filterTipo !== 'all') {
+                const tipo = getDocFieldValue(doc, 'TIPO') || '-';
+                if (tipo !== filterTipo) return false;
+            }
+
+            // Tipo de Carga Filter
+            if (filterTipoCarga !== 'all') {
+                const tipoCarga = getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-';
+                if (tipoCarga !== filterTipoCarga) return false;
+            }
+
+            // Nº Factura Filter
+            if (filterNoFactura !== 'all') {
+                const noFactura = getDocFieldValue(doc, 'NO_FACTURA') || '-';
+                if (noFactura !== filterNoFactura) return false;
+            }
+
             // Comments Filter
             if (filterComments !== 'all') {
                 const docComments = getDocumentComments(doc) || 'Sem Comentários';
