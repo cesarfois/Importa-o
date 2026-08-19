@@ -22,7 +22,8 @@ import {
     FaCircle,
     FaRegCircle,
     FaTruck,
-    FaDollarSign
+    FaDollarSign,
+    FaUndo
 } from 'react-icons/fa';
 import { workflowAnalyticsService } from '../services/workflowAnalyticsService';
 import { docuwareService } from '../services/docuwareService';
