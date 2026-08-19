@@ -478,6 +478,18 @@ const WorkflowHistoryPage = () => {
     const [filterDocNum, setFilterDocNum] = useState('all');
     const [filterComments, setFilterComments] = useState('all');
     const [searchDocNum, setSearchDocNum] = useState('');
+
+    const [filterTransitario, setFilterTransitario] = useState('all');
+    const [searchTransitario, setSearchTransitario] = useState('');
+    
+    const [filterTipo, setFilterTipo] = useState('all');
+    const [searchTipo, setSearchTipo] = useState('');
+    
+    const [filterTipoCarga, setFilterTipoCarga] = useState('all');
+    const [searchTipoCarga, setSearchTipoCarga] = useState('');
+    
+    const [filterNoFactura, setFilterNoFactura] = useState('all');
+    const [searchNoFactura, setSearchNoFactura] = useState('');
     const [searchStep, setSearchStep] = useState('');
     const [searchResponsible, setSearchResponsible] = useState('');
     const [searchComments, setSearchComments] = useState('');
@@ -798,6 +810,40 @@ const WorkflowHistoryPage = () => {
         documents.forEach(doc => {
             const num = getDocumentNumber(doc);
             set.add(num || 'Sem Nº');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueTransitarios = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            let val = getDocFieldValue(doc, 'DESPACHANTE') || '-';
+            if (val && val !== '-') val = val.split('@')[0];
+            set.add(val);
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueTipos = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            set.add(getDocFieldValue(doc, 'TIPO') || '-');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueTiposCarga = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            set.add(getDocFieldValue(doc, 'TIPO_DE_CARGA') || getDocFieldValue(doc, 'TIPO_CARGA') || '-');
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
+    const uniqueNoFacturas = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            set.add(getDocFieldValue(doc, 'NO_FACTURA') || '-');
         });
         return Array.from(set).sort();
     }, [documents]);
@@ -2242,23 +2288,35 @@ const WorkflowHistoryPage = () => {
                                     <table className="table table-compact w-full border-collapse">
                                         <thead>
                                             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-wider font-semibold">
-                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap w-[140px] min-w-[140px]">
                                                     <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('docNum')}>
                                                         Documento {sortField === 'docNum' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                     </span>
                                                     {renderFilterDropdown('docNum', 'Documento', filterDocNum, setFilterDocNum, searchDocNum, setSearchDocNum, uniqueDocNums, true)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('requerente')}>
-                                                    Transitário {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap w-[140px] min-w-[140px]">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('requerente')}>
+                                                        Transitário {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('transitario', 'Transitário', filterTransitario, setFilterTransitario, searchTransitario, setSearchTransitario, uniqueTransitarios, true)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('viaTransporte')}>
-                                                    Tipo {sortField === 'viaTransporte' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap w-[140px] min-w-[140px]">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('viaTransporte')}>
+                                                        Tipo {sortField === 'viaTransporte' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('tipo', 'Tipo', filterTipo, setFilterTipo, searchTipo, setSearchTipo, uniqueTipos, true)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('tipoCarga')}>
-                                                    Tipo de Carga {sortField === 'tipoCarga' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap w-[140px] min-w-[140px]">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('tipoCarga')}>
+                                                        Tipo de Carga {sortField === 'tipoCarga' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('tipoCarga', 'Tipo de Carga', filterTipoCarga, setFilterTipoCarga, searchTipoCarga, setSearchTipoCarga, uniqueTiposCarga, true)}
                                                 </th>
-                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap">
-                                                    Nº Factura
+                                                <th className="py-3 px-2 text-left select-none whitespace-nowrap w-[140px] min-w-[140px]">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('noFactura')}>
+                                                        Nº Factura {sortField === 'noFactura' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('noFactura', 'Nº Factura', filterNoFactura, setFilterNoFactura, searchNoFactura, setSearchNoFactura, uniqueNoFacturas, true)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => handleSort('valorFactura')}>
                                                     Valor Factura {sortField === 'valorFactura' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
