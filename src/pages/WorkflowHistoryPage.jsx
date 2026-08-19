@@ -1002,7 +1002,7 @@ const WorkflowHistoryPage = () => {
         });
 
         return result;
-    }, [documents, documentProgress, quickFilter, filterStep, filterResponsible, sortField, sortDirection]);
+    }, [documents, documentProgress, quickFilter, filterStep, filterResponsible, filterDocNum, filterComments, filterTransitario, filterTipo, filterTipoCarga, filterNoFactura, sortField, sortDirection]);
 
     // Pipeline visual steps aggregated for the cockpit - Dynamic from WFD
     const flowPipelineSteps = useMemo(() => {
