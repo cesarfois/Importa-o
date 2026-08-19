@@ -678,25 +678,29 @@ const WorkflowHistoryPage = () => {
         documents.forEach(doc => {
             const prog = documentProgress[doc.Id];
             if (prog) {
+                const dtFacturaRaw = findFieldVal(doc, ['DATA_FACTURA', 'DATA_DA_FACTURA', 'DATA_EMISSAO_FACTURA', 'DATA_EMISSAO_DA_FACTURA']);
+                const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE__RCS_', 'DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS', 'DATA_ENTREGUE', 'ENTREGUE']);
+                
+                const dateFactura = dtFacturaRaw ? parseDocuwareDate(dtFacturaRaw) : null;
+                const dateRcs = dtRcsRaw ? parseDocuwareDate(dtRcsRaw) : null;
+                
+                if (dateFactura && dateRcs) {
+                    const utc1 = Date.UTC(dateRcs.getFullYear(), dateRcs.getMonth(), dateRcs.getDate());
+                    const utc2 = Date.UTC(dateFactura.getFullYear(), dateFactura.getMonth(), dateFactura.getDate());
+                    const durationDays = Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
+                    if (durationDays >= 0) {
+                        completedDurationsSum += (durationDays * 24 * 60 * 60 * 1000);
+                        completedDurationsCount++;
+                    }
+                }
+
                 if (prog.isFinished) {
                     if (prog.isRejected) {
                         rejected++;
                     } else {
                         completed++;
                     }
-                    const dtFacturaRaw = findFieldVal(doc, ['DATA_FACTURA', 'DATA_DA_FACTURA', 'DATA_EMISSAO_FACTURA', 'DATA_EMISSAO_DA_FACTURA']);
-                    const dtRcsRaw = findFieldVal(doc, ['DATA_ENTREGUE__RCS_', 'DATA_ENTREGUE_RCS_', 'DATA_ENTREGUE_RCS', 'DATA_ENTREGA_RCS', 'DATA_ENTREGUE', 'ENTREGUE']);
-                    
-                    const dateFactura = dtFacturaRaw ? parseDocuwareDate(dtFacturaRaw) : null;
-                    const dateRcs = dtRcsRaw ? parseDocuwareDate(dtRcsRaw) : null;
-                    
-                    if (dateFactura && dateRcs) {
-                        const duration = dateRcs.getTime() - dateFactura.getTime();
-                        if (duration > 0) {
-                            completedDurationsSum += duration;
-                            completedDurationsCount++;
-                        }
-                    } else if (prog.completedAt && prog.entryDate) {
+                    if (!(dateFactura && dateRcs) && prog.completedAt && prog.entryDate) {
                         const duration = new Date(prog.completedAt).getTime() - new Date(prog.entryDate).getTime();
                         if (duration > 0) {
                             completedDurationsSum += duration;
