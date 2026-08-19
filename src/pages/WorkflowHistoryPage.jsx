@@ -22,7 +22,8 @@ import {
     FaCircle,
     FaRegCircle,
     FaTruck,
-    FaDollarSign
+    FaDollarSign,
+    FaUndo
 } from 'react-icons/fa';
 import { workflowAnalyticsService } from '../services/workflowAnalyticsService';
 import { docuwareService } from '../services/docuwareService';
@@ -518,6 +519,8 @@ const WorkflowHistoryPage = () => {
     const [isDiagramMaximized, setIsDiagramMaximized] = useState(false);
     const [error, setError] = useState(null);
     const [searched, setSearched] = useState(false);
+
+    const resetAllFilters = () => { setQuickFilter('all'); setFilterStep('all'); setSearchStep(''); setFilterResponsible('all'); setSearchResponsible(''); setFilterComments('all'); setSearchComments(''); setFilterDocNum('all'); setSearchDocNum(''); setFilterTransitario('all'); setSearchTransitario(''); setFilterTipo('all'); setSearchTipo(''); setFilterTipoCarga('all'); setSearchTipoCarga(''); setFilterNoFactura('all'); setSearchNoFactura(''); };
 
     // Load Cabinets & Org ID on mount, supporting deep-linking from DocuWare tasks
     useEffect(() => {
@@ -2224,8 +2227,8 @@ const WorkflowHistoryPage = () => {
                             {/* Toolbar: Filters */}
                             <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-wrap gap-4 items-center justify-between">
                                 
-                                {/* Left Side: Export Button */}
-                                <div>
+                                {/* Left Side: Export Button & Clear Filters */
+                                <div className="flex gap-2">
                                     <button
                                         type="button"
                                         onClick={handleExportDocumentsList}
@@ -2235,6 +2238,15 @@ const WorkflowHistoryPage = () => {
                                     >
                                         <FaFileCsv className="text-sm" />
                                         <span>Exportar Lista</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={resetAllFilters}
+                                        className="btn btn-sm bg-slate-100 hover:bg-slate-200 text-slate-600 border-0 gap-2 font-semibold shadow-sm rounded-lg h-9"
+                                        title="Limpar todos os filtros da tabela"
+                                    >
+                                        <FaUndo className="text-sm" />
+                                        <span className="hidden sm:inline">Limpar Filtros</span>
                                     </button>
                                 </div>
 
