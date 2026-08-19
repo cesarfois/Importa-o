@@ -2408,7 +2408,7 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
         
         const validDiffs = searchedAndSortedDetails
             .map(p => p.diasFacturaEntrega)
-            .filter(val => typeof val === 'number');
+            .filter(val => typeof val === 'number' && val >= 0);
         const avgCiclo = validDiffs.length > 0
             ? (validDiffs.reduce((sum, val) => sum + val, 0) / validDiffs.length).toFixed(1)
             : '-';
@@ -2438,7 +2438,7 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
         
         const validDiffs = searchedAndSortedDetails
             .map(p => p.diasFacturaEntrega)
-            .filter(val => typeof val === 'number');
+            .filter(val => typeof val === 'number' && val >= 0);
         const avgCiclo = validDiffs.length > 0
             ? (validDiffs.reduce((sum, val) => sum + val, 0) / validDiffs.length).toFixed(1)
             : '-';
@@ -2467,7 +2467,7 @@ const WorkflowAnalyticsPage = ({ activeTab: controlledActiveTab, onTabChange }) 
         
         const validDiffs = searchedAndSortedDetails
             .map(p => p.diasFacturaEntrega)
-            .filter(val => typeof val === 'number');
+            .filter(val => typeof val === 'number' && val >= 0);
         const avgCiclo = validDiffs.length > 0
             ? (validDiffs.reduce((sum, val) => sum + val, 0) / validDiffs.length).toFixed(1)
             : '-';
