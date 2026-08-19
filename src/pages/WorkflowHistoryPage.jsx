@@ -2227,7 +2227,7 @@ const WorkflowHistoryPage = () => {
                             {/* Toolbar: Filters */}
                             <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-wrap gap-4 items-center justify-between">
                                 
-                                {{/* Left Side: Export Button & Clear Filters */}
+                                {/* Left Side: Export Button & Clear Filters */}
                                 <div className="flex gap-2">
                                     <button
                                         type="button"
