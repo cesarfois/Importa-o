@@ -480,6 +480,8 @@ const WorkflowHistoryPage = () => {
     const [filterComments, setFilterComments] = useState('all');
     const [searchDocNum, setSearchDocNum] = useState('');
 
+    const [filterEmpresa, setFilterEmpresa] = useState('all');
+    const [searchEmpresa, setSearchEmpresa] = useState('');
     const [filterTransitario, setFilterTransitario] = useState('all');
     const [searchTransitario, setSearchTransitario] = useState('');
     
@@ -817,6 +819,15 @@ const WorkflowHistoryPage = () => {
         return Array.from(set).sort();
     }, [documents]);
 
+    const uniqueEmpresas = useMemo(() => {
+        const set = new Set();
+        documents.forEach(doc => {
+            const val = getDocFieldValue(doc, 'COMPANY') || getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA');
+            if (val) set.add(val.trim());
+        });
+        return Array.from(set).sort();
+    }, [documents]);
+
     const uniqueTransitarios = useMemo(() => {
         const set = new Set();
         documents.forEach(doc => {
@@ -901,6 +912,12 @@ const WorkflowHistoryPage = () => {
                 if (docNum !== filterDocNum) return false;
             }
 
+            // Empresa Filter
+            if (filterEmpresa !== 'all') {
+                let empresa = getDocFieldValue(doc, 'COMPANY') || getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA') || '-';
+                if (empresa !== filterEmpresa) return false;
+            }
+
             // Transitário Filter
             if (filterTransitario !== 'all') {
                 let transitario = getDocFieldValue(doc, 'DESPACHANTE') || '-';
@@ -962,6 +979,10 @@ const WorkflowHistoryPage = () => {
                 const getDocNum = (d) => getDocumentNumber(d);
                 valA = getDocNum(a);
                 valB = getDocNum(b);
+            } else if (sortField === 'empresa') {
+                const aVal = getDocFieldValue(a, 'COMPANY') || getDocFieldValue(a, 'FORNECEDOR') || getDocFieldValue(a, 'EMPRESA') || '';
+                const bVal = getDocFieldValue(b, 'COMPANY') || getDocFieldValue(b, 'FORNECEDOR') || getDocFieldValue(b, 'EMPRESA') || '';
+                return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
             } else if (sortField === 'requerente') {
                 const getReq = (d) => getDocFieldValue(d, 'DESPACHANTE') || '';
                 valA = getReq(a);
@@ -1002,7 +1023,7 @@ const WorkflowHistoryPage = () => {
         });
 
         return result;
-    }, [documents, documentProgress, quickFilter, filterStep, filterResponsible, filterDocNum, filterComments, filterTransitario, filterTipo, filterTipoCarga, filterNoFactura, sortField, sortDirection]);
+    }, [documents, documentProgress, quickFilter, filterStep, filterResponsible, filterDocNum, filterComments, filterTransitario, filterTipo, filterTipoCarga, filterNoFactura, filterEmpresa, sortField, sortDirection]);
 
     // Pipeline visual steps aggregated for the cockpit - Dynamic from WFD
     const flowPipelineSteps = useMemo(() => {
