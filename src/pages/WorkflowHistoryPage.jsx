@@ -2353,6 +2353,12 @@ const WorkflowHistoryPage = () => {
                                                     {renderFilterDropdown('docNum', 'Documento', filterDocNum, setFilterDocNum, searchDocNum, setSearchDocNum, uniqueDocNums, true)}
                                                 </th>
                                                 <th className="py-3 px-2 text-left select-none whitespace-nowrap w-[140px] min-w-[140px]">
+                                                    <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('empresa')}>
+                                                        Empresa {sortField === 'empresa' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                                                    </span>
+                                                    {renderFilterDropdown('empresa', 'Empresa', filterEmpresa, setFilterEmpresa, searchEmpresa, setSearchEmpresa, uniqueEmpresas, true)}
+                                                </th>
+<th className="py-3 px-2 text-left select-none whitespace-nowrap w-[140px] min-w-[140px]">
                                                     <span className="cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors" onClick={() => handleSort('requerente')}>
                                                         Transitário {sortField === 'requerente' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
                                                     </span>
@@ -2434,7 +2440,13 @@ const WorkflowHistoryPage = () => {
                                                             <div className="text-[10px] font-mono text-slate-400">ID: {doc.Id}</div>
                                                         </td>
 
-                                                        {/* Transitário */}
+                                                        {/* Empresa */}
+                                                        <td className="py-3 px-2">
+                                                            <div className="font-medium text-slate-700 text-xs truncate max-w-[130px]" title={getDocFieldValue(doc, 'COMPANY') || getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA') || '-'}>
+                                                                {getDocFieldValue(doc, 'COMPANY') || getDocFieldValue(doc, 'FORNECEDOR') || getDocFieldValue(doc, 'EMPRESA') || '-'}
+                                                            </div>
+                                                        </td>
+{/* Transitário */}
                                                          <td className="py-3 px-2">
                                                              <div className="font-medium text-slate-700 text-xs truncate max-w-[130px]" title={getDocFieldValue(doc, 'DESPACHANTE') || '-'}>
                                                                  {getDocFieldValue(doc, 'DESPACHANTE') ? getDocFieldValue(doc, 'DESPACHANTE').split('@')[0] : '-'}
